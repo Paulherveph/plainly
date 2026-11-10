@@ -1,0 +1,1960 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plainly — Paperwork, in plain language</title>
+<meta name="description" content="Plainly turns leases, visa letters and contracts into a plain summary, the actions you owe, and their deadlines. Every claim comes with a quote." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300..700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+/* ───────── Tokens (docs/DESIGN.md) ───────── */
+:root, [data-theme="dark"] {
+  --bg: #0B0B0F;
+  --bg-deep: #07070B;
+  --surface: #13131A;
+  --surface-2: #1B1B25;
+  --glass: rgba(22, 22, 32, 0.62);
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.14);
+  --text: #F4F4F6;
+  --text-muted: #9A9AA8;
+  --text-faint: #6B6B7A;
+  --accent: #9478FF;
+  --accent-text: #B4A3FF;
+  --accent-soft: rgba(148,120,255,0.14);
+  --accent-glow: rgba(148,120,255,0.45);
+  --ok: #3DD68C; --caution: #F5B83D; --critical: #FF5C6C;
+  --ok-soft: rgba(61,214,140,0.12); --caution-soft: rgba(245,184,61,0.12); --critical-soft: rgba(255,92,108,0.12);
+  --paper: #F4F3EF; --paper-ink: #1C1C22; --paper-muted: #5C5C68;
+  --btn-primary-bg: #F4F4F6; --btn-primary-fg: #0B0B0F;
+  --shadow-lg: 0 30px 80px -20px rgba(0,0,0,0.7), 0 0 0 1px var(--border);
+  --mark: rgba(148,120,255,0.32);
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  --bg: #F6F6F9;
+  --bg-deep: #EEEEF3;
+  --surface: #FFFFFF;
+  --surface-2: #F0F0F5;
+  --glass: rgba(255,255,255,0.72);
+  --border: rgba(11,11,15,0.08);
+  --border-strong: rgba(11,11,15,0.14);
+  --text: #0B0B0F;
+  --text-muted: #565664;
+  --text-faint: #7A7A88;
+  --accent: #9478FF;
+  --accent-text: #5B3FD6;
+  --accent-soft: rgba(148,120,255,0.12);
+  --accent-glow: rgba(148,120,255,0.35);
+  --ok: #138A55; --caution: #A86A00; --critical: #D12A3E;
+  --ok-soft: rgba(19,138,85,0.10); --caution-soft: rgba(168,106,0,0.10); --critical-soft: rgba(209,42,62,0.09);
+  --paper: #FFFFFF; --paper-ink: #1C1C22; --paper-muted: #5C5C68;
+  --btn-primary-bg: #0B0B0F; --btn-primary-fg: #F6F6F9;
+  --shadow-lg: 0 30px 60px -24px rgba(30,20,80,0.25), 0 0 0 1px var(--border);
+  --mark: rgba(148,120,255,0.28);
+  color-scheme: light;
+}
+
+/* ───────── Base ───────── */
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+body {
+  margin: 0; background: var(--bg); color: var(--text);
+  font-family: "Geist", ui-sans-serif, system-ui, -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 16px; line-height: 1.5; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: "ss01";
+  transition: background-color .2s ease, color .2s ease;
+}
+.mono { font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace; font-variant-numeric: tabular-nums; }
+a { color: inherit; text-decoration: none; }
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; background: none; border: 0; padding: 0; }
+img, svg { display: block; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.skip { position: absolute; left: 16px; top: -60px; z-index: 100; background: var(--btn-primary-bg); color: var(--btn-primary-fg); padding: 8px 14px; border-radius: 8px; }
+.skip:focus { top: 12px; }
+.icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.icon-sm { width: 15px; height: 15px; }
+.icon-lg { width: 22px; height: 22px; }
+
+.container { width: 100%; max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+@media (min-width: 768px) { .container { padding: 0 32px; } }
+
+/* ───────── Buttons ───────── */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  height: 40px; padding: 0 16px; border-radius: 999px; font-size: 14px; font-weight: 500;
+  white-space: nowrap; transition: transform .15s ease, background-color .15s ease, border-color .15s ease, box-shadow .2s ease, opacity .15s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-lg { height: 48px; padding: 0 22px; font-size: 15px; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 13px; }
+.btn-primary { background: var(--btn-primary-bg); color: var(--btn-primary-fg); box-shadow: 0 0 0 1px rgba(255,255,255,0.1), 0 8px 30px -8px var(--accent-glow); }
+.btn-primary:hover { box-shadow: 0 0 0 1px rgba(255,255,255,0.2), 0 10px 40px -6px var(--accent-glow); }
+.btn-secondary { background: var(--glass); border: 1px solid var(--border-strong); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+.btn-secondary:hover { background: var(--surface-2); }
+.btn-ghost { color: var(--text-muted); }
+.btn-ghost:hover { color: var(--text); background: var(--surface-2); }
+.btn-danger { background: var(--critical); color: #fff; }
+.btn-danger:hover { filter: brightness(1.08); }
+.btn-icon { width: 36px; height: 36px; padding: 0; border-radius: 10px; color: var(--text-muted); }
+.btn-icon:hover { color: var(--text); background: var(--surface-2); }
+.btn[disabled] { opacity: .45; pointer-events: none; }
+
+/* ───────── Header ───────── */
+.site-header {
+  position: sticky; top: 0; z-index: 40;
+  backdrop-filter: saturate(140%) blur(16px); -webkit-backdrop-filter: saturate(140%) blur(16px);
+  background: color-mix(in oklab, var(--bg) 72%, transparent);
+  border-bottom: 1px solid var(--border);
+}
+.header-inner { display: flex; align-items: center; height: 64px; gap: 16px; }
+.logo { display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; letter-spacing: -0.02em; }
+.logo-mark { width: 28px; height: 28px; }
+.nav { display: none; margin-left: 24px; gap: 4px; }
+.nav a { padding: 8px 12px; border-radius: 999px; font-size: 14px; color: var(--text-muted); transition: color .15s, background-color .15s; }
+.nav a:hover { color: var(--text); }
+.nav a[aria-current="page"] { color: var(--text); background: var(--surface-2); }
+.header-right { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); }
+.seg button { height: 28px; min-width: 36px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; color: var(--text-muted); transition: background-color .15s, color .15s; }
+.seg button[aria-pressed="true"] { background: var(--surface-2); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
+.seg button:hover { color: var(--text); }
+.header-locale { display: none; }
+.header-cta { display: none; }
+.menu-btn { display: inline-flex; }
+@media (min-width: 900px) {
+  .nav { display: flex; } .header-locale { display: inline-flex; } .header-cta { display: inline-flex; } .menu-btn { display: none; }
+}
+.mobile-menu { display: none; border-top: 1px solid var(--border); padding: 12px 0 16px; }
+.mobile-menu.open { display: block; }
+.mobile-menu a { display: block; padding: 12px 4px; font-size: 16px; color: var(--text-muted); border-bottom: 1px solid var(--border); }
+.mobile-menu a[aria-current="page"] { color: var(--text); }
+.mobile-menu .row { display: flex; gap: 10px; align-items: center; justify-content: space-between; padding-top: 14px; }
+
+/* ───────── Shared surfaces ───────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+}
+.glass {
+  background: linear-gradient(180deg, color-mix(in oklab, var(--surface-2) 80%, transparent), color-mix(in oklab, var(--surface) 80%, transparent));
+  border: 1px solid var(--border); border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+}
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px 0 10px;
+  border-radius: 999px; font-size: 13px; color: var(--text-muted);
+  background: var(--glass); border: 1px solid var(--border-strong);
+}
+.eyebrow .dot { width: 6px; height: 6px; border-radius: 99px; background: var(--accent); box-shadow: 0 0 12px var(--accent); }
+.chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 500; border: 1px solid var(--border); color: var(--text-muted); background: var(--surface-2);
+}
+.badge { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 999px; font-size: 12px; font-weight: 500; }
+.badge .icon { width: 13px; height: 13px; }
+.badge-ok { color: var(--ok); background: var(--ok-soft); }
+.badge-info { color: var(--accent-text); background: var(--accent-soft); }
+.badge-caution { color: var(--caution); background: var(--caution-soft); }
+.badge-critical { color: var(--critical); background: var(--critical-soft); }
+.badge-muted { color: var(--text-muted); background: var(--surface-2); }
+h1, h2, h3, h4 { margin: 0; letter-spacing: -0.025em; font-weight: 600; }
+p { margin: 0; }
+.muted { color: var(--text-muted); }
+.faint { color: var(--text-faint); }
+.section-title { font-size: 28px; line-height: 1.15; }
+@media (min-width: 768px) { .section-title { font-size: 40px; line-height: 1.1; } }
+.section-sub { color: var(--text-muted); font-size: 16px; margin-top: 12px; max-width: 560px; }
+
+/* ───────── Routes ───────── */
+[data-route] { display: none; }
+[data-route].active { display: block; animation: route-in .22s ease-out; }
+@keyframes route-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* ───────── Landing / Hero ───────── */
+.hero { position: relative; overflow: hidden; isolation: isolate; padding: 72px 0 0; }
+@media (min-width: 768px) { .hero { padding-top: 104px; } }
+.hero-bg { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.hero-beam {
+  position: absolute; left: 50%; top: -10%; width: 2px; height: 78%; transform: translateX(-50%);
+  background: linear-gradient(180deg, transparent 0%, rgba(190,175,255,0.08) 30%, rgba(190,175,255,0.75) 62%, #fff 82%, rgba(220,210,255,0.9));
+  box-shadow: 0 0 24px 6px var(--accent-glow), 0 0 120px 40px rgba(148,120,255,0.18);
+  opacity: .9;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, transparent 38%, #000 66%); mask-image: linear-gradient(180deg, transparent 0%, transparent 38%, #000 66%);
+}
+.hero-beam::after {
+  content: ""; position: absolute; left: 50%; bottom: -60px; width: 720px; height: 220px; transform: translateX(-50%);
+  background: radial-gradient(closest-side, rgba(170,150,255,0.55), rgba(148,120,255,0.18) 45%, transparent 75%);
+  filter: blur(6px);
+}
+.hero-glow { position: absolute; inset: 0; background:
+  radial-gradient(60% 50% at 50% 0%, rgba(148,120,255,0.20), transparent 70%),
+  radial-gradient(40% 40% at 15% 70%, rgba(60,80,200,0.12), transparent 70%),
+  radial-gradient(40% 40% at 85% 60%, rgba(148,120,255,0.10), transparent 70%); }
+[data-theme="light"] .hero-beam { opacity: .55; }
+[data-theme="light"] .hero-glow { opacity: .7; }
+#hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
+.hero-grid { position: absolute; inset: 0; opacity: .35;
+  background-image: linear-gradient(var(--border) 1px, transparent 1px), linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 64px 64px; mask-image: radial-gradient(60% 55% at 50% 30%, #000 20%, transparent 75%); -webkit-mask-image: radial-gradient(60% 55% at 50% 30%, #000 20%, transparent 75%); }
+.hero-copy { text-align: center; display: flex; flex-direction: column; align-items: center; }
+.hero h1 {
+  margin-top: 22px; font-size: 44px; line-height: 1.04; letter-spacing: -0.045em; font-weight: 600; max-width: 820px;
+  background: linear-gradient(180deg, var(--text) 30%, color-mix(in oklab, var(--text) 62%, transparent));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+@media (min-width: 640px) { .hero h1 { font-size: 64px; } }
+@media (min-width: 1024px) { .hero h1 { font-size: 76px; } }
+.hero h1 em { font-style: normal; background: linear-gradient(90deg, #C9BDFF, var(--accent) 60%, #7B9BFF); -webkit-background-clip: text; background-clip: text; color: transparent; }
+[data-theme="light"] .hero h1 em { background: linear-gradient(90deg, #7B5CFA, #5B3FD6); -webkit-background-clip: text; background-clip: text; }
+.hero-sub { margin-top: 20px; font-size: 17px; color: var(--text-muted); max-width: 540px; }
+@media (min-width: 768px) { .hero-sub { font-size: 19px; } }
+.hero-ctas { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+.hero-trust { margin-top: 22px; display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; font-size: 13px; color: var(--text-faint); }
+.hero-trust span { display: inline-flex; align-items: center; gap: 6px; }
+.hero-trust .icon { width: 14px; height: 14px; color: var(--ok); }
+
+.hero-frame-wrap { position: relative; margin-top: 120px; padding-bottom: 40px; }
+@media (min-width: 768px) { .hero-frame-wrap { margin-top: 150px; } }
+.hero-frame {
+  position: relative; border-radius: 20px; padding: 8px;
+  background: linear-gradient(180deg, rgba(190,175,255,0.35), rgba(148,120,255,0.06) 40%, transparent);
+  box-shadow: 0 0 80px -10px var(--accent-glow), 0 40px 120px -30px rgba(0,0,0,0.8);
+}
+[data-theme="light"] .hero-frame { box-shadow: 0 0 60px -10px var(--accent-glow), 0 30px 80px -30px rgba(40,20,120,0.25); }
+.hero-frame-inner { border-radius: 14px; overflow: hidden; background: var(--bg); border: 1px solid var(--border-strong); }
+.hero-frame-wrap::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 180px; background: linear-gradient(180deg, transparent, var(--bg)); pointer-events: none; }
+
+/* mini app preview inside the frame */
+.mini-bar { display: flex; align-items: center; gap: 8px; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.mini-dots { display: flex; gap: 6px; } .mini-dots i { width: 10px; height: 10px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border-strong); }
+.mini-url { margin: 0 auto; font-size: 12px; color: var(--text-faint); padding: 4px 14px; border-radius: 999px; background: var(--bg); border: 1px solid var(--border); }
+.mini-body { display: grid; grid-template-columns: 1fr; gap: 16px; padding: 20px; }
+@media (min-width: 900px) { .mini-body { grid-template-columns: 1.35fr 1fr; padding: 24px; } }
+.mini-paper { display: none; }
+@media (min-width: 900px) { .mini-paper { display: block; } }
+
+/* ───────── Landing sections ───────── */
+.section { padding: 88px 0; position: relative; }
+@media (min-width: 768px) { .section { padding: 120px 0; } }
+.section-head { text-align: center; display: flex; flex-direction: column; align-items: center; margin-bottom: 48px; }
+.steps { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 768px) { .steps { grid-template-columns: repeat(3, 1fr); } }
+.step { padding: 28px; position: relative; overflow: hidden; }
+.step-num { font-size: 13px; color: var(--accent-text); }
+.step h3 { font-size: 20px; margin-top: 18px; }
+.step p { color: var(--text-muted); margin-top: 8px; font-size: 15px; }
+.step-icon { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-text); border: 1px solid rgba(148,120,255,0.25); margin-top: 18px; }
+.step::before { content: ""; position: absolute; inset: auto -40% -60% auto; width: 240px; height: 240px; background: radial-gradient(closest-side, rgba(148,120,255,0.14), transparent); }
+
+.bento { display: grid; gap: 16px; grid-template-columns: 1fr; }
+@media (min-width: 900px) { .bento { grid-template-columns: repeat(6, 1fr); } .b-a { grid-column: span 4; } .b-b { grid-column: span 2; } .b-c { grid-column: span 3; } .b-d { grid-column: span 3; } }
+.bento .glass { padding: 28px; overflow: hidden; position: relative; min-height: 260px; display: flex; flex-direction: column; }
+.bento h3 { font-size: 20px; }
+.bento p.d { color: var(--text-muted); font-size: 15px; margin-top: 6px; max-width: 420px; }
+.bento .demo { margin-top: auto; padding-top: 24px; }
+
+.privacy-band { display: grid; gap: 32px; align-items: center; grid-template-columns: 1fr; padding: 36px; }
+@media (min-width: 900px) { .privacy-band { grid-template-columns: 1fr 1fr; padding: 56px; } }
+.privacy-list { display: grid; gap: 14px; }
+.privacy-list li { display: flex; gap: 12px; align-items: flex-start; font-size: 15px; }
+.privacy-list .icon { color: var(--ok); margin-top: 2px; }
+ul.clean { list-style: none; margin: 0; padding: 0; }
+
+.faq { max-width: 760px; margin: 0 auto; }
+.faq details { border-bottom: 1px solid var(--border); }
+.faq summary { list-style: none; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 4px; font-size: 17px; font-weight: 500; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary .icon { transition: transform .2s ease; color: var(--text-muted); }
+.faq details[open] summary .icon { transform: rotate(45deg); }
+.faq details p { padding: 0 4px 22px; color: var(--text-muted); max-width: 640px; }
+
+.final-cta { text-align: center; padding: 64px 24px; position: relative; overflow: hidden; }
+.final-cta::before { content: ""; position: absolute; left: 50%; top: -120px; width: 600px; height: 300px; transform: translateX(-50%); background: radial-gradient(closest-side, rgba(148,120,255,0.3), transparent); }
+
+.site-footer { border-top: 1px solid var(--border); padding: 40px 0 56px; margin-top: 40px; }
+.footer-inner { display: flex; flex-direction: column; gap: 20px; }
+@media (min-width: 768px) { .footer-inner { flex-direction: row; align-items: center; justify-content: space-between; } }
+.footer-links { display: flex; flex-wrap: wrap; gap: 20px; font-size: 14px; color: var(--text-muted); }
+.footer-links a:hover { color: var(--text); }
+
+/* ───────── App pages ───────── */
+.page { padding-top: 40px; padding-bottom: 96px; }
+@media (min-width: 768px) { .page { padding-top: 56px; } }
+.page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; }
+.page-head h1 { font-size: 28px; line-height: 1.15; }
+@media (min-width: 768px) { .page-head h1 { font-size: 40px; line-height: 1.1; } }
+.page-head p { color: var(--text-muted); margin-top: 8px; }
+
+.quota { display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: var(--text-muted); }
+.quota-bar { width: 72px; height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.quota-bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .25s ease-out; }
+
+.tabs { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border); }
+.tabs button { height: 34px; padding: 0 14px; border-radius: 8px; font-size: 14px; color: var(--text-muted); display: inline-flex; align-items: center; gap: 8px; }
+.tabs button[aria-selected="true"] { background: var(--surface-2); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
+
+.dropzone {
+  margin-top: 16px; position: relative; border-radius: 16px; padding: 48px 24px; text-align: center;
+  border: 1.5px dashed var(--border-strong); background:
+    radial-gradient(60% 80% at 50% 0%, var(--accent-soft), transparent 70%), var(--surface);
+  transition: border-color .15s, background-color .15s, transform .15s;
+}
+.dropzone.drag { border-color: var(--accent); transform: scale(1.005); }
+.dropzone .dz-icon { width: 56px; height: 56px; margin: 0 auto 16px; border-radius: 16px; display: grid; place-items: center; background: var(--surface-2); border: 1px solid var(--border-strong); color: var(--accent-text); box-shadow: 0 0 40px -6px var(--accent-glow); }
+.dropzone h2 { font-size: 20px; }
+.dropzone p { color: var(--text-muted); font-size: 14px; margin-top: 6px; }
+.dropzone .actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.dz-progress { margin: 20px auto 0; max-width: 360px; text-align: left; }
+.progress { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+.progress i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), #C4B6FF); border-radius: 99px; transition: width .15s linear; }
+.alert { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; font-size: 14px; margin-top: 16px; text-align: left; }
+.alert-critical { background: var(--critical-soft); color: var(--critical); border: 1px solid color-mix(in oklab, var(--critical) 30%, transparent); }
+.alert-info { background: var(--accent-soft); color: var(--accent-text); border: 1px solid rgba(148,120,255,0.25); }
+
+textarea.input, input.input, select.input {
+  width: 100%; border-radius: 8px; border: 1px solid var(--border-strong); background: var(--surface); padding: 12px 14px; font-size: 15px;
+  transition: border-color .15s, box-shadow .15s;
+}
+textarea.input { min-height: 200px; resize: vertical; line-height: 1.6; }
+.input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+.input::placeholder { color: var(--text-faint); }
+
+.samples { display: grid; gap: 12px; grid-template-columns: 1fr; margin-top: 16px; }
+@media (min-width: 768px) { .samples { grid-template-columns: repeat(3, 1fr); } }
+.sample {
+  text-align: left; padding: 18px; border-radius: 12px; background: var(--surface); border: 1px solid var(--border);
+  display: flex; gap: 14px; align-items: flex-start; transition: border-color .15s, background-color .15s, transform .15s;
+}
+.sample:hover { border-color: rgba(148,120,255,0.4); background: var(--surface-2); transform: translateY(-1px); }
+.sample-thumb { width: 44px; height: 56px; border-radius: 6px; background: var(--paper); flex: none; padding: 7px 6px; display: grid; gap: 3px; align-content: start; box-shadow: 0 6px 20px -8px rgba(0,0,0,0.6); }
+.sample-thumb i { display: block; height: 3px; border-radius: 2px; background: #CFCFD6; }
+.sample-thumb i:first-child { background: #9C9CA8; width: 70%; }
+.sample h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.sample p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.sample .meta { margin-top: 10px; display: flex; gap: 6px; flex-wrap: wrap; }
+
+.h-label { font-size: 13px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 48px; display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+.lib-tools { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.search { position: relative; flex: 1 1 240px; }
+.search .icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-faint); }
+.search input { padding-left: 38px; height: 42px; padding-top: 0; padding-bottom: 0; }
+select.input { width: auto; height: 42px; padding: 0 36px 0 14px; appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%239A9AA8' stroke-width='2' viewBox='0 0 24 24'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; }
+.lib { margin-top: 12px; overflow: hidden; }
+.lib-row { display: grid; grid-template-columns: auto 1fr auto; gap: 14px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: background-color .15s; }
+.lib-row:last-child { border-bottom: 0; }
+.lib-row:hover { background: var(--surface-2); }
+.lib-ico { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+.lib-title { font-weight: 500; font-size: 15px; }
+.lib-meta { font-size: 13px; color: var(--text-muted); margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.lib-side { display: flex; align-items: center; gap: 10px; }
+.lib-exp { display: none; font-size: 12px; color: var(--text-faint); }
+@media (min-width: 640px) { .lib-exp { display: inline; } }
+
+.empty { text-align: center; padding: 48px 24px; }
+.empty .e-ico { width: 48px; height: 48px; border-radius: 14px; margin: 0 auto 14px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-muted); border: 1px solid var(--border); }
+.empty h3 { font-size: 16px; }
+.empty p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+/* ───────── Analysis ───────── */
+.an-head { display: flex; flex-direction: column; gap: 16px; padding-bottom: 20px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+@media (min-width: 900px) { .an-head { flex-direction: row; align-items: flex-end; justify-content: space-between; } }
+.an-head h1 { font-size: 24px; line-height: 1.2; }
+@media (min-width: 768px) { .an-head h1 { font-size: 28px; } }
+.an-meta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; align-items: center; }
+.an-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.an-grid { display: grid; grid-template-columns: minmax(0,1fr); gap: 24px; }
+@media (min-width: 1024px) { .an-grid { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 28px; } }
+.an-main { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.an-section { padding: 22px; }
+@media (min-width: 768px) { .an-section { padding: 24px 26px; } }
+.an-section > header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+.an-section h2 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+.an-section h2 .icon { color: var(--accent-text); }
+.an-section h2 .count { font-size: 12px; color: var(--text-faint); font-weight: 500; }
+.an-section.enter { animation: sec-in .24s ease-out both; }
+@keyframes sec-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.summary-text { font-size: 17px; line-height: 1.6; color: var(--text); }
+.summary-text .caret { display: inline-block; width: 2px; height: 1.1em; vertical-align: -3px; background: var(--accent); margin-left: 2px; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.facts { width: 100%; border-collapse: collapse; font-size: 14px; }
+.facts th, .facts td { text-align: left; padding: 12px 0; border-top: 1px solid var(--border); vertical-align: top; }
+.facts tr:first-child th, .facts tr:first-child td { border-top: 0; }
+.facts th { font-weight: 400; color: var(--text-muted); width: 38%; padding-right: 16px; }
+.facts td { font-weight: 500; }
+.facts td .cite-wrap { margin-top: 6px; }
+@media (max-width: 640px) { .cite .q { max-width: 28vw; } .facts th { width: 34%; } }
+
+.cite {
+  display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px 0 7px; border-radius: 999px; font-size: 12px;
+  color: var(--accent-text); background: var(--accent-soft); border: 1px solid rgba(148,120,255,0.22); max-width: 100%;
+  transition: background-color .15s, border-color .15s;
+}
+.cite:hover { background: rgba(148,120,255,0.22); border-color: rgba(148,120,255,0.45); }
+.cite .icon { width: 12px; height: 12px; }
+.cite .q { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; color: var(--text-muted); font-family: "Geist Mono", monospace; font-size: 11px; }
+
+.actions-list { display: grid; gap: 10px; }
+.action { display: grid; grid-template-columns: auto 1fr; gap: 14px; padding: 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); }
+[data-theme="light"] .action { background: var(--surface-2); }
+.date-tile { align-self: start; width: 52px; border-radius: 10px; overflow: hidden; text-align: center; border: 1px solid var(--border-strong); background: var(--surface); flex: none; }
+.date-tile .m { font-size: 10px; text-transform: uppercase; letter-spacing: .08em; padding: 3px 0; background: var(--accent-soft); color: var(--accent-text); font-weight: 600; }
+.date-tile .d { font-size: 20px; font-weight: 600; padding: 4px 0 5px; letter-spacing: -0.02em; }
+.date-tile.overdue .m { background: var(--critical-soft); color: var(--critical); }
+.date-tile.none .d { font-size: 10px; padding: 8px 2px 9px; color: var(--text-faint); line-height: 1.2; }
+.action h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+.action p { font-size: 14px; color: var(--text-muted); margin-top: 3px; }
+.action .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; align-items: center; }
+
+.watch { display: grid; grid-template-columns: auto 1fr; gap: 12px; padding: 14px; border-radius: 10px; border: 1px solid var(--border); border-left-width: 3px; }
+.watch + .watch { margin-top: 10px; }
+.watch.critical { border-left-color: var(--critical); background: linear-gradient(90deg, var(--critical-soft), transparent 60%); }
+.watch.caution { border-left-color: var(--caution); background: linear-gradient(90deg, var(--caution-soft), transparent 60%); }
+.watch.info { border-left-color: var(--accent); background: linear-gradient(90deg, var(--accent-soft), transparent 60%); }
+.watch h3 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.watch p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
+.watch .w-ico { margin-top: 2px; }
+.watch.critical .w-ico { color: var(--critical); } .watch.caution .w-ico { color: var(--caution); } .watch.info .w-ico { color: var(--accent-text); }
+
+.gloss { display: grid; gap: 0; }
+.gloss div { display: grid; grid-template-columns: 1fr; gap: 2px; padding: 12px 0; border-top: 1px solid var(--border); }
+.gloss div:first-child { border-top: 0; padding-top: 0; }
+@media (min-width: 640px) { .gloss div { grid-template-columns: 180px 1fr; gap: 16px; } }
+.gloss dt { font-weight: 500; font-size: 14px; }
+.gloss dd { margin: 0; color: var(--text-muted); font-size: 14px; }
+
+.dropped { display: flex; gap: 10px; align-items: center; font-size: 13px; color: var(--text-muted); padding: 10px 14px; border-radius: 10px; border: 1px dashed var(--border-strong); }
+.dropped .icon { color: var(--caution); width: 16px; height: 16px; }
+.legal { font-size: 12px; color: var(--text-faint); display: flex; gap: 8px; align-items: center; padding: 4px 2px; }
+.legal .icon { width: 14px; height: 14px; }
+
+.status-line { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); }
+.pulse { width: 8px; height: 8px; border-radius: 99px; background: var(--accent); box-shadow: 0 0 0 0 var(--accent-glow); animation: pulse 1.4s ease-out infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 var(--accent-glow); } 100% { box-shadow: 0 0 0 10px transparent; } }
+.done-dot { width: 8px; height: 8px; border-radius: 99px; background: var(--ok); }
+
+.skel { border-radius: 6px; background: linear-gradient(90deg, var(--surface-2) 0%, color-mix(in oklab, var(--surface-2) 60%, var(--border-strong)) 50%, var(--surface-2) 100%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+.skel-line { height: 12px; margin-top: 10px; }
+.skel-title { height: 16px; width: 140px; }
+
+/* Preview pane */
+.an-side { min-width: 0; }
+.preview { position: sticky; top: 84px; display: flex; flex-direction: column; max-height: calc(100vh - 104px); overflow: hidden; }
+.preview-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid var(--border); gap: 10px; }
+.preview-head .pages { display: flex; gap: 4px; }
+.preview-head .pages button { height: 26px; min-width: 26px; border-radius: 6px; font-size: 12px; color: var(--text-muted); padding: 0 6px; }
+.preview-head .pages button[aria-current="true"] { background: var(--surface-2); color: var(--text); box-shadow: 0 0 0 1px var(--border-strong); }
+.preview-scroll { overflow: auto; padding: 18px; display: grid; gap: 18px; background: var(--bg-deep); scroll-behavior: smooth; }
+.paper { background: var(--paper); color: var(--paper-ink); border-radius: 4px; padding: 30px 28px 40px; font-size: 12.5px; line-height: 1.65; box-shadow: 0 10px 30px -12px rgba(0,0,0,0.5); position: relative; font-family: "Geist", Georgia, serif; }
+.paper h4 { font-size: 13px; letter-spacing: 0.02em; text-transform: uppercase; margin-bottom: 12px; color: var(--paper-ink); }
+.paper p { margin-top: 9px; color: #34343C; }
+.paper .pg { position: absolute; bottom: 12px; right: 18px; font-size: 10px; color: var(--paper-muted); font-family: "Geist Mono", monospace; }
+.paper mark { background: rgba(148,120,255,0.35); color: inherit; border-radius: 2px; padding: 1px 0; box-shadow: 0 0 0 2px rgba(148,120,255,0.35); animation: mark-in .5s ease-out; }
+@keyframes mark-in { from { background: rgba(148,120,255,0.8); box-shadow: 0 0 0 6px rgba(148,120,255,0.3); } }
+.preview-mobile-btn { display: inline-flex; }
+@media (min-width: 1024px) { .preview-mobile-btn { display: none; } }
+@media (max-width: 1023.98px) {
+  .an-side { position: fixed; inset: auto 0 0 0; z-index: 60; transform: translateY(105%); transition: transform .25s ease-out; }
+  .an-side.open { transform: none; }
+  .an-side .preview { position: static; max-height: 82vh; border-radius: 18px 18px 0 0; border-bottom: 0; }
+  .an-side .grab { display: block; }
+}
+.grab { display: none; width: 40px; height: 4px; border-radius: 99px; background: var(--border-strong); margin: 8px auto 0; }
+
+/* Chat */
+.chat { padding: 0; overflow: hidden; }
+.chat-head { padding: 18px 22px 6px; }
+.chat-head h2 { font-size: 16px; display: flex; gap: 10px; align-items: center; }
+.chat-head h2 .icon { color: var(--accent-text); }
+.chat-head p { font-size: 13px; color: var(--text-muted); margin-top: 4px; }
+.chat-msgs { padding: 10px 22px; display: grid; gap: 14px; max-height: 420px; overflow: auto; }
+.msg { max-width: 92%; font-size: 15px; line-height: 1.55; }
+.msg.user { justify-self: end; background: var(--surface-2); border: 1px solid var(--border); padding: 10px 14px; border-radius: 14px 14px 4px 14px; }
+.msg.bot { justify-self: start; }
+.msg.bot .bubble { padding: 2px 0; }
+.msg.bot .cites { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.msg.bot.refusal .bubble { color: var(--text-muted); font-style: italic; }
+.msg .tools { display: flex; gap: 4px; margin-top: 6px; }
+.suggest { display: flex; gap: 8px; flex-wrap: wrap; padding: 4px 22px 14px; }
+.suggest button { height: 32px; padding: 0 12px; border-radius: 999px; font-size: 13px; border: 1px solid var(--border-strong); color: var(--text-muted); background: var(--bg); transition: color .15s, border-color .15s; }
+[data-theme="light"] .suggest button { background: var(--surface-2); }
+.suggest button:hover { color: var(--text); border-color: rgba(148,120,255,0.5); }
+.composer-wrap { position: sticky; bottom: 12px; z-index: 30; }
+.composer { display: flex; gap: 8px; align-items: center; padding: 8px 8px 8px 16px; border-radius: 16px; background: color-mix(in oklab, var(--surface) 88%, transparent); border: 1px solid var(--border-strong); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 20px 50px -20px rgba(0,0,0,0.6), 0 0 0 1px rgba(148,120,255,0.06); }
+.composer:focus-within { border-color: rgba(148,120,255,0.6); box-shadow: 0 0 0 4px var(--accent-soft), 0 20px 50px -20px rgba(0,0,0,0.6); }
+.composer input { flex: 1; min-width: 0; height: 40px; border: 0; background: transparent; outline: none; font-size: 15px; }
+.composer input::placeholder { color: var(--text-faint); }
+.send { width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; background: var(--btn-primary-bg); color: var(--btn-primary-fg); transition: transform .15s, opacity .15s; flex: none; }
+.send:active { transform: scale(.94); }
+.send[disabled] { opacity: .35; }
+
+/* ───────── Deadlines ───────── */
+.dl-toolbar { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.dl-group { margin-top: 28px; }
+.dl-group h2 { font-size: 13px; font-weight: 500; color: var(--text-muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 10px; display: flex; gap: 8px; align-items: center; }
+.dl-list { overflow: hidden; }
+.dl-row { display: grid; grid-template-columns: auto auto 1fr auto; gap: 14px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--border); transition: background-color .15s, opacity .2s; }
+.dl-row:last-child { border-bottom: 0; }
+.dl-row:hover { background: var(--surface-2); }
+.dl-row.done { opacity: .5; }
+.dl-row.done .dl-title { text-decoration: line-through; }
+.check { width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid var(--border-strong); display: grid; place-items: center; transition: background-color .15s, border-color .15s; }
+.check .icon { width: 14px; height: 14px; stroke-width: 2.5; opacity: 0; color: var(--btn-primary-fg); transition: opacity .15s; }
+.check[aria-checked="true"] { background: var(--ok); border-color: var(--ok); }
+.check[aria-checked="true"] .icon { opacity: 1; color: #06210F; }
+.dl-date { font-size: 13px; color: var(--text-muted); width: 84px; }
+.dl-date b { display: block; color: var(--text); font-weight: 500; font-size: 14px; }
+.dl-title { font-weight: 500; font-size: 15px; }
+.dl-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.dl-sub a { color: var(--accent-text); }
+.dl-actions { display: flex; gap: 4px; align-items: center; }
+@media (max-width: 560px) {
+  .dl-row { grid-template-columns: auto 1fr auto; }
+  .dl-date { grid-column: 2; grid-row: 2; width: auto; display: flex; gap: 6px; align-items: baseline; }
+  .dl-date b { display: inline; }
+  .dl-main { grid-column: 2; grid-row: 1; }
+  .dl-actions { grid-column: 3; grid-row: 1 / span 2; }
+}
+
+/* ───────── Privacy ───────── */
+.prose { max-width: 720px; }
+.prose h2 { font-size: 20px; margin-top: 40px; }
+.prose p, .prose li { color: var(--text-muted); margin-top: 10px; font-size: 16px; }
+.prose ul { padding-left: 20px; }
+.danger-zone { margin-top: 48px; padding: 24px; border-radius: 12px; border: 1px solid color-mix(in oklab, var(--critical) 35%, transparent); background: linear-gradient(180deg, var(--critical-soft), transparent); display: flex; flex-direction: column; gap: 16px; }
+@media (min-width: 768px) { .danger-zone { flex-direction: row; align-items: center; justify-content: space-between; } }
+.danger-zone h3 { font-size: 16px; }
+.danger-zone p { color: var(--text-muted); font-size: 14px; margin-top: 4px; }
+
+/* ───────── Overlays ───────── */
+.scrim { position: fixed; inset: 0; z-index: 70; background: rgba(5,5,10,0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .2s ease-out; }
+.scrim.open { opacity: 1; pointer-events: auto; }
+.sheet { position: fixed; z-index: 80; top: 0; right: 0; bottom: 0; width: min(440px, 100%); background: var(--surface); border-left: 1px solid var(--border-strong); transform: translateX(100%); transition: transform .24s cubic-bezier(.2,.8,.2,1); display: flex; flex-direction: column; box-shadow: -30px 0 80px -30px rgba(0,0,0,0.6); }
+.sheet.open { transform: none; }
+.sheet-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px; border-bottom: 1px solid var(--border); }
+.sheet-head h2 { font-size: 16px; }
+.sheet-body { padding: 22px 20px; overflow: auto; display: grid; gap: 18px; align-content: start; }
+.quote-block { font-family: "Geist Mono", monospace; font-size: 13.5px; line-height: 1.65; padding: 16px 18px; border-radius: 10px; background: var(--bg); border: 1px solid var(--border); border-left: 3px solid var(--accent); }
+[data-theme="light"] .quote-block { background: var(--surface-2); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14px; }
+.kv dt { color: var(--text-muted); } .kv dd { margin: 0; }
+
+.modal { position: fixed; z-index: 80; left: 50%; top: 50%; width: min(460px, calc(100% - 32px)); transform: translate(-50%, -46%) scale(.98); opacity: 0; pointer-events: none; transition: opacity .2s ease-out, transform .2s ease-out; padding: 28px; border-radius: 16px; background: var(--surface); border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); }
+.modal.open { opacity: 1; transform: translate(-50%, -50%); pointer-events: auto; }
+.modal h2 { font-size: 20px; }
+.modal p { color: var(--text-muted); margin-top: 8px; font-size: 15px; }
+.modal .m-ico { width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; margin-bottom: 16px; }
+.modal .m-actions { display: flex; gap: 10px; margin-top: 24px; justify-content: flex-end; flex-wrap: wrap; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--text-faint); font-size: 12px; margin: 16px 0; }
+.divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+.toasts { position: fixed; z-index: 90; bottom: 20px; left: 50%; transform: translateX(-50%); display: grid; gap: 8px; width: min(420px, calc(100% - 32px)); }
+.toast { display: flex; gap: 10px; align-items: center; padding: 12px 16px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--border-strong); box-shadow: var(--shadow-lg); font-size: 14px; animation: toast-in .22s ease-out; }
+.toast .icon { color: var(--ok); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+.mockup-note { position: fixed; left: 16px; bottom: 16px; z-index: 35; font-size: 11px; color: var(--text-faint); background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; }
+@media (max-width: 1023.98px) { .mockup-note { display: none; } }
+
+/* Reduced motion: opacity only */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-property: opacity !important; scroll-behavior: auto !important; }
+  .skel { animation: none; }
+}
+</style>
+</head>
+<body>
+<a href="#main" class="skip" data-i18n="skip">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="lg-logo" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C9BDFF"/><stop offset="1" stop-color="#7B5CFA"/></linearGradient>
+  </defs>
+</svg>
+
+<header class="site-header">
+  <div class="container">
+    <div class="header-inner">
+      <a href="#/" class="logo" aria-label="Plainly home">
+        <svg class="logo-mark" viewBox="0 0 28 28" aria-hidden="true">
+          <rect x="1" y="1" width="26" height="26" rx="8" fill="url(#lg-logo)"/>
+          <path d="M8 9.5h12M8 14h8M8 18.5h5" stroke="#0B0B0F" stroke-width="2.2" stroke-linecap="round"/>
+          <circle cx="19.5" cy="18.5" r="2" fill="#0B0B0F"/>
+        </svg>
+        Plainly
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="#/documents" data-nav="documents" data-i18n="nav.documents">Documents</a>
+        <a href="#/deadlines" data-nav="deadlines" data-i18n="nav.deadlines">Deadlines</a>
+        <a href="#/privacy" data-nav="privacy" data-i18n="nav.privacy">Privacy</a>
+      </nav>
+      <div class="header-right">
+        <div class="seg header-locale" role="group" aria-label="Language" data-locale-switch>
+          <button type="button" data-locale="en" aria-pressed="true">EN</button>
+          <button type="button" data-locale="fr" aria-pressed="false">FR</button>
+          <button type="button" data-locale="zh" aria-pressed="false">中文</button>
+        </div>
+        <button type="button" class="btn-icon btn" data-theme-toggle aria-label="Switch to light theme">
+          <svg class="icon" data-ico="sun"></svg>
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm header-cta" data-open-signin data-i18n="nav.save">Save your work</button>
+        <button type="button" class="btn-icon btn menu-btn" aria-expanded="false" aria-controls="mobile-menu" aria-label="Open menu" data-menu>
+          <svg class="icon" data-ico="menu"></svg>
+        </button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobile-menu">
+      <a href="#/documents" data-nav="documents" data-i18n="nav.documents">Documents</a>
+      <a href="#/deadlines" data-nav="deadlines" data-i18n="nav.deadlines">Deadlines</a>
+      <a href="#/privacy" data-nav="privacy" data-i18n="nav.privacy">Privacy</a>
+      <div class="row">
+        <div class="seg" role="group" aria-label="Language" data-locale-switch>
+          <button type="button" data-locale="en" aria-pressed="true">EN</button>
+          <button type="button" data-locale="fr" aria-pressed="false">FR</button>
+          <button type="button" data-locale="zh" aria-pressed="false">中文</button>
+        </div>
+        <button type="button" class="btn btn-secondary btn-sm" data-open-signin data-i18n="nav.save">Save your work</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- ═════════════ LANDING ═════════════ -->
+<section data-route="landing" aria-labelledby="hero-title">
+  <div class="hero">
+    <div class="hero-bg" aria-hidden="true">
+      <div class="hero-glow"></div>
+      <div class="hero-grid"></div>
+      <canvas id="hero-canvas"></canvas>
+      <div class="hero-beam"></div>
+    </div>
+    <div class="container">
+      <div class="hero-copy">
+        <span class="eyebrow"><span class="dot"></span><span data-i18n="hero.eyebrow">Leases, visa letters, job offers, contracts</span></span>
+        <h1 id="hero-title" data-i18n-html="hero.title">Paperwork, in <em>plain language.</em></h1>
+        <p class="hero-sub" data-i18n="hero.sub">Drop in a document. Get what it says, what you have to do, and by when. Every point links to the line it came from.</p>
+        <div class="hero-ctas">
+          <a href="#/analysis/lease" class="btn btn-primary btn-lg" data-sample-link="lease"><span data-i18n="hero.cta1">Try a sample</span><svg class="icon icon-sm" data-ico="arrowRight"></svg></a>
+          <a href="#/documents" class="btn btn-secondary btn-lg"><svg class="icon icon-sm" data-ico="upload"></svg><span data-i18n="hero.cta2">Upload a document</span></a>
+        </div>
+        <div class="hero-trust">
+          <span><svg class="icon" data-ico="check"></svg><span data-i18n="trust.1">No signup</span></span>
+          <span><svg class="icon" data-ico="check"></svg><span data-i18n="trust.2">Deleted after 30 days</span></span>
+          <span><svg class="icon" data-ico="check"></svg><span data-i18n="trust.3">English, français, 中文</span></span>
+        </div>
+      </div>
+
+      <div class="hero-frame-wrap">
+        <div class="hero-frame">
+          <div class="hero-frame-inner">
+            <div class="mini-bar" aria-hidden="true">
+              <div class="mini-dots"><i></i><i></i><i></i></div>
+              <div class="mini-url mono">plainly.app/en/documents/lease</div>
+              <div style="width:46px"></div>
+            </div>
+            <div class="mini-body" id="hero-preview" aria-label="Example analysis of a lease"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="section" aria-labelledby="how-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow"><span class="dot"></span><span data-i18n="how.eyebrow">How it works</span></span>
+        <h2 id="how-title" class="section-title" style="margin-top:18px" data-i18n="how.title">Three steps. About thirty seconds.</h2>
+      </div>
+      <div class="steps">
+        <article class="glass step">
+          <span class="step-num mono">01</span>
+          <div class="step-icon"><svg class="icon" data-ico="upload"></svg></div>
+          <h3 data-i18n="how.1.t">Upload</h3>
+          <p data-i18n="how.1.d">A PDF, a photo of a letter, or pasted text. Up to 20 pages.</p>
+        </article>
+        <article class="glass step">
+          <span class="step-num mono">02</span>
+          <div class="step-icon"><svg class="icon" data-ico="book"></svg></div>
+          <h3 data-i18n="how.2.t">Understand</h3>
+          <p data-i18n="how.2.d">A short summary, the key facts and the terms that matter, in the language you read best.</p>
+        </article>
+        <article class="glass step">
+          <span class="step-num mono">03</span>
+          <div class="step-icon"><svg class="icon" data-ico="calendar"></svg></div>
+          <h3 data-i18n="how.3.t">Act</h3>
+          <p data-i18n="how.3.d">Your to-dos with dates, ready to drop into your calendar.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0" aria-labelledby="feat-title">
+    <div class="container">
+      <div class="section-head">
+        <span class="eyebrow"><span class="dot"></span><span data-i18n="feat.eyebrow">What you get</span></span>
+        <h2 id="feat-title" class="section-title" style="margin-top:18px" data-i18n-html="feat.title">Answers you can check.<br><span class="muted">Not answers you have to trust.</span></h2>
+      </div>
+      <div class="bento">
+        <article class="glass b-a">
+          <h3 data-i18n="feat.a.t">Every claim has a quote</h3>
+          <p class="d" data-i18n="feat.a.d">Each fact points to its page and the exact sentence. If a quote can't be found in your document, Plainly drops the claim.</p>
+          <div class="demo">
+            <div class="quote-block" style="max-width:520px">“The Tenant shall pay a security deposit of €1,700 no later than 20 November 2026.”</div>
+            <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+              <span class="badge badge-ok"><svg class="icon" data-ico="check"></svg><span data-i18n="feat.a.v">Found on page 1</span></span>
+              <span class="badge badge-muted mono">p.1 · §4</span>
+            </div>
+          </div>
+        </article>
+        <article class="glass b-b">
+          <h3 data-i18n="feat.b.t">Deadlines, collected</h3>
+          <p class="d" data-i18n="feat.b.d">Dates only when the document states them. Never guessed.</p>
+          <div class="demo" style="display:grid;gap:8px">
+            <div class="action" style="padding:10px"><div class="date-tile"><div class="m">Nov</div><div class="d">20</div></div><div><h3 style="font-size:14px">Pay the deposit</h3><p style="font-size:13px">€1,700</p></div></div>
+            <div class="action" style="padding:10px"><div class="date-tile"><div class="m">Dec</div><div class="d">01</div></div><div><h3 style="font-size:14px">Send proof of insurance</h3><p style="font-size:13px">Before move-in</p></div></div>
+          </div>
+        </article>
+        <article class="glass b-c">
+          <h3 data-i18n="feat.c.t">Watch-outs, ranked</h3>
+          <p class="d" data-i18n="feat.c.d">The clauses that can cost you, sorted from critical to just good to know.</p>
+          <div class="demo">
+            <div class="watch critical"><svg class="icon w-ico" data-ico="octagon"></svg><div><h3 style="font-size:14px">Renews automatically</h3><p style="font-size:13px">Give notice 3 months before the end date.</p></div></div>
+            <div class="watch caution"><svg class="icon w-ico" data-ico="triangle"></svg><div><h3 style="font-size:14px">10% late fee</h3><p style="font-size:13px">Applies after 5 days.</p></div></div>
+          </div>
+        </article>
+        <article class="glass b-d">
+          <h3 data-i18n="feat.d.t">Ask the document</h3>
+          <p class="d" data-i18n="feat.d.d">Questions are answered from the document only. If it isn't there, Plainly says so.</p>
+          <div class="demo" style="display:grid;gap:10px">
+            <div class="msg user" style="font-size:14px">Can I have a cat?</div>
+            <div class="msg bot" style="font-size:14px">Only with the landlord's written consent. <span class="cite" style="margin-left:4px"><svg class="icon" data-ico="quote"></svg>p.2</span></div>
+            <div class="msg user" style="font-size:14px">Is parking included?</div>
+            <div class="msg bot refusal" style="font-size:14px"><span class="bubble">I can't find that in this document.</span></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0" aria-labelledby="priv-title">
+    <div class="container">
+      <div class="glass privacy-band">
+        <div>
+          <span class="eyebrow"><svg class="icon icon-sm" data-ico="lock"></svg><span data-i18n="priv.eyebrow">Privacy</span></span>
+          <h2 id="priv-title" class="section-title" style="margin-top:18px" data-i18n="priv.title">Your documents stay yours.</h2>
+          <p class="section-sub" data-i18n="priv.sub">Plainly reads your file to explain it. It doesn't keep it longer than it has to.</p>
+          <a href="#/privacy" class="btn btn-secondary" style="margin-top:24px"><span data-i18n="priv.cta">Read the privacy page</span><svg class="icon icon-sm" data-ico="arrowRight"></svg></a>
+        </div>
+        <ul class="clean privacy-list">
+          <li><svg class="icon" data-ico="check"></svg><span data-i18n="priv.1">Files sit in private storage. Only you can open them.</span></li>
+          <li><svg class="icon" data-ico="check"></svg><span data-i18n="priv.2">Everything is deleted after 30 days, or right now with one button.</span></li>
+          <li><svg class="icon" data-ico="check"></svg><span data-i18n="priv.3">Document text never goes into logs or analytics.</span></li>
+          <li><svg class="icon" data-ico="check"></svg><span data-i18n="priv.4">Not legal advice. Plainly explains. You decide.</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head"><h2 id="faq-title" class="section-title" data-i18n="faq.title">Questions</h2></div>
+      <div class="faq">
+        <details><summary><span data-i18n="faq.1.q">Is this legal advice?</span><svg class="icon" data-ico="plus"></svg></summary><p data-i18n="faq.1.a">No. Plainly explains what a document says and points to the exact lines. For decisions with legal weight, talk to a professional.</p></details>
+        <details><summary><span data-i18n="faq.2.q">Which documents work?</span><svg class="icon" data-ico="plus"></svg></summary><p data-i18n="faq.2.a">PDFs, photos (PNG, JPG) and pasted text, up to 10 MB and 20 pages. Leases, visa and residence letters, job offers, bank notices and contracts work best.</p></details>
+        <details><summary><span data-i18n="faq.3.q">What if my document is in another language?</span><svg class="icon" data-ico="plus"></svg></summary><p data-i18n="faq.3.a">Upload it as it is. You choose whether the explanation comes back in English, French or Chinese.</p></details>
+        <details><summary><span data-i18n="faq.4.q">How do I know it didn't make things up?</span><svg class="icon" data-ico="plus"></svg></summary><p data-i18n="faq.4.a">Each point carries a quote. Plainly checks that the quote really is in your document and removes any point that fails the check.</p></details>
+        <details><summary><span data-i18n="faq.5.q">Do I need an account?</span><svg class="icon" data-ico="plus"></svg></summary><p data-i18n="faq.5.a">No. You can try it right away with 5 analyses a day. Sign in with Google or an email link to keep your documents and get 20 a day.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" style="padding-top:0">
+    <div class="container">
+      <div class="glass final-cta">
+        <h2 class="section-title" style="position:relative" data-i18n="final.title">Got a letter you don't understand?</h2>
+        <p class="section-sub" style="margin:12px auto 0;position:relative" data-i18n="final.sub">Try a sample first. It takes ten seconds.</p>
+        <div class="hero-ctas" style="position:relative">
+          <a href="#/analysis/lease" class="btn btn-primary btn-lg"><span data-i18n="hero.cta1">Try a sample</span><svg class="icon icon-sm" data-ico="arrowRight"></svg></a>
+          <a href="#/documents" class="btn btn-secondary btn-lg"><span data-i18n="hero.cta2">Upload a document</span></a>
+        </div>
+      </div>
+    </div>
+  </section>
+</section>
+
+<!-- ═════════════ DOCUMENTS ═════════════ -->
+<section data-route="documents" aria-labelledby="docs-title">
+  <div class="container page">
+    <div class="page-head">
+      <div>
+        <h1 id="docs-title" data-i18n="docs.title">Your documents</h1>
+        <p data-i18n="docs.sub">Upload a file or paste text. Results stream in as they are ready.</p>
+      </div>
+      <div class="quota" aria-live="polite"><div class="quota-bar"><i id="quota-bar"></i></div><span id="quota-label"></span></div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Input method">
+      <button role="tab" aria-selected="true" aria-controls="panel-upload" id="tab-upload" data-tab="upload"><svg class="icon icon-sm" data-ico="upload"></svg><span data-i18n="docs.tab.upload">Upload</span></button>
+      <button role="tab" aria-selected="false" aria-controls="panel-paste" id="tab-paste" data-tab="paste" tabindex="-1"><svg class="icon icon-sm" data-ico="clipboard"></svg><span data-i18n="docs.tab.paste">Paste text</span></button>
+    </div>
+
+    <div id="panel-upload" role="tabpanel" aria-labelledby="tab-upload">
+      <div class="dropzone" id="dropzone">
+        <div class="dz-icon"><svg class="icon icon-lg" data-ico="upload"></svg></div>
+        <h2 data-i18n="dz.title">Drop a document here</h2>
+        <p data-i18n="dz.sub">PDF, PNG or JPG · up to 10 MB and 20 pages</p>
+        <div class="actions">
+          <label class="btn btn-primary" for="file-input"><span data-i18n="dz.choose">Choose a file</span></label>
+          <input type="file" id="file-input" class="sr-only" accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg" />
+        </div>
+        <div id="dz-status" aria-live="polite"></div>
+      </div>
+    </div>
+    <div id="panel-paste" role="tabpanel" aria-labelledby="tab-paste" hidden>
+      <div style="margin-top:16px">
+        <label for="paste-text" class="sr-only" data-i18n="paste.label">Document text</label>
+        <textarea id="paste-text" class="input" data-i18n-ph="paste.ph" placeholder="Paste the text of your document here…"></textarea>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;gap:12px;flex-wrap:wrap">
+          <span class="faint mono" style="font-size:12px" id="paste-count">0 / 60,000</span>
+          <button class="btn btn-primary" id="paste-go" disabled><span data-i18n="paste.go">Explain this text</span><svg class="icon icon-sm" data-ico="arrowRight"></svg></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-label"><span data-i18n="docs.samples">Or try a sample</span><span class="chip" style="text-transform:none;letter-spacing:0" data-i18n="docs.samples.note">No upload needed</span></div>
+    <div class="samples" id="samples"></div>
+
+    <div class="h-label"><span data-i18n="docs.library">Library</span></div>
+    <div class="lib-tools">
+      <div class="search">
+        <svg class="icon icon-sm" data-ico="search"></svg>
+        <label for="lib-search" class="sr-only" data-i18n="lib.search">Search by title</label>
+        <input id="lib-search" class="input" type="search" data-i18n-ph="lib.search" placeholder="Search by title" />
+      </div>
+      <label for="lib-filter" class="sr-only" data-i18n="lib.filter">Document type</label>
+      <select id="lib-filter" class="input">
+        <option value="" data-i18n="lib.all">All types</option>
+        <option value="Lease" data-i18n="kind.Lease">Lease</option>
+        <option value="Visa notice" data-i18n="kind.Visa notice">Visa notice</option>
+        <option value="Job offer" data-i18n="kind.Job offer">Job offer</option>
+      </select>
+    </div>
+    <div class="card lib" id="library"></div>
+  </div>
+</section>
+
+<!-- ═════════════ ANALYSIS ═════════════ -->
+<section data-route="analysis" aria-labelledby="an-title">
+  <div class="container page" style="padding-bottom:40px">
+    <div class="an-head">
+      <div>
+        <a href="#/documents" class="btn btn-ghost btn-sm" style="margin-left:-12px"><svg class="icon icon-sm" data-ico="arrowLeft"></svg><span data-i18n="an.back">All documents</span></a>
+        <h1 id="an-title" style="margin-top:6px"></h1>
+        <div class="an-meta" id="an-meta"></div>
+      </div>
+      <div class="an-tools">
+        <span class="faint" style="font-size:13px" data-i18n="an.outlang">Explain in</span>
+        <div class="seg" role="group" aria-label="Output language" id="out-lang">
+          <button type="button" data-out="en" aria-pressed="true">EN</button>
+          <button type="button" data-out="fr" aria-pressed="false">FR</button>
+          <button type="button" data-out="zh" aria-pressed="false">中文</button>
+        </div>
+        <button class="btn btn-secondary btn-sm preview-mobile-btn" id="open-preview"><svg class="icon icon-sm" data-ico="eye"></svg><span data-i18n="an.viewdoc">View document</span></button>
+      </div>
+    </div>
+
+    <div class="an-grid">
+      <div class="an-main" id="an-main"></div>
+      <aside class="an-side" id="an-side" aria-label="Document preview">
+        <div class="card preview">
+          <div class="grab" aria-hidden="true"></div>
+          <div class="preview-head">
+            <span style="font-size:13px;font-weight:500;display:flex;gap:8px;align-items:center"><svg class="icon icon-sm" data-ico="file"></svg><span data-i18n="an.original">Original</span></span>
+            <div class="pages" id="page-btns"></div>
+            <button class="btn-icon btn preview-mobile-btn" id="close-preview" aria-label="Close preview"><svg class="icon" data-ico="x"></svg></button>
+          </div>
+          <div class="preview-scroll" id="preview-scroll"></div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════ DEADLINES ═════════════ -->
+<section data-route="deadlines" aria-labelledby="dl-title">
+  <div class="container page">
+    <div class="page-head">
+      <div>
+        <h1 id="dl-title" data-i18n="dl.title">Deadlines</h1>
+        <p data-i18n="dl.sub">Every dated action from your documents, soonest first.</p>
+      </div>
+      <div class="dl-toolbar">
+        <div class="seg" role="group" aria-label="Show" id="dl-filter">
+          <button type="button" data-f="open" aria-pressed="true" data-i18n="dl.open">Open</button>
+          <button type="button" data-f="all" aria-pressed="false" data-i18n="dl.all">All</button>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="ics-all"><svg class="icon icon-sm" data-ico="download"></svg><span data-i18n="dl.exportall">Export all (.ics)</span></button>
+      </div>
+    </div>
+    <div id="dl-body"></div>
+  </div>
+</section>
+
+<!-- ═════════════ PRIVACY ═════════════ -->
+<section data-route="privacy" aria-labelledby="pv-title">
+  <div class="container page">
+    <div class="prose">
+      <span class="eyebrow"><svg class="icon icon-sm" data-ico="shield"></svg><span data-i18n="pv.eyebrow">Last updated 11 November 2026</span></span>
+      <h1 id="pv-title" style="font-size:40px;line-height:1.1;margin-top:18px" data-i18n="pv.title">Privacy, in plain language</h1>
+      <p style="font-size:18px" data-i18n="pv.lead">You trust Plainly with documents that matter. Here is exactly what happens to them.</p>
+      <h2 data-i18n="pv.h1">What we store</h2>
+      <ul>
+        <li data-i18n="pv.1.1">The file you upload, in a private storage bucket only your account can read.</li>
+        <li data-i18n="pv.1.2">The analysis and your chat messages about that document.</li>
+        <li data-i18n="pv.1.3">A daily count of analyses, to apply the free limit.</li>
+      </ul>
+      <h2 data-i18n="pv.h2">How long</h2>
+      <p data-i18n="pv.2">30 days. After that, the file, its analysis and its chat are deleted automatically. You can delete everything sooner with the button below.</p>
+      <h2 data-i18n="pv.h3">Who sees it</h2>
+      <p data-i18n="pv.3">Only you. The text is sent to the AI model (Anthropic Claude) to produce the explanation, and is not used to train it. Document text is never written to logs or analytics.</p>
+      <h2 data-i18n="pv.h4">Not legal advice</h2>
+      <p data-i18n="pv.4">Plainly explains what a document says. It does not tell you whether something is legal or what you should sign.</p>
+      <div class="danger-zone">
+        <div><h3 data-i18n="pv.del.t">Delete everything now</h3><p data-i18n="pv.del.d">Removes all your documents, analyses, chats and deadlines. This can't be undone.</p></div>
+        <button class="btn btn-danger" id="delete-all"><svg class="icon icon-sm" data-ico="trash"></svg><span data-i18n="pv.del.btn">Delete everything</span></button>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-inner">
+    <div>
+      <a href="#/" class="logo" style="font-size:15px"><svg class="logo-mark" style="width:22px;height:22px" viewBox="0 0 28 28" aria-hidden="true"><rect x="1" y="1" width="26" height="26" rx="8" fill="url(#lg-logo)"/><path d="M8 9.5h12M8 14h8M8 18.5h5" stroke="#0B0B0F" stroke-width="2.2" stroke-linecap="round"/><circle cx="19.5" cy="18.5" r="2" fill="#0B0B0F"/></svg>Plainly</a>
+      <p class="faint" style="font-size:13px;margin-top:10px" data-i18n="footer.note">Not legal advice. Files are deleted after 30 days.</p>
+    </div>
+    <div class="footer-links">
+      <a href="#/documents" data-i18n="nav.documents">Documents</a>
+      <a href="#/deadlines" data-i18n="nav.deadlines">Deadlines</a>
+      <a href="#/privacy" data-i18n="nav.privacy">Privacy</a>
+      <a href="https://github.com/" rel="noopener" target="_blank">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<!-- Overlays -->
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="cite-sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title" aria-hidden="true">
+  <div class="sheet-head"><h2 id="sheet-title" data-i18n="sheet.title">Source</h2><button class="btn btn-icon" data-close aria-label="Close"><svg class="icon" data-ico="x"></svg></button></div>
+  <div class="sheet-body" id="sheet-body"></div>
+</aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-hidden="true"></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+<div class="mockup-note mono">Plainly · HTML mockup</div>
+
+<script>
+"use strict";
+/* ───────── Icons (lucide paths) ───────── */
+const ICONS = {
+  sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/>',
+  moon: '<path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>',
+  menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
+  arrowRight: '<path d="M5 12h14M12 5l7 7-7 7"/>',
+  arrowLeft: '<path d="M19 12H5M12 19l-7-7 7-7"/>',
+  upload: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m17 8-5-5-5 5M12 3v12"/>',
+  download: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5M12 15V3"/>',
+  book: '<path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/>',
+  calendar: '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  file: '<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4M16 13H8M16 17H8M10 9H8"/>',
+  octagon: '<path d="M12 16h.01M12 8v4"/><path d="M15.31 2a2 2 0 0 1 1.42.59l4.68 4.68A2 2 0 0 1 22 8.69v6.62a2 2 0 0 1-.59 1.42l-4.68 4.68a2 2 0 0 1-1.42.59H8.69a2 2 0 0 1-1.42-.59l-4.68-4.68A2 2 0 0 1 2 15.31V8.69a2 2 0 0 1 .59-1.42l4.68-4.68A2 2 0 0 1 8.69 2z"/>',
+  triangle: '<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4M12 17h.01"/>',
+  info: '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/>',
+  quote: '<path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"/>',
+  send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+  stop: '<rect x="6" y="6" width="12" height="12" rx="2"/>',
+  x: '<path d="M18 6 6 18M6 6l12 12"/>',
+  search: '<circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+  trash: '<path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+  lock: '<rect width="18" height="11" x="3" y="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  shield: '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  clock: '<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>',
+  list: '<path d="m3 17 2 2 4-4M3 7l2 2 4-4M13 6h8M13 12h8M13 18h8"/>',
+  message: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+  eye: '<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
+  refresh: '<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>',
+  clipboard: '<rect width="8" height="4" x="8" y="2" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>',
+  plus: '<path d="M5 12h14M12 5v14"/>',
+  sparkle: '<path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/>',
+  mail: '<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  gauge: '<path d="m12 14 4-4"/><path d="M3.34 19a10 10 0 1 1 17.32 0"/>',
+  key: '<path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.42-.59l.81-.81a6.5 6.5 0 1 0-4.17-4.17z"/><circle cx="16.5" cy="7.5" r=".5"/>',
+};
+const icon = (n, cls = "icon") => `<svg class="${cls}" viewBox="0 0 24 24" aria-hidden="true">${ICONS[n] || ""}</svg>`;
+function hydrateIcons(root = document) {
+  root.querySelectorAll("svg[data-ico]").forEach((s) => {
+    s.setAttribute("viewBox", "0 0 24 24"); s.setAttribute("aria-hidden", "true");
+    s.innerHTML = ICONS[s.dataset.ico] || ""; s.removeAttribute("data-ico");
+  });
+}
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const TODAY = new Date("2026-11-11T09:00:00");
+
+/* ───────── i18n (UI strings) ───────── */
+const I18N = {
+  en: {
+    "skip": "Skip to content", "nav.documents": "Documents", "nav.deadlines": "Deadlines", "nav.privacy": "Privacy", "nav.save": "Save your work",
+    "hero.eyebrow": "Leases, visa letters, job offers, contracts",
+    "hero.title": "Paperwork, in <em>plain language.</em>",
+    "hero.sub": "Drop in a document. Get what it says, what you have to do, and by when. Every point links to the line it came from.",
+    "hero.cta1": "Try a sample", "hero.cta2": "Upload a document",
+    "trust.1": "No signup", "trust.2": "Deleted after 30 days", "trust.3": "English, français, 中文",
+    "how.eyebrow": "How it works", "how.title": "Three steps. About thirty seconds.",
+    "how.1.t": "Upload", "how.1.d": "A PDF, a photo of a letter, or pasted text. Up to 20 pages.",
+    "how.2.t": "Understand", "how.2.d": "A short summary, the key facts and the terms that matter, in the language you read best.",
+    "how.3.t": "Act", "how.3.d": "Your to-dos with dates, ready to drop into your calendar.",
+    "feat.eyebrow": "What you get", "feat.title": "Answers you can check.<br><span class=\"muted\">Not answers you have to trust.</span>",
+    "feat.a.t": "Every claim has a quote", "feat.a.d": "Each fact points to its page and the exact sentence. If a quote can't be found in your document, Plainly drops the claim.", "feat.a.v": "Found on page 1",
+    "feat.b.t": "Deadlines, collected", "feat.b.d": "Dates only when the document states them. Never guessed.",
+    "feat.c.t": "Watch-outs, ranked", "feat.c.d": "The clauses that can cost you, sorted from critical to just good to know.",
+    "feat.d.t": "Ask the document", "feat.d.d": "Questions are answered from the document only. If it isn't there, Plainly says so.",
+    "priv.eyebrow": "Privacy", "priv.title": "Your documents stay yours.", "priv.sub": "Plainly reads your file to explain it. It doesn't keep it longer than it has to.", "priv.cta": "Read the privacy page",
+    "priv.1": "Files sit in private storage. Only you can open them.", "priv.2": "Everything is deleted after 30 days, or right now with one button.", "priv.3": "Document text never goes into logs or analytics.", "priv.4": "Not legal advice. Plainly explains. You decide.",
+    "faq.title": "Questions",
+    "faq.1.q": "Is this legal advice?", "faq.1.a": "No. Plainly explains what a document says and points to the exact lines. For decisions with legal weight, talk to a professional.",
+    "faq.2.q": "Which documents work?", "faq.2.a": "PDFs, photos (PNG, JPG) and pasted text, up to 10 MB and 20 pages. Leases, visa and residence letters, job offers, bank notices and contracts work best.",
+    "faq.3.q": "What if my document is in another language?", "faq.3.a": "Upload it as it is. You choose whether the explanation comes back in English, French or Chinese.",
+    "faq.4.q": "How do I know it didn't make things up?", "faq.4.a": "Each point carries a quote. Plainly checks that the quote really is in your document and removes any point that fails the check.",
+    "faq.5.q": "Do I need an account?", "faq.5.a": "No. You can try it right away with 5 analyses a day. Sign in with Google or an email link to keep your documents and get 20 a day.",
+    "final.title": "Got a letter you don't understand?", "final.sub": "Try a sample first. It takes ten seconds.",
+    "docs.title": "Your documents", "docs.sub": "Upload a file or paste text. Results stream in as they are ready.",
+    "docs.tab.upload": "Upload", "docs.tab.paste": "Paste text",
+    "dz.title": "Drop a document here", "dz.sub": "PDF, PNG or JPG · up to 10 MB and 20 pages", "dz.choose": "Choose a file",
+    "dz.uploading": "Uploading", "dz.reading": "Reading the document…",
+    "dz.err.type": "This file type isn't supported. Use a PDF, PNG or JPG.", "dz.err.size": "This file is larger than 10 MB. Try a smaller scan or split it.",
+    "paste.label": "Document text", "paste.ph": "Paste the text of your document here…", "paste.go": "Explain this text",
+    "docs.samples": "Or try a sample", "docs.samples.note": "No upload needed", "docs.library": "Library",
+    "lib.search": "Search by title", "lib.filter": "Document type", "lib.all": "All types",
+    "lib.empty.t": "Nothing here yet", "lib.empty.d": "Upload a document or try a sample to get started.",
+    "lib.nomatch.t": "No matches", "lib.nomatch.d": "Try another title or clear the filter.",
+    "lib.expires": "Deleted in {n} days",
+    "status.ready": "Ready", "status.analyzing": "Analyzing", "status.failed": "Failed",
+    "quota.left": "{n} of {max} analyses left today",
+    "kind.Lease": "Lease", "kind.Visa notice": "Visa notice", "kind.Job offer": "Job offer",
+    "an.back": "All documents", "an.outlang": "Explain in", "an.viewdoc": "View document", "an.original": "Original",
+    "an.summary": "Summary", "an.facts": "Key facts", "an.actions": "What you must do", "an.watch": "Watch out for", "an.gloss": "Words explained",
+    "an.reading": "Reading page {p} of {n}…", "an.done": "Analysis ready",
+    "an.dropped": "{n} claim removed because its quote wasn't found in the document.",
+    "an.legal": "Plainly explains documents. It is not legal advice.",
+    "an.nodate": "No date", "an.overdue": "Overdue", "an.addcal": "Add to calendar", "an.page": "Page {p}",
+    "sev.critical": "Critical", "sev.caution": "Caution", "sev.info": "Good to know",
+    "chat.title": "Ask this document", "chat.sub": "Answers come from this document only, with quotes.",
+    "chat.ph": "Ask about this document…", "chat.send": "Send", "chat.stop": "Stop", "chat.retry": "Retry",
+    "chat.refusal": "I can't find that in this document.", "chat.stopped": "Stopped.",
+    "sheet.title": "Source", "sheet.verified": "Quote found in the document", "sheet.page": "Page", "sheet.show": "Show on page {p}", "sheet.claim": "Claim",
+    "dl.title": "Deadlines", "dl.sub": "Every dated action from your documents, soonest first.",
+    "dl.open": "Open", "dl.all": "All", "dl.exportall": "Export all (.ics)", "dl.overdue": "Overdue", "dl.upcoming": "Upcoming", "dl.done": "Done",
+    "dl.from": "From", "dl.ics": "Download .ics", "dl.mark": "Mark as done",
+    "dl.empty.t": "No deadlines", "dl.empty.d": "When a document has dates, they'll show up here.", "dl.in": "in {n} days", "dl.today": "today", "dl.ago": "{n} days ago",
+    "pv.eyebrow": "Last updated 11 November 2026", "pv.title": "Privacy, in plain language", "pv.lead": "You trust Plainly with documents that matter. Here is exactly what happens to them.",
+    "pv.h1": "What we store", "pv.1.1": "The file you upload, in a private storage bucket only your account can read.", "pv.1.2": "The analysis and your chat messages about that document.", "pv.1.3": "A daily count of analyses, to apply the free limit.",
+    "pv.h2": "How long", "pv.2": "30 days. After that, the file, its analysis and its chat are deleted automatically. You can delete everything sooner with the button below.",
+    "pv.h3": "Who sees it", "pv.3": "Only you. The text is sent to the AI model (Anthropic Claude) to produce the explanation, and is not used to train it. Document text is never written to logs or analytics.",
+    "pv.h4": "Not legal advice", "pv.4": "Plainly explains what a document says. It does not tell you whether something is legal or what you should sign.",
+    "pv.del.t": "Delete everything now", "pv.del.d": "Removes all your documents, analyses, chats and deadlines. This can't be undone.", "pv.del.btn": "Delete everything",
+    "del.title": "Delete everything?", "del.body": "All documents, analyses, chats and deadlines will be removed for good.", "del.cancel": "Cancel", "del.ok": "Yes, delete everything", "del.toast": "Everything was deleted.",
+    "quota.title": "You've used today's free analyses", "quota.body": "Guests get 5 analyses a day. Sign in to keep your documents and get 20 a day, or come back tomorrow.", "quota.signin": "Sign in for 20 a day", "quota.later": "Come back tomorrow",
+    "signin.title": "Keep your documents", "signin.body": "Sign in and everything you've done as a guest stays with you.", "signin.google": "Continue with Google", "signin.or": "or", "signin.email": "Email address", "signin.magic": "Send me a sign-in link", "signin.sent": "Check your inbox for the sign-in link.",
+    "footer.note": "Not legal advice. Files are deleted after 30 days.",
+    "ics.toast": "Calendar file downloaded.",
+  },
+  fr: {
+    "skip": "Aller au contenu", "nav.documents": "Documents", "nav.deadlines": "Échéances", "nav.privacy": "Confidentialité", "nav.save": "Garder mes documents",
+    "hero.eyebrow": "Baux, lettres de visa, offres d'emploi, contrats",
+    "hero.title": "La paperasse, en <em>langage clair.</em>",
+    "hero.sub": "Déposez un document. Vous saurez ce qu'il dit, ce que vous devez faire et avant quand. Chaque point renvoie à la phrase d'origine.",
+    "hero.cta1": "Essayer un exemple", "hero.cta2": "Importer un document",
+    "trust.1": "Sans inscription", "trust.2": "Supprimé après 30 jours", "trust.3": "English, français, 中文",
+    "how.eyebrow": "Comment ça marche", "how.title": "Trois étapes. Environ trente secondes.",
+    "how.1.t": "Importer", "how.1.d": "Un PDF, la photo d'une lettre ou du texte collé. Jusqu'à 20 pages.",
+    "how.2.t": "Comprendre", "how.2.d": "Un résumé court, les faits clés et les termes importants, dans la langue que vous lisez le mieux.",
+    "how.3.t": "Agir", "how.3.d": "Vos tâches avec leurs dates, prêtes pour votre agenda.",
+    "feat.eyebrow": "Ce que vous obtenez", "feat.title": "Des réponses vérifiables.<br><span class=\"muted\">Pas des réponses à croire sur parole.</span>",
+    "feat.a.t": "Chaque point a sa citation", "feat.a.d": "Chaque fait indique sa page et la phrase exacte. Si la citation n'existe pas dans votre document, Plainly retire le point.", "feat.a.v": "Trouvé page 1",
+    "feat.b.t": "Les échéances, rassemblées", "feat.b.d": "Une date seulement si le document l'indique. Jamais devinée.",
+    "feat.c.t": "Les pièges, classés", "feat.c.d": "Les clauses qui peuvent vous coûter cher, de critique à bon à savoir.",
+    "feat.d.t": "Interrogez le document", "feat.d.d": "Les réponses viennent du document uniquement. Si l'info n'y est pas, Plainly le dit.",
+    "priv.eyebrow": "Confidentialité", "priv.title": "Vos documents restent à vous.", "priv.sub": "Plainly lit votre fichier pour l'expliquer. Il ne le garde pas plus longtemps que nécessaire.", "priv.cta": "Lire la page confidentialité",
+    "priv.1": "Les fichiers sont dans un stockage privé. Vous seul pouvez les ouvrir.", "priv.2": "Tout est supprimé après 30 jours, ou tout de suite avec un bouton.", "priv.3": "Le texte des documents n'apparaît jamais dans les logs ni les statistiques.", "priv.4": "Pas un conseil juridique. Plainly explique. Vous décidez.",
+    "faq.title": "Questions",
+    "faq.1.q": "Est-ce un conseil juridique ?", "faq.1.a": "Non. Plainly explique ce que dit un document et montre les lignes exactes. Pour une décision juridique, consultez un professionnel.",
+    "faq.2.q": "Quels documents fonctionnent ?", "faq.2.a": "PDF, photos (PNG, JPG) et texte collé, jusqu'à 10 Mo et 20 pages. Baux, titres de séjour, offres d'emploi, courriers bancaires et contrats.",
+    "faq.3.q": "Et si mon document est dans une autre langue ?", "faq.3.a": "Importez-le tel quel. Vous choisissez la langue de l'explication : anglais, français ou chinois.",
+    "faq.4.q": "Comment savoir que rien n'est inventé ?", "faq.4.a": "Chaque point a une citation. Plainly vérifie qu'elle figure bien dans votre document et retire les points qui échouent.",
+    "faq.5.q": "Faut-il un compte ?", "faq.5.a": "Non. Vous avez 5 analyses par jour tout de suite. Connectez-vous avec Google ou un lien e-mail pour garder vos documents et passer à 20.",
+    "final.title": "Une lettre que vous ne comprenez pas ?", "final.sub": "Essayez d'abord un exemple. Dix secondes suffisent.",
+    "docs.title": "Vos documents", "docs.sub": "Importez un fichier ou collez du texte. Les résultats arrivent au fur et à mesure.",
+    "docs.tab.upload": "Importer", "docs.tab.paste": "Coller du texte",
+    "dz.title": "Déposez un document ici", "dz.sub": "PDF, PNG ou JPG · 10 Mo et 20 pages max.", "dz.choose": "Choisir un fichier",
+    "dz.uploading": "Envoi", "dz.reading": "Lecture du document…",
+    "dz.err.type": "Ce type de fichier n'est pas accepté. Utilisez un PDF, PNG ou JPG.", "dz.err.size": "Ce fichier dépasse 10 Mo. Essayez un scan plus léger ou découpez-le.",
+    "paste.label": "Texte du document", "paste.ph": "Collez le texte de votre document ici…", "paste.go": "Expliquer ce texte",
+    "docs.samples": "Ou essayez un exemple", "docs.samples.note": "Sans import", "docs.library": "Bibliothèque",
+    "lib.search": "Rechercher par titre", "lib.filter": "Type de document", "lib.all": "Tous les types",
+    "lib.empty.t": "Rien pour l'instant", "lib.empty.d": "Importez un document ou essayez un exemple.",
+    "lib.nomatch.t": "Aucun résultat", "lib.nomatch.d": "Essayez un autre titre ou retirez le filtre.",
+    "lib.expires": "Supprimé dans {n} jours",
+    "status.ready": "Prêt", "status.analyzing": "Analyse", "status.failed": "Échec",
+    "quota.left": "{n} analyses sur {max} restantes aujourd'hui",
+    "kind.Lease": "Bail", "kind.Visa notice": "Courrier de visa", "kind.Job offer": "Offre d'emploi",
+    "an.back": "Tous les documents", "an.outlang": "Expliquer en", "an.viewdoc": "Voir le document", "an.original": "Original",
+    "an.summary": "Résumé", "an.facts": "Faits clés", "an.actions": "Ce que vous devez faire", "an.watch": "Points d'attention", "an.gloss": "Mots expliqués",
+    "an.reading": "Lecture de la page {p} sur {n}…", "an.done": "Analyse prête",
+    "an.dropped": "{n} point retiré : sa citation est introuvable dans le document.",
+    "an.legal": "Plainly explique des documents. Ce n'est pas un conseil juridique.",
+    "an.nodate": "Sans date", "an.overdue": "En retard", "an.addcal": "Ajouter à l'agenda", "an.page": "Page {p}",
+    "sev.critical": "Critique", "sev.caution": "Attention", "sev.info": "Bon à savoir",
+    "chat.title": "Interroger ce document", "chat.sub": "Les réponses viennent uniquement de ce document, avec citations.",
+    "chat.ph": "Posez une question sur ce document…", "chat.send": "Envoyer", "chat.stop": "Arrêter", "chat.retry": "Réessayer",
+    "chat.refusal": "Je ne trouve pas cette information dans ce document.", "chat.stopped": "Arrêté.",
+    "sheet.title": "Source", "sheet.verified": "Citation trouvée dans le document", "sheet.page": "Page", "sheet.show": "Voir la page {p}", "sheet.claim": "Point",
+    "dl.title": "Échéances", "dl.sub": "Toutes les actions datées de vos documents, la plus proche d'abord.",
+    "dl.open": "À faire", "dl.all": "Toutes", "dl.exportall": "Tout exporter (.ics)", "dl.overdue": "En retard", "dl.upcoming": "À venir", "dl.done": "Fait",
+    "dl.from": "De", "dl.ics": "Télécharger .ics", "dl.mark": "Marquer comme fait",
+    "dl.empty.t": "Aucune échéance", "dl.empty.d": "Les dates de vos documents apparaîtront ici.", "dl.in": "dans {n} jours", "dl.today": "aujourd'hui", "dl.ago": "il y a {n} jours",
+    "pv.eyebrow": "Mis à jour le 11 novembre 2026", "pv.title": "La confidentialité, en clair", "pv.lead": "Vous confiez à Plainly des documents importants. Voici exactement ce qu'il en fait.",
+    "pv.h1": "Ce que nous gardons", "pv.1.1": "Le fichier importé, dans un stockage privé que seul votre compte peut lire.", "pv.1.2": "L'analyse et vos messages sur ce document.", "pv.1.3": "Un compteur d'analyses par jour, pour la limite gratuite.",
+    "pv.h2": "Combien de temps", "pv.2": "30 jours. Ensuite, le fichier, son analyse et la discussion sont supprimés automatiquement. Vous pouvez tout supprimer avant avec le bouton ci-dessous.",
+    "pv.h3": "Qui le voit", "pv.3": "Vous seul. Le texte est envoyé au modèle d'IA (Anthropic Claude) pour produire l'explication et ne sert pas à l'entraîner. Il n'est jamais écrit dans les logs ni les statistiques.",
+    "pv.h4": "Pas un conseil juridique", "pv.4": "Plainly explique ce que dit un document. Il ne dit pas si une chose est légale ni ce que vous devez signer.",
+    "pv.del.t": "Tout supprimer maintenant", "pv.del.d": "Supprime vos documents, analyses, discussions et échéances. Action définitive.", "pv.del.btn": "Tout supprimer",
+    "del.title": "Tout supprimer ?", "del.body": "Documents, analyses, discussions et échéances seront supprimés définitivement.", "del.cancel": "Annuler", "del.ok": "Oui, tout supprimer", "del.toast": "Tout a été supprimé.",
+    "quota.title": "Vos analyses gratuites du jour sont utilisées", "quota.body": "Les invités ont 5 analyses par jour. Connectez-vous pour garder vos documents et passer à 20, ou revenez demain.", "quota.signin": "Se connecter (20 par jour)", "quota.later": "Revenir demain",
+    "signin.title": "Gardez vos documents", "signin.body": "Connectez-vous : tout ce que vous avez fait en invité reste avec vous.", "signin.google": "Continuer avec Google", "signin.or": "ou", "signin.email": "Adresse e-mail", "signin.magic": "Recevoir un lien de connexion", "signin.sent": "Le lien de connexion est dans votre boîte mail.",
+    "footer.note": "Pas un conseil juridique. Fichiers supprimés après 30 jours.",
+    "ics.toast": "Fichier agenda téléchargé.",
+  },
+  zh: {
+    "skip": "跳到正文", "nav.documents": "文件", "nav.deadlines": "截止日期", "nav.privacy": "隐私", "nav.save": "保存我的文件",
+    "hero.eyebrow": "租约、签证信、录用通知、合同",
+    "hero.title": "复杂文件，<em>一看就懂。</em>",
+    "hero.sub": "上传一份文件，马上知道它写了什么、你要做什么、什么时候之前做。每一条都能对回原文。",
+    "hero.cta1": "试一个示例", "hero.cta2": "上传文件",
+    "trust.1": "无需注册", "trust.2": "30 天后自动删除", "trust.3": "English, français, 中文",
+    "how.eyebrow": "使用方法", "how.title": "三步，大约三十秒。",
+    "how.1.t": "上传", "how.1.d": "PDF、信件照片或粘贴文本，最多 20 页。",
+    "how.2.t": "理解", "how.2.d": "简短摘要、关键信息和重要术语，用你最熟悉的语言。",
+    "how.3.t": "行动", "how.3.d": "带日期的待办事项，可直接加入日历。",
+    "feat.eyebrow": "你会得到", "feat.title": "可以核对的答案。<br><span class=\"muted\">不用盲目相信。</span>",
+    "feat.a.t": "每条结论都有原文", "feat.a.d": "每条信息都标明页码和原句。如果原文里找不到这句话，Plainly 会删除这条结论。", "feat.a.v": "在第 1 页找到",
+    "feat.b.t": "截止日期，一处汇总", "feat.b.d": "只有文件写明的日期才会列出，绝不猜测。",
+    "feat.c.t": "风险条款，按轻重排序", "feat.c.d": "可能让你吃亏的条款，从严重到仅供参考。",
+    "feat.d.t": "向文件提问", "feat.d.d": "答案只来自这份文件。找不到就直说。",
+    "priv.eyebrow": "隐私", "priv.title": "你的文件只属于你。", "priv.sub": "Plainly 读取文件只为解释它，不会多留一天。", "priv.cta": "查看隐私说明",
+    "priv.1": "文件存放在私有存储中，只有你能打开。", "priv.2": "30 天后全部删除，也可以一键立即删除。", "priv.3": "文件内容绝不会写入日志或统计。", "priv.4": "这不是法律意见。Plainly 负责解释，决定由你。",
+    "faq.title": "常见问题",
+    "faq.1.q": "这是法律意见吗？", "faq.1.a": "不是。Plainly 解释文件内容并指出原文位置。涉及法律决定，请咨询专业人士。",
+    "faq.2.q": "支持哪些文件？", "faq.2.a": "PDF、图片（PNG、JPG）和粘贴文本，最大 10 MB、20 页。租约、签证和居留信、录用通知、银行通知和合同效果最好。",
+    "faq.3.q": "文件是其他语言怎么办？", "faq.3.a": "直接上传。你可以选择用英文、法文或中文解释。",
+    "faq.4.q": "怎么知道它没有编造？", "faq.4.a": "每条结论都附带引文。Plainly 会核对引文确实出现在你的文件中，核对失败的结论会被删除。",
+    "faq.5.q": "需要注册吗？", "faq.5.a": "不需要。访客每天可分析 5 次。用 Google 或邮箱链接登录即可保存文件，每天 20 次。",
+    "final.title": "收到一封看不懂的信？", "final.sub": "先试一个示例，只要十秒钟。",
+    "docs.title": "你的文件", "docs.sub": "上传文件或粘贴文本，结果会逐步显示。",
+    "docs.tab.upload": "上传", "docs.tab.paste": "粘贴文本",
+    "dz.title": "把文件拖到这里", "dz.sub": "PDF、PNG 或 JPG · 最大 10 MB、20 页", "dz.choose": "选择文件",
+    "dz.uploading": "正在上传", "dz.reading": "正在阅读文件…",
+    "dz.err.type": "不支持此文件类型，请使用 PDF、PNG 或 JPG。", "dz.err.size": "文件超过 10 MB，请压缩或拆分后再试。",
+    "paste.label": "文件文本", "paste.ph": "在这里粘贴文件文本…", "paste.go": "解释这段文本",
+    "docs.samples": "或者试一个示例", "docs.samples.note": "无需上传", "docs.library": "文件库",
+    "lib.search": "按标题搜索", "lib.filter": "文件类型", "lib.all": "全部类型",
+    "lib.empty.t": "还没有文件", "lib.empty.d": "上传文件或试一个示例开始。",
+    "lib.nomatch.t": "没有匹配结果", "lib.nomatch.d": "换个标题或清除筛选。",
+    "lib.expires": "{n} 天后删除",
+    "status.ready": "已完成", "status.analyzing": "分析中", "status.failed": "失败",
+    "quota.left": "今天还剩 {n}/{max} 次分析",
+    "kind.Lease": "租约", "kind.Visa notice": "签证通知", "kind.Job offer": "录用通知",
+    "an.back": "全部文件", "an.outlang": "解释语言", "an.viewdoc": "查看原文", "an.original": "原文",
+    "an.summary": "摘要", "an.facts": "关键信息", "an.actions": "你需要做的事", "an.watch": "注意事项", "an.gloss": "术语解释",
+    "an.reading": "正在阅读第 {p}/{n} 页…", "an.done": "分析完成",
+    "an.dropped": "有 {n} 条结论因原文中找不到引文而被删除。",
+    "an.legal": "Plainly 解释文件内容，不构成法律意见。",
+    "an.nodate": "无日期", "an.overdue": "已逾期", "an.addcal": "加入日历", "an.page": "第 {p} 页",
+    "sev.critical": "严重", "sev.caution": "注意", "sev.info": "须知",
+    "chat.title": "向这份文件提问", "chat.sub": "答案只来自这份文件，并附原文。",
+    "chat.ph": "就这份文件提问…", "chat.send": "发送", "chat.stop": "停止", "chat.retry": "重试",
+    "chat.refusal": "我在这份文件中找不到相关内容。", "chat.stopped": "已停止。",
+    "sheet.title": "出处", "sheet.verified": "已在文件中找到该引文", "sheet.page": "页码", "sheet.show": "查看第 {p} 页", "sheet.claim": "结论",
+    "dl.title": "截止日期", "dl.sub": "所有文件中带日期的事项，按时间排序。",
+    "dl.open": "未完成", "dl.all": "全部", "dl.exportall": "全部导出 (.ics)", "dl.overdue": "已逾期", "dl.upcoming": "即将到期", "dl.done": "已完成",
+    "dl.from": "来自", "dl.ics": "下载 .ics", "dl.mark": "标记为完成",
+    "dl.empty.t": "没有截止日期", "dl.empty.d": "文件中出现日期时会显示在这里。", "dl.in": "{n} 天后", "dl.today": "今天", "dl.ago": "{n} 天前",
+    "pv.eyebrow": "更新于 2026 年 11 月 11 日", "pv.title": "隐私说明，简单直白", "pv.lead": "你把重要文件交给 Plainly，下面说明它们会怎样被处理。",
+    "pv.h1": "我们保存什么", "pv.1.1": "你上传的文件，存放在只有你的账户能读取的私有存储中。", "pv.1.2": "该文件的分析结果和你的提问记录。", "pv.1.3": "每日分析次数，用于免费额度。",
+    "pv.h2": "保存多久", "pv.2": "30 天。之后文件、分析和对话会自动删除。你也可以用下面的按钮提前全部删除。",
+    "pv.h3": "谁能看到", "pv.3": "只有你。文本会发送给 AI 模型（Anthropic Claude）生成解释，不会用于训练。文件内容绝不写入日志或统计。",
+    "pv.h4": "不是法律意见", "pv.4": "Plainly 解释文件写了什么，不判断是否合法，也不告诉你该不该签。",
+    "pv.del.t": "立即删除全部", "pv.del.d": "删除你的所有文件、分析、对话和截止日期。无法恢复。", "pv.del.btn": "全部删除",
+    "del.title": "确定全部删除？", "del.body": "所有文件、分析、对话和截止日期将被永久删除。", "del.cancel": "取消", "del.ok": "确定删除", "del.toast": "已全部删除。",
+    "quota.title": "今天的免费分析次数已用完", "quota.body": "访客每天 5 次。登录后可保存文件并每天使用 20 次，或者明天再来。", "quota.signin": "登录，每天 20 次", "quota.later": "明天再来",
+    "signin.title": "保存你的文件", "signin.body": "登录后，访客期间的所有内容都会保留。", "signin.google": "使用 Google 继续", "signin.or": "或", "signin.email": "邮箱地址", "signin.magic": "发送登录链接", "signin.sent": "请查收邮箱中的登录链接。",
+    "footer.note": "不构成法律意见。文件 30 天后删除。",
+    "ics.toast": "日历文件已下载。",
+  },
+};
+let locale = "en";
+const t = (k, vars) => {
+  let s = (I18N[locale] && I18N[locale][k]) ?? I18N.en[k] ?? k;
+  if (vars) for (const [a, b] of Object.entries(vars)) s = s.replaceAll(`{${a}}`, b);
+  return s;
+};
+function applyI18n() {
+  document.documentElement.lang = locale === "zh" ? "zh-CN" : locale;
+  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach((el) => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
+  document.querySelectorAll("[data-locale]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.locale === locale)));
+}
+
+/* ───────── Sample data (what FakeAnalyzer will return) ───────── */
+const SAMPLES = {
+  lease: {
+    id: "lease", kind: "Lease", title: "Residential lease — 14 Rue des Lilas, Lyon", lang: "fr", pagesCount: 3, size: "184 KB",
+    blurb: "12-month apartment lease with deposit, insurance and renewal clauses.",
+    pages: [
+      { h: "Residential Lease Agreement", p: [
+        "This agreement is made between Marc Petit (the Landlord) and Amina Diallo (the Tenant) for the apartment at 14 Rue des Lilas, Apt 3B, 69003 Lyon.",
+        "§1 Term. The lease begins on 1 December 2026 and runs for a period of twelve (12) months.",
+        "§2 Rent. The monthly rent is €850, payable on or before the 5th day of each month by bank transfer.",
+        "§3 Charges. A fixed monthly charge of €60 covers building maintenance and cold water.",
+        "§4 Deposit. The Tenant shall pay a security deposit of €1,700 no later than 20 November 2026.",
+        "§5 Signature. The Tenant must sign and return this agreement by 5 November 2026."] },
+      { h: "Obligations of the Tenant", p: [
+        "§6 Insurance. The Tenant must provide a certificate of home insurance before 1 December 2026.",
+        "§7 Late payment. Any rent unpaid more than five days after the due date incurs a late fee of 10% of the monthly rent.",
+        "§8 Repairs. Minor repairs costing less than €150 are the responsibility of the Tenant.",
+        "§9 Pets. No animals may be kept in the premises without the prior written consent of the Landlord.",
+        "§10 Access. The Landlord may enter the premises with at least 24 hours' notice for inspection or repairs."] },
+      { h: "Renewal and termination", p: [
+        "§11 Renewal. This lease renews automatically for successive twelve-month periods unless either party gives notice.",
+        "§12 Notice. The Tenant must give three months' written notice by registered letter to end the lease.",
+        "§13 Joint liability. Where several tenants sign, they are jointly and severally liable for the rent.",
+        "Signed in Lyon, in two copies."] },
+    ],
+    summary: {
+      en: "This is a 12-month lease for an apartment in Lyon starting 1 December 2026. You pay €850 rent plus €60 charges each month, and a €1,700 deposit by 20 November. It renews on its own every year unless you send three months' notice by registered letter.",
+      fr: "Il s'agit d'un bail de 12 mois pour un appartement à Lyon, à partir du 1er décembre 2026. Vous payez 850 € de loyer et 60 € de charges par mois, plus un dépôt de 1 700 € avant le 20 novembre. Il se renouvelle chaque année sauf préavis de trois mois par lettre recommandée.",
+      zh: "这是一份里昂公寓的 12 个月租约，从 2026 年 12 月 1 日开始。每月租金 850 欧元加 60 欧元杂费，押金 1,700 欧元须在 11 月 20 日前支付。除非你提前三个月用挂号信通知，否则租约每年自动续期。",
+    },
+    facts: [
+      { label: "Monthly rent", value: "€850 + €60 charges", cite: { page: 1, quote: "The monthly rent is €850, payable on or before the 5th day of each month" } },
+      { label: "Deposit", value: "€1,700", cite: { page: 1, quote: "security deposit of €1,700 no later than 20 November 2026" } },
+      { label: "Start date", value: "1 December 2026", cite: { page: 1, quote: "The lease begins on 1 December 2026" } },
+      { label: "Length", value: "12 months, renews automatically", cite: { page: 3, quote: "This lease renews automatically for successive twelve-month periods" } },
+      { label: "Landlord", value: "Marc Petit", cite: { page: 1, quote: "between Marc Petit (the Landlord) and Amina Diallo (the Tenant)" } },
+    ],
+    actions: [
+      { title: "Sign and return the lease", detail: "Send the signed agreement back to the landlord.", dueOn: "2026-11-05", cite: { page: 1, quote: "The Tenant must sign and return this agreement by 5 November 2026" } },
+      { title: "Pay the security deposit", detail: "€1,700 by bank transfer.", dueOn: "2026-11-20", cite: { page: 1, quote: "security deposit of €1,700 no later than 20 November 2026" } },
+      { title: "Send proof of home insurance", detail: "A certificate from your insurer, before you move in.", dueOn: "2026-12-01", cite: { page: 2, quote: "provide a certificate of home insurance before 1 December 2026" } },
+      { title: "Pay rent every month", detail: "€850 by the 5th of each month.", dueOn: null, cite: { page: 1, quote: "payable on or before the 5th day of each month by bank transfer" } },
+    ],
+    watchOuts: [
+      { severity: "critical", title: "It renews automatically", explanation: "If you want to leave, send notice by registered letter at least three months before the end date. Otherwise you are committed for another year.", cite: { page: 3, quote: "The Tenant must give three months' written notice by registered letter to end the lease" } },
+      { severity: "caution", title: "10% late fee", explanation: "Paying more than five days late adds €85 to that month.", cite: { page: 2, quote: "incurs a late fee of 10% of the monthly rent" } },
+      { severity: "caution", title: "Small repairs are on you", explanation: "Anything under €150 to fix is yours to pay.", cite: { page: 2, quote: "Minor repairs costing less than €150 are the responsibility of the Tenant" } },
+      { severity: "info", title: "Landlord visits", explanation: "The landlord can come in with 24 hours' notice.", cite: { page: 2, quote: "with at least 24 hours' notice for inspection or repairs" } },
+    ],
+    glossary: [
+      { term: "Security deposit", plain: "Money you pay upfront. You get it back at the end if there's no damage or unpaid rent." },
+      { term: "Registered letter", plain: "A tracked letter with proof of delivery (lettre recommandée)." },
+      { term: "Jointly and severally liable", plain: "If you share the flat, each person can be asked to pay the full rent, not just their share." },
+      { term: "Charges", plain: "A monthly amount on top of rent for building costs like cleaning and water." },
+    ],
+    dropped: 1,
+    chat: [
+      { k: /pet|cat|dog|animal|chat|chien|宠物|猫|狗/i, a: "Only with the landlord's written consent. The lease says no animals may be kept without it.", cite: { page: 2, quote: "No animals may be kept in the premises without the prior written consent of the Landlord" } },
+      { k: /deposit|dépôt|depot|caution|押金/i, a: "The deposit is €1,700 and it's due by 20 November 2026.", cite: { page: 1, quote: "security deposit of €1,700 no later than 20 November 2026" } },
+      { k: /leave|end|terminate|quit|notice|partir|résilier|préavis|退租|解约|通知/i, a: "You need to send three months' written notice by registered letter. Without it, the lease renews for another twelve months.", cite: { page: 3, quote: "The Tenant must give three months' written notice by registered letter to end the lease" } },
+      { k: /late|retard|迟/i, a: "Rent paid more than five days late costs an extra 10% of the monthly rent, so €85.", cite: { page: 2, quote: "incurs a late fee of 10% of the monthly rent" } },
+    ],
+    suggestions: ["Can I have a cat?", "How do I end the lease?", "Is parking included?"],
+  },
+  visa: {
+    id: "visa", kind: "Visa notice", title: "Residence permit renewal notice", lang: "en", pagesCount: 2, size: "96 KB",
+    blurb: "Prefecture letter asking for documents before a residence permit expires.",
+    pages: [
+      { h: "Notice — Residence permit renewal", p: [
+        "File no. 2026/RP/48213. Holder: Wei Zhang.",
+        "Your current residence permit expires on 15 January 2027.",
+        "To renew it, you must book an appointment online and submit your application no later than 15 December 2026.",
+        "Applications submitted after this date may not be processed before the expiry of your permit.",
+        "A stamp duty of €225 is payable online when you submit your application."] },
+      { h: "Documents required", p: [
+        "Bring the original and one copy of: your passport, your current permit, three recent photographs and proof of address dated less than three months.",
+        "Students must also provide a certificate of enrolment for the current academic year.",
+        "Incomplete files will be returned without examination.",
+        "If you change address, you must notify the prefecture within three months."] },
+    ],
+    summary: {
+      en: "Your residence permit ends on 15 January 2027. To renew it, book an appointment and apply by 15 December 2026, pay a €225 fee online, and bring your passport, permit, photos, proof of address and enrolment certificate.",
+      fr: "Votre titre de séjour expire le 15 janvier 2027. Pour le renouveler, prenez rendez-vous et déposez votre demande avant le 15 décembre 2026, payez 225 € en ligne et apportez passeport, titre actuel, photos, justificatif de domicile et certificat de scolarité.",
+      zh: "你的居留许可将于 2027 年 1 月 15 日到期。续签需在 2026 年 12 月 15 日前预约并提交申请，在线支付 225 欧元，并携带护照、现有居留卡、照片、地址证明和在读证明。",
+    },
+    facts: [
+      { label: "Permit expires", value: "15 January 2027", cite: { page: 1, quote: "Your current residence permit expires on 15 January 2027" } },
+      { label: "Apply by", value: "15 December 2026", cite: { page: 1, quote: "submit your application no later than 15 December 2026" } },
+      { label: "Fee", value: "€225, paid online", cite: { page: 1, quote: "A stamp duty of €225 is payable online" } },
+    ],
+    actions: [
+      { title: "Book an appointment and apply", detail: "Online, before the deadline.", dueOn: "2026-12-15", cite: { page: 1, quote: "submit your application no later than 15 December 2026" } },
+      { title: "Gather your documents", detail: "Passport, permit, 3 photos, proof of address, enrolment certificate. Originals and copies.", dueOn: null, cite: { page: 2, quote: "Bring the original and one copy of: your passport, your current permit, three recent photographs" } },
+    ],
+    watchOuts: [
+      { severity: "critical", title: "Incomplete files are returned", explanation: "A missing document means your file is sent back unread, and you lose time.", cite: { page: 2, quote: "Incomplete files will be returned without examination" } },
+      { severity: "caution", title: "Late applications may not be ready in time", explanation: "Applying after 15 December could leave you without a valid permit.", cite: { page: 1, quote: "may not be processed before the expiry of your permit" } },
+    ],
+    glossary: [
+      { term: "Stamp duty", plain: "An official fee, here paid online as an electronic stamp (timbre fiscal)." },
+      { term: "Prefecture", plain: "The local government office that handles residence permits." },
+    ],
+    dropped: 0,
+    chat: [
+      { k: /fee|cost|pay|prix|payer|费用|多少钱/i, a: "The fee is €225, paid online when you submit the application.", cite: { page: 1, quote: "A stamp duty of €225 is payable online" } },
+      { k: /move|address|adresse|地址/i, a: "If you move, tell the prefecture within three months.", cite: { page: 2, quote: "you must notify the prefecture within three months" } },
+    ],
+    suggestions: ["How much does it cost?", "What if I move?", "Can I work while waiting?"],
+  },
+  offer: {
+    id: "offer", kind: "Job offer", title: "Offer letter — Product Designer, Nordlys", lang: "en", pagesCount: 2, size: "142 KB",
+    blurb: "Full-time offer with trial period, non-compete and acceptance deadline.",
+    pages: [
+      { h: "Offer of employment", p: [
+        "Dear Samuel, we are pleased to offer you the position of Product Designer at Nordlys SAS.",
+        "Your start date will be 4 January 2027. The position is full-time, 35 hours per week.",
+        "Your gross annual salary will be €48,000, paid in twelve monthly instalments.",
+        "This offer is valid until 25 November 2026. Please return a signed copy before that date.",
+        "Your employment includes a trial period of four months, renewable once."] },
+      { h: "Other terms", p: [
+        "Non-compete. For twelve months after leaving, you may not work for a direct competitor within France.",
+        "Remote work. You may work remotely up to two days per week.",
+        "Holidays. You are entitled to 25 working days of paid leave per year.",
+        "This letter is governed by French law."] },
+    ],
+    summary: {
+      en: "Nordlys offers you a full-time Product Designer job starting 4 January 2027, at €48,000 gross a year. You must sign by 25 November 2026. There's a four-month trial period that can be extended once, and a 12-month non-compete after you leave.",
+      fr: "Nordlys vous propose un poste de Product Designer à temps plein à partir du 4 janvier 2027, pour 48 000 € bruts par an. Signez avant le 25 novembre 2026. Période d'essai de quatre mois renouvelable une fois, et clause de non-concurrence de 12 mois.",
+      zh: "Nordlys 为你提供全职产品设计师职位，2027 年 1 月 4 日入职，年薪税前 48,000 欧元。须在 2026 年 11 月 25 日前签字。试用期四个月，可延长一次；离职后有 12 个月竞业限制。",
+    },
+    facts: [
+      { label: "Salary", value: "€48,000 gross / year", cite: { page: 1, quote: "Your gross annual salary will be €48,000" } },
+      { label: "Start date", value: "4 January 2027", cite: { page: 1, quote: "Your start date will be 4 January 2027" } },
+      { label: "Hours", value: "35 h / week, 2 remote days", cite: { page: 1, quote: "The position is full-time, 35 hours per week" } },
+      { label: "Paid leave", value: "25 days / year", cite: { page: 2, quote: "25 working days of paid leave per year" } },
+    ],
+    actions: [
+      { title: "Sign and return the offer", detail: "The offer lapses after this date.", dueOn: "2026-11-25", cite: { page: 1, quote: "This offer is valid until 25 November 2026" } },
+      { title: "First day at work", detail: "Full-time from this date.", dueOn: "2027-01-04", cite: { page: 1, quote: "Your start date will be 4 January 2027" } },
+    ],
+    watchOuts: [
+      { severity: "critical", title: "12-month non-compete", explanation: "After leaving, you can't join a direct competitor in France for a year.", cite: { page: 2, quote: "For twelve months after leaving, you may not work for a direct competitor within France" } },
+      { severity: "caution", title: "Trial period can double", explanation: "Four months, renewable once, so up to eight months.", cite: { page: 1, quote: "a trial period of four months, renewable once" } },
+    ],
+    glossary: [
+      { term: "Gross salary", plain: "Pay before social charges and income tax are taken out." },
+      { term: "Trial period", plain: "A first phase where either side can end the contract quickly." },
+      { term: "Non-compete", plain: "A promise not to work for competitors for a time after you leave." },
+    ],
+    dropped: 0,
+    chat: [
+      { k: /remote|home|télétravail|distance|远程|在家/i, a: "Up to two days of remote work per week.", cite: { page: 2, quote: "You may work remotely up to two days per week" } },
+      { k: /holiday|leave|vacation|congé|假/i, a: "25 working days of paid leave per year.", cite: { page: 2, quote: "25 working days of paid leave per year" } },
+    ],
+    suggestions: ["Can I work from home?", "How many days off?", "Is there a signing bonus?"],
+  },
+};
+
+/* ───────── App state ───────── */
+const QUOTA_MAX = 5;
+const state = {
+  quotaUsed: 2,
+  library: [
+    { id: "lease", sample: "lease", title: SAMPLES.lease.title, kind: "Lease", status: "ready", created: "2026-11-09", pages: 3 },
+    { id: "offer", sample: "offer", title: SAMPLES.offer.title, kind: "Job offer", status: "ready", created: "2026-11-07", pages: 2 },
+    { id: "visa", sample: "visa", title: SAMPLES.visa.title, kind: "Visa notice", status: "ready", created: "2026-11-03", pages: 2 },
+    { id: "bank-scan", sample: null, title: "Bank notice (blurry scan).jpg", kind: "Other", status: "failed", created: "2026-11-02", pages: 1 },
+  ],
+  done: new Set(),
+  dlFilter: "open",
+  outLang: "en",
+  current: null,
+};
+
+/* ───────── Helpers ───────── */
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const parseDate = (iso) => new Date(iso + "T00:00:00");
+const daysBetween = (a, b) => Math.round((parseDate(b) - parseDate(a)) / 86400000);
+const todayIso = "2026-11-11";
+const fmtDate = (iso, opts = { day: "numeric", month: "short", year: "numeric" }) =>
+  new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : locale === "fr" ? "fr-FR" : "en-GB", opts).format(parseDate(iso));
+const kindLabel = (k) => (I18N.en["kind." + k] ? t("kind." + k) : k);
+function toast(msg) {
+  const el = document.createElement("div"); el.className = "toast"; el.innerHTML = icon("check") + `<span>${esc(msg)}</span>`;
+  $("#toasts").appendChild(el); setTimeout(() => { el.style.opacity = "0"; el.style.transition = "opacity .2s"; setTimeout(() => el.remove(), 220); }, 2800);
+}
+
+/* ───────── Theme ───────── */
+function setTheme(theme) {
+  document.documentElement.dataset.theme = theme;
+  const b = $("[data-theme-toggle]");
+  b.innerHTML = icon(theme === "dark" ? "sun" : "moon");
+  b.setAttribute("aria-label", theme === "dark" ? "Switch to light theme" : "Switch to dark theme");
+  try { localStorage.setItem("plainly-theme", theme); } catch {}
+}
+$("[data-theme-toggle]").addEventListener("click", () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark"));
+
+/* ───────── Locale ───────── */
+$$("[data-locale]").forEach((b) => b.addEventListener("click", () => {
+  locale = b.dataset.locale; applyI18n(); rerender();
+}));
+
+/* ───────── Mobile menu ───────── */
+$("[data-menu]").addEventListener("click", (e) => {
+  const m = $("#mobile-menu"); const open = !m.classList.contains("open");
+  m.classList.toggle("open", open); e.currentTarget.setAttribute("aria-expanded", String(open));
+  e.currentTarget.innerHTML = icon(open ? "x" : "menu");
+});
+
+/* ───────── Router ───────── */
+function route() {
+  const h = location.hash.replace(/^#\/?/, "");
+  const [name, arg] = h.split("/");
+  const r = ({ "": "landing", documents: "documents", analysis: "analysis", deadlines: "deadlines", privacy: "privacy" })[name || ""] || "landing";
+  $$("[data-route]").forEach((s) => s.classList.toggle("active", s.dataset.route === r));
+  $$("[data-nav]").forEach((a) => a.toggleAttribute("aria-current", a.dataset.nav === r || (r === "analysis" && a.dataset.nav === "documents")));
+  $$("[data-nav][aria-current]").forEach((a) => a.setAttribute("aria-current", "page"));
+  $("#mobile-menu").classList.remove("open");
+  closeAll();
+  window.scrollTo({ top: 0, behavior: "instant" });
+  if (r === "documents") renderDocuments();
+  if (r === "analysis") startAnalysis(arg || "lease");
+  if (r === "deadlines") renderDeadlines();
+  if (r === "landing") startHero(); else stopHero();
+}
+window.addEventListener("hashchange", route);
+function rerender() {
+  const h = location.hash.replace(/^#\/?/, "").split("/")[0];
+  if (h === "documents") renderDocuments();
+  if (h === "deadlines") renderDeadlines();
+  if (h === "analysis" && state.current) renderAnalysis(state.current, { instant: true });
+  renderHeroPreview();
+}
+
+/* ───────── Documents page ───────── */
+function renderQuota() {
+  const left = Math.max(0, QUOTA_MAX - state.quotaUsed);
+  $("#quota-label").textContent = t("quota.left", { n: left, max: QUOTA_MAX });
+  $("#quota-bar").style.width = (left / QUOTA_MAX) * 100 + "%";
+}
+function renderDocuments() {
+  renderQuota();
+  $("#samples").innerHTML = Object.values(SAMPLES).map((s) => `
+    <button class="sample" data-sample="${s.id}">
+      <span class="sample-thumb" aria-hidden="true"><i></i><i></i><i></i><i style="width:80%"></i><i></i><i style="width:60%"></i></span>
+      <span style="min-width:0">
+        <h3>${esc(s.title)}</h3>
+        <p>${esc(s.blurb)}</p>
+        <span class="meta"><span class="chip">${esc(kindLabel(s.kind))}</span><span class="chip mono">${s.pagesCount} p · ${s.size}</span></span>
+      </span>
+    </button>`).join("");
+  $$("#samples [data-sample]").forEach((b) => b.addEventListener("click", () => openSample(b.dataset.sample)));
+  renderLibrary();
+}
+function renderLibrary() {
+  const q = $("#lib-search").value.trim().toLowerCase();
+  const f = $("#lib-filter").value;
+  const rows = state.library.filter((d) => (!q || d.title.toLowerCase().includes(q)) && (!f || d.kind === f));
+  const lib = $("#library");
+  if (!state.library.length) { lib.innerHTML = `<div class="empty"><div class="e-ico">${icon("file")}</div><h3>${t("lib.empty.t")}</h3><p>${t("lib.empty.d")}</p></div>`; return; }
+  if (!rows.length) { lib.innerHTML = `<div class="empty"><div class="e-ico">${icon("search")}</div><h3>${t("lib.nomatch.t")}</h3><p>${t("lib.nomatch.d")}</p></div>`; return; }
+  lib.innerHTML = rows.map((d) => {
+    const exp = 30 - daysBetween(d.created, todayIso);
+    const badge = d.status === "ready" ? `<span class="badge badge-ok">${icon("check")}${t("status.ready")}</span>`
+      : d.status === "failed" ? `<span class="badge badge-critical">${icon("x")}${t("status.failed")}</span>`
+      : `<span class="badge badge-info"><span class="pulse"></span>${t("status.analyzing")}</span>`;
+    const tag = d.sample ? `a href="#/analysis/${d.sample}"` : `div`;
+    const endTag = d.sample ? "a" : "div";
+    return `<${tag} class="lib-row">
+      <span class="lib-ico">${icon("file")}</span>
+      <span style="min-width:0"><span class="lib-title" style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.title)}</span>
+        <span class="lib-meta"><span>${esc(kindLabel(d.kind))}</span><span class="faint">·</span><span>${fmtDate(d.created)}</span><span class="faint">·</span><span class="mono">${d.pages} p</span></span></span>
+      <span class="lib-side"><span class="lib-exp">${t("lib.expires", { n: exp })}</span>${badge}${d.status === "failed" ? `<button class="btn btn-ghost btn-sm" data-retry aria-label="${t("chat.retry")}">${icon("refresh", "icon icon-sm")}</button>` : ""}</span>
+    </${endTag}>`;
+  }).join("");
+  $$("[data-retry]", lib).forEach((b) => b.addEventListener("click", () => toast(t("dz.err.type"))));
+}
+$("#lib-search").addEventListener("input", renderLibrary);
+$("#lib-filter").addEventListener("change", renderLibrary);
+
+// tabs with arrow-key support
+$$("[data-tab]").forEach((tab) => {
+  tab.addEventListener("click", () => selectTab(tab.dataset.tab));
+  tab.addEventListener("keydown", (e) => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { const n = tab.dataset.tab === "upload" ? "paste" : "upload"; selectTab(n); $(`[data-tab="${n}"]`).focus(); } });
+});
+function selectTab(name) {
+  $$("[data-tab]").forEach((b) => { const on = b.dataset.tab === name; b.setAttribute("aria-selected", String(on)); b.tabIndex = on ? 0 : -1; });
+  $("#panel-upload").hidden = name !== "upload"; $("#panel-paste").hidden = name !== "paste";
+}
+
+function consumeQuota() {
+  if (state.quotaUsed >= QUOTA_MAX) { openQuotaModal(); return false; }
+  state.quotaUsed++; renderQuota(); return true;
+}
+function openSample(id) {
+  if (!consumeQuota()) return;
+  location.hash = "#/analysis/" + id;
+}
+
+// Dropzone
+const dz = $("#dropzone");
+["dragenter", "dragover"].forEach((e) => dz.addEventListener(e, (ev) => { ev.preventDefault(); dz.classList.add("drag"); }));
+["dragleave", "drop"].forEach((e) => dz.addEventListener(e, (ev) => { ev.preventDefault(); dz.classList.remove("drag"); }));
+dz.addEventListener("drop", (ev) => { const f = ev.dataTransfer.files[0]; if (f) handleFile(f); });
+$("#file-input").addEventListener("change", (e) => { const f = e.target.files[0]; if (f) handleFile(f); e.target.value = ""; });
+window.addEventListener("paste", (e) => {
+  if (!$('[data-route="documents"]').classList.contains("active")) return;
+  const f = [...(e.clipboardData?.files || [])][0]; if (f) handleFile(f);
+});
+function handleFile(file) {
+  const st = $("#dz-status");
+  const ok = ["application/pdf", "image/png", "image/jpeg"].includes(file.type) || /\.(pdf|png|jpe?g)$/i.test(file.name);
+  if (!ok) { st.innerHTML = `<div class="alert alert-critical" role="alert">${icon("octagon")}<span>${t("dz.err.type")}</span></div>`; return; }
+  if (file.size > 10 * 1024 * 1024) { st.innerHTML = `<div class="alert alert-critical" role="alert">${icon("octagon")}<span>${t("dz.err.size")}</span></div>`; return; }
+  if (!consumeQuota()) return;
+  st.innerHTML = `<div class="dz-progress"><div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:70%">${esc(file.name)}</span><span class="mono muted" id="dz-pct">0%</span></div><div class="progress"><i id="dz-bar"></i></div><p class="muted" style="font-size:13px;margin-top:8px" id="dz-msg">${t("dz.uploading")}…</p></div>`;
+  let p = 0;
+  const iv = setInterval(() => {
+    p = Math.min(100, p + 7 + Math.random() * 12);
+    $("#dz-bar").style.width = p + "%"; $("#dz-pct").textContent = Math.round(p) + "%";
+    if (p >= 100) {
+      clearInterval(iv); $("#dz-msg").textContent = t("dz.reading");
+      const title = file.name.replace(/\.[^.]+$/, "");
+      state.library.unshift({ id: "u" + Date.now(), sample: "lease", title, kind: "Lease", status: "ready", created: todayIso, pages: 3 });
+      SAMPLES.lease._customTitle = title;
+      setTimeout(() => { st.innerHTML = ""; location.hash = "#/analysis/lease"; }, 500);
+    }
+  }, 90);
+}
+// Paste text
+$("#paste-text").addEventListener("input", (e) => {
+  const n = e.target.value.length; $("#paste-count").textContent = n.toLocaleString() + " / 60,000"; $("#paste-go").disabled = n < 20;
+});
+$("#paste-go").addEventListener("click", () => { if (!consumeQuota()) return; SAMPLES.lease._customTitle = null; location.hash = "#/analysis/lease"; });
+
+/* ───────── Analysis ───────── */
+let streamTimers = [];
+const clearStream = () => { streamTimers.forEach(clearTimeout); streamTimers = []; };
+function startAnalysis(id) {
+  const s = SAMPLES[id] || SAMPLES.lease;
+  state.current = s; state.chat = []; state.outLang = locale;
+  renderAnalysis(s, { instant: reduced });
+}
+function citeChip(c, extra = "") {
+  return `<button class="cite" data-cite='${esc(JSON.stringify(c))}' ${extra} aria-label="${esc(t("an.page", { p: c.page }))}: ${esc(c.quote)}">${icon("quote")}<span class="mono">p.${c.page}</span><span class="q">${esc(c.quote)}</span></button>`;
+}
+function dateTile(iso) {
+  if (!iso) return `<div class="date-tile none"><div class="m">—</div><div class="d">${t("an.nodate")}</div></div>`;
+  const d = parseDate(iso); const overdue = iso < todayIso && !state.done.has(iso);
+  const m = new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : locale === "fr" ? "fr-FR" : "en-GB", { month: "short" }).format(d);
+  return `<div class="date-tile ${overdue ? "overdue" : ""}"><div class="m">${esc(m)}</div><div class="d mono">${String(d.getDate()).padStart(2, "0")}</div></div>`;
+}
+function sectionShell(key, ico, count) {
+  return `<section class="card an-section" data-sec="${key}" aria-busy="true"><header><h2>${icon(ico)}<span>${t("an." + key)}</span>${count != null ? `<span class="count mono">${count}</span>` : ""}</h2></header><div class="sec-body">
+    <div class="skel skel-line" style="width:92%"></div><div class="skel skel-line" style="width:78%"></div><div class="skel skel-line" style="width:64%"></div></div></section>`;
+}
+function renderSectionBody(key, s) {
+  const lang = state.outLang;
+  if (key === "summary") return `<p class="summary-text" id="summary-text">${esc(s.summary[lang] || s.summary.en)}</p>`;
+  if (key === "facts") return `<table class="facts"><tbody>${s.facts.map((f) => `<tr><th scope="row">${esc(f.label)}</th><td>${esc(f.value)}<div class="cite-wrap">${citeChip(f.cite)}</div></td></tr>`).join("")}</tbody></table>`;
+  if (key === "actions") return `<div class="actions-list">${s.actions.map((a) => {
+    const overdue = a.dueOn && a.dueOn < todayIso;
+    return `<article class="action">${dateTile(a.dueOn)}<div style="min-width:0"><h3>${esc(a.title)}</h3><p>${esc(a.detail)}</p><div class="row">${overdue ? `<span class="badge badge-critical">${icon("clock")}${t("an.overdue")}</span>` : ""}${citeChip(a.cite)}${a.dueOn ? `<button class="btn btn-ghost btn-sm" data-ics='${esc(JSON.stringify({ title: a.title, detail: a.detail, dueOn: a.dueOn, doc: s.title }))}'>${icon("calendar", "icon icon-sm")}${t("an.addcal")}</button>` : ""}</div></div></article>`;
+  }).join("")}</div>`;
+  if (key === "watch") return s.watchOuts.map((w) => {
+    const ico = w.severity === "critical" ? "octagon" : w.severity === "caution" ? "triangle" : "info";
+    return `<article class="watch ${w.severity}">${icon(ico, "icon w-ico")}<div style="min-width:0"><h3>${esc(w.title)}<span class="badge badge-${w.severity}">${t("sev." + w.severity)}</span></h3><p>${esc(w.explanation)}</p><div style="margin-top:10px">${citeChip(w.cite)}</div></div></article>`;
+  }).join("");
+  if (key === "gloss") return `<dl class="gloss">${s.glossary.map((g) => `<div><dt>${esc(g.term)}</dt><dd>${esc(g.plain)}</dd></div>`).join("")}</dl>`;
+  return "";
+}
+function renderAnalysis(s, { instant }) {
+  clearStream();
+  const title = s._customTitle || s.title;
+  $("#an-title").textContent = title;
+  $("#an-meta").innerHTML = `<span class="chip">${esc(kindLabel(s.kind))}</span><span class="chip mono">${s.lang.toUpperCase()} · ${s.pagesCount} p</span><span class="status-line" id="an-status"></span>`;
+  $$("#out-lang [data-out]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.out === state.outLang)));
+  const sections = [["summary", "file"], ["facts", "list", s.facts.length], ["actions", "calendar", s.actions.length], ["watch", "triangle", s.watchOuts.length], ["gloss", "book", s.glossary.length]];
+  const main = $("#an-main");
+  main.innerHTML = sections.map(([k, i, c]) => sectionShell(k, i, c)).join("") +
+    `<div id="dropped-slot"></div>
+     <section class="card chat" aria-labelledby="chat-title">
+       <div class="chat-head"><h2 id="chat-title">${icon("message")}<span>${t("chat.title")}</span></h2><p>${t("chat.sub")}</p></div>
+       <div class="chat-msgs" id="chat-msgs" aria-live="polite"></div>
+       <div class="suggest" id="suggest">${s.suggestions.map((q) => `<button type="button">${esc(q)}</button>`).join("")}</div>
+     </section>
+     <div class="composer-wrap"><form class="composer" id="composer"><label for="chat-input" class="sr-only">${t("chat.ph")}</label><input id="chat-input" autocomplete="off" placeholder="${esc(t("chat.ph"))}" /><button class="send" type="submit" id="send-btn" aria-label="${t("chat.send")}">${icon("send")}</button></form></div>
+     <p class="legal">${icon("shield")}<span>${t("an.legal")}</span></p>`;
+  renderPreview(s);
+  bindChat(s);
+  renderChat();
+
+  const status = $("#an-status");
+  const finish = () => {
+    status.innerHTML = `<span class="done-dot"></span>${t("an.done")}`;
+    if (s.dropped) $("#dropped-slot").innerHTML = `<div class="dropped">${icon("info")}<span>${t("an.dropped", { n: s.dropped })}</span></div>`;
+  };
+  const fill = (k, animate) => {
+    const sec = $(`[data-sec="${k}"]`, main); if (!sec) return;
+    sec.querySelector(".sec-body").innerHTML = renderSectionBody(k, s);
+    sec.setAttribute("aria-busy", "false");
+    if (animate) sec.classList.add("enter");
+  };
+  if (instant) { sections.forEach(([k]) => fill(k, false)); finish(); return; }
+
+  // simulated streaming, section by section
+  status.innerHTML = `<span class="pulse"></span>${t("an.reading", { p: 1, n: s.pagesCount })}`;
+  let tAt = 500;
+  sections.forEach(([k], i) => {
+    streamTimers.push(setTimeout(() => {
+      status.innerHTML = `<span class="pulse"></span>${t("an.reading", { p: Math.min(s.pagesCount, i + 1), n: s.pagesCount })}`;
+      if (k === "summary") {
+        fill(k, true);
+        const el = $("#summary-text"); const full = el.textContent; const words = full.split(locale === "zh" || state.outLang === "zh" ? "" : " ");
+        el.innerHTML = '<span class="caret"></span>'; let w = 0;
+        const step = () => { w++; el.innerHTML = esc(words.slice(0, w).join(state.outLang === "zh" ? "" : " ")) + (w < words.length ? '<span class="caret"></span>' : ""); if (w < words.length) streamTimers.push(setTimeout(step, state.outLang === "zh" ? 18 : 32)); };
+        step();
+      } else fill(k, true);
+    }, tAt));
+    tAt += k === "summary" ? 1500 : 650;
+  });
+  streamTimers.push(setTimeout(finish, tAt));
+}
+$$("#out-lang [data-out]").forEach((b) => b.addEventListener("click", () => {
+  if (!state.current) return; state.outLang = b.dataset.out;
+  $$("#out-lang [data-out]").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  const sec = $('[data-sec="summary"] .sec-body'); if (sec) { sec.innerHTML = renderSectionBody("summary", state.current); sec.parentElement.classList.remove("enter"); void sec.offsetWidth; sec.parentElement.classList.add("enter"); }
+}));
+
+/* preview pane */
+function renderPreview(s, highlight) {
+  $("#page-btns").innerHTML = s.pages.map((_, i) => `<button type="button" data-goto="${i + 1}" aria-label="${esc(t("an.page", { p: i + 1 }))}" ${i === 0 ? 'aria-current="true"' : ""}>${i + 1}</button>`).join("");
+  $("#preview-scroll").innerHTML = s.pages.map((pg, i) => {
+    const paras = pg.p.map((txt) => {
+      let html = esc(txt);
+      if (highlight && highlight.page === i + 1) {
+        const q = esc(highlight.quote); const at = html.indexOf(q);
+        if (at >= 0) html = html.slice(0, at) + `<mark id="hl">${q}</mark>` + html.slice(at + q.length);
+      }
+      return `<p>${html}</p>`;
+    }).join("");
+    return `<article class="paper" id="page-${i + 1}" aria-label="${esc(t("an.page", { p: i + 1 }))}"><h4>${esc(pg.h)}</h4>${paras}<span class="pg">${i + 1} / ${s.pages.length}</span></article>`;
+  }).join("");
+  $$("#page-btns [data-goto]").forEach((b) => b.addEventListener("click", () => gotoPage(+b.dataset.goto)));
+}
+function gotoPage(p, smooth = true) {
+  const box = $("#preview-scroll"); const pg = $("#page-" + p); if (!pg) return;
+  const hl = $("#hl");
+  const target = hl ? hl.offsetTop - box.clientHeight / 3 : pg.offsetTop - 18;
+  box.scrollTo({ top: Math.max(0, target), behavior: smooth && !reduced ? "smooth" : "auto" });
+  $$("#page-btns [data-goto]").forEach((b) => b.setAttribute("aria-current", String(+b.dataset.goto === p)));
+}
+function showInDoc(c) {
+  renderPreview(state.current, c);
+  if (matchMedia("(max-width: 1023.98px)").matches) openPreviewSheet();
+  requestAnimationFrame(() => gotoPage(c.page));
+}
+$("#open-preview").addEventListener("click", openPreviewSheet);
+$("#close-preview").addEventListener("click", closeAll);
+function openPreviewSheet() { $("#an-side").classList.add("open"); $("#scrim").classList.add("open"); }
+
+/* citation sheet */
+let lastFocus = null;
+document.addEventListener("click", (e) => {
+  const c = e.target.closest("[data-cite]");
+  if (c && state.current) { openCite(JSON.parse(c.dataset.cite), c); return; }
+  const ics = e.target.closest("[data-ics]");
+  if (ics) { const a = JSON.parse(ics.dataset.ics); downloadIcs([a], slug(a.title)); }
+});
+function openCite(c, from) {
+  lastFocus = from;
+  $("#sheet-body").innerHTML = `
+    <span class="badge badge-ok" style="justify-self:start">${icon("check")}${t("sheet.verified")}</span>
+    <blockquote class="quote-block" style="margin:0">“${esc(c.quote)}”</blockquote>
+    <dl class="kv"><dt>${t("sheet.page")}</dt><dd class="mono">${c.page} / ${state.current.pagesCount}</dd><dt>${t("an.original")}</dt><dd>${esc(state.current._customTitle || state.current.title)}</dd></dl>
+    <button class="btn btn-primary" id="show-doc" style="justify-self:start">${icon("eye", "icon icon-sm")}${t("sheet.show", { p: c.page })}</button>`;
+  $("#show-doc").addEventListener("click", () => { closeAll(); showInDoc(c); });
+  openLayer($("#cite-sheet"));
+}
+function openLayer(el) {
+  el.classList.add("open"); el.setAttribute("aria-hidden", "false"); $("#scrim").classList.add("open");
+  const f = el.querySelector("button, input, a"); f && setTimeout(() => f.focus(), 30);
+}
+function closeAll() {
+  ["#cite-sheet", "#modal"].forEach((s) => { const el = $(s); el.classList.remove("open"); el.setAttribute("aria-hidden", "true"); });
+  $("#an-side").classList.remove("open"); $("#scrim").classList.remove("open");
+  if (lastFocus) { lastFocus.focus?.(); lastFocus = null; }
+}
+$("#scrim").addEventListener("click", closeAll);
+$$("[data-close]").forEach((b) => b.addEventListener("click", closeAll));
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeAll(); });
+
+/* chat */
+let chatTimer = null;
+function bindChat(s) {
+  const form = $("#composer");
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (chatTimer) { stopChat(); return; }
+    const q = $("#chat-input").value.trim(); if (!q) return;
+    $("#chat-input").value = ""; ask(q);
+  });
+  $$("#suggest button").forEach((b) => b.addEventListener("click", () => ask(b.textContent)));
+}
+function ask(q) {
+  const s = state.current;
+  state.chat.push({ role: "user", text: q });
+  const hit = s.chat.find((c) => c.k.test(q));
+  const msg = hit ? { role: "bot", text: "", full: hit.a, cite: hit.cite, q } : { role: "bot", text: "", full: t("chat.refusal"), refusal: true, q };
+  state.chat.push(msg); renderChat(); streamMsg(msg);
+}
+function streamMsg(msg) {
+  const words = msg.full.split(" "); let i = 0; setSendMode(true);
+  const tick = () => {
+    i++; msg.text = words.slice(0, i).join(" "); msg.streaming = i < words.length; renderChat();
+    if (i < words.length) chatTimer = setTimeout(tick, reduced ? 0 : 45); else { chatTimer = null; setSendMode(false); }
+  };
+  chatTimer = setTimeout(tick, reduced ? 0 : 380);
+}
+function stopChat() {
+  clearTimeout(chatTimer); chatTimer = null; setSendMode(false);
+  const last = state.chat[state.chat.length - 1]; if (last) { last.streaming = false; last.stopped = true; } renderChat();
+}
+function setSendMode(streaming) {
+  const b = $("#send-btn"); if (!b) return;
+  b.innerHTML = icon(streaming ? "stop" : "send"); b.setAttribute("aria-label", t(streaming ? "chat.stop" : "chat.send"));
+}
+function renderChat() {
+  const box = $("#chat-msgs"); if (!box) return;
+  box.innerHTML = state.chat.map((m, idx) => m.role === "user"
+    ? `<div class="msg user">${esc(m.text)}</div>`
+    : `<div class="msg bot ${m.refusal ? "refusal" : ""}"><div class="bubble">${m.text ? esc(m.text) : '<span class="status-line"><span class="pulse"></span></span>'}${m.streaming ? '<span class="caret" style="display:inline-block;width:2px;height:1em;background:var(--accent);margin-left:2px;vertical-align:-2px"></span>' : ""}</div>
+        ${m.stopped ? `<div class="tools"><span class="faint" style="font-size:12px">${t("chat.stopped")}</span><button class="btn btn-ghost btn-sm" data-retry-msg="${idx}">${icon("refresh", "icon icon-sm")}${t("chat.retry")}</button></div>` : ""}
+        ${!m.streaming && !m.stopped && m.cite ? `<div class="cites">${citeChip(m.cite)}</div>` : ""}</div>`).join("");
+  box.style.display = state.chat.length ? "grid" : "none";
+  $("#suggest").style.display = state.chat.length ? "none" : "flex";
+  box.scrollTop = box.scrollHeight;
+  $$("[data-retry-msg]", box).forEach((b) => b.addEventListener("click", () => {
+    const m = state.chat[+b.dataset.retryMsg]; m.stopped = false; m.text = ""; streamMsg(m);
+  }));
+}
+
+/* ───────── Deadlines ───────── */
+function allDeadlines() {
+  const ids = new Set(state.library.filter((d) => d.sample && d.status === "ready").map((d) => d.sample));
+  const out = [];
+  ids.forEach((id) => SAMPLES[id].actions.forEach((a, i) => { if (a.dueOn) out.push({ key: id + i, ...a, doc: SAMPLES[id].title, docId: id }); }));
+  return out.sort((a, b) => a.dueOn.localeCompare(b.dueOn));
+}
+function relDays(iso) {
+  const n = daysBetween(todayIso, iso);
+  return n === 0 ? t("dl.today") : n > 0 ? t("dl.in", { n }) : t("dl.ago", { n: -n });
+}
+function renderDeadlines() {
+  $$("#dl-filter [data-f]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.f === state.dlFilter)));
+  const items = allDeadlines();
+  const body = $("#dl-body");
+  if (!items.length) { body.innerHTML = `<div class="card empty" style="margin-top:12px"><div class="e-ico">${icon("calendar")}</div><h3>${t("dl.empty.t")}</h3><p>${t("dl.empty.d")}</p><a href="#/documents" class="btn btn-secondary btn-sm" style="margin-top:16px">${t("hero.cta1")}</a></div>`; $("#ics-all").disabled = true; return; }
+  $("#ics-all").disabled = false;
+  const overdue = items.filter((d) => d.dueOn < todayIso && !state.done.has(d.key));
+  const upcoming = items.filter((d) => d.dueOn >= todayIso && !state.done.has(d.key));
+  const done = items.filter((d) => state.done.has(d.key));
+  const row = (d) => {
+    const isDone = state.done.has(d.key); const late = d.dueOn < todayIso && !isDone;
+    return `<div class="dl-row ${isDone ? "done" : ""}">
+      <button class="check" role="checkbox" aria-checked="${isDone}" aria-label="${esc(t("dl.mark"))}: ${esc(d.title)}" data-done="${d.key}">${icon("check")}</button>
+      <div class="dl-date"><b class="mono">${fmtDate(d.dueOn, { day: "2-digit", month: "short" })}</b><span style="${late ? "color:var(--critical)" : ""}">${relDays(d.dueOn)}</span></div>
+      <div class="dl-main" style="min-width:0"><div class="dl-title">${esc(d.title)}</div><div class="dl-sub"><span>${t("dl.from")} <a href="#/analysis/${d.docId}">${esc(d.doc)}</a></span>${late ? `<span class="badge badge-critical">${icon("clock")}${t("dl.overdue")}</span>` : ""}</div></div>
+      <div class="dl-actions"><button class="btn btn-icon" aria-label="${esc(t("dl.ics"))}: ${esc(d.title)}" data-ics='${esc(JSON.stringify({ title: d.title, detail: d.detail, dueOn: d.dueOn, doc: d.doc }))}'>${icon("download")}</button></div>
+    </div>`;
+  };
+  const group = (label, arr, ico, style = "") => arr.length ? `<div class="dl-group"><h2 style="${style}">${icon(ico, "icon icon-sm")}${label}<span class="mono faint">${arr.length}</span></h2><div class="card dl-list">${arr.map(row).join("")}</div></div>` : "";
+  body.innerHTML = group(t("dl.overdue"), overdue, "clock", "color:var(--critical)") + group(t("dl.upcoming"), upcoming, "calendar") + (state.dlFilter === "all" ? group(t("dl.done"), done, "check") : "");
+  $$("[data-done]", body).forEach((b) => b.addEventListener("click", () => {
+    const k = b.dataset.done; state.done.has(k) ? state.done.delete(k) : state.done.add(k); renderDeadlines();
+  }));
+}
+$$("#dl-filter [data-f]").forEach((b) => b.addEventListener("click", () => { state.dlFilter = b.dataset.f; renderDeadlines(); }));
+$("#ics-all").addEventListener("click", () => downloadIcs(allDeadlines().filter((d) => !state.done.has(d.key)), "plainly-deadlines"));
+
+/* toIcs() — same shape as the real one */
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const icsEsc = (s) => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+function toIcs(items) {
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Plainly//Deadlines//EN", "CALSCALE:GREGORIAN"];
+  items.forEach((d) => {
+    const day = d.dueOn.replace(/-/g, ""); const next = new Date(parseDate(d.dueOn).getTime() + 86400000);
+    const nextDay = `${next.getFullYear()}${String(next.getMonth() + 1).padStart(2, "0")}${String(next.getDate()).padStart(2, "0")}`;
+    lines.push("BEGIN:VEVENT", `UID:${slug(d.title)}-${day}@plainly.app`, `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${day}`, `DTEND;VALUE=DATE:${nextDay}`, `SUMMARY:${icsEsc(d.title)}`, `DESCRIPTION:${icsEsc((d.detail || "") + " — " + d.doc)}`, "END:VEVENT");
+  });
+  lines.push("END:VCALENDAR"); return lines.join("\r\n");
+}
+function downloadIcs(items, name) {
+  if (!items.length) return;
+  const url = URL.createObjectURL(new Blob([toIcs(items)], { type: "text/calendar" }));
+  const a = document.createElement("a"); a.href = url; a.download = name + ".ics"; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  toast(t("ics.toast"));
+}
+
+/* ───────── Modals ───────── */
+function openModal(html, from) {
+  lastFocus = from || document.activeElement;
+  $("#modal").innerHTML = html; hydrateIcons($("#modal")); openLayer($("#modal"));
+  $$("#modal [data-close]").forEach((b) => b.addEventListener("click", closeAll));
+}
+function openQuotaModal() {
+  openModal(`<div class="m-ico" style="background:var(--accent-soft);color:var(--accent-text)">${icon("gauge", "icon icon-lg")}</div>
+    <h2 id="modal-title">${t("quota.title")}</h2><p>${t("quota.body")}</p>
+    <div class="m-actions"><button class="btn btn-ghost" data-close>${t("quota.later")}</button><button class="btn btn-primary" id="q-signin">${t("quota.signin")}</button></div>`);
+  $("#q-signin").addEventListener("click", openSignin);
+}
+function openSignin() {
+  openModal(`<div class="m-ico" style="background:var(--accent-soft);color:var(--accent-text)">${icon("key", "icon icon-lg")}</div>
+    <h2 id="modal-title">${t("signin.title")}</h2><p>${t("signin.body")}</p>
+    <button class="btn btn-secondary btn-lg" style="width:100%;margin-top:22px" id="g-btn"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>${t("signin.google")}</button>
+    <div class="divider">${t("signin.or")}</div>
+    <form id="magic" style="display:grid;gap:10px"><label for="email" class="sr-only">${t("signin.email")}</label><input id="email" type="email" required class="input" placeholder="${esc(t("signin.email"))}" autocomplete="email" /><button class="btn btn-primary btn-lg" type="submit">${icon("mail", "icon icon-sm")}${t("signin.magic")}</button></form>`);
+  $("#g-btn").addEventListener("click", () => { closeAll(); toast(t("signin.sent")); });
+  $("#magic").addEventListener("submit", (e) => { e.preventDefault(); closeAll(); toast(t("signin.sent")); });
+}
+$$("[data-open-signin]").forEach((b) => b.addEventListener("click", (e) => openSignin(e.currentTarget)));
+$("#delete-all").addEventListener("click", (e) => {
+  openModal(`<div class="m-ico" style="background:var(--critical-soft);color:var(--critical)">${icon("trash", "icon icon-lg")}</div>
+    <h2 id="modal-title">${t("del.title")}</h2><p>${t("del.body")}</p>
+    <div class="m-actions"><button class="btn btn-ghost" data-close>${t("del.cancel")}</button><button class="btn btn-danger" id="del-ok">${t("del.ok")}</button></div>`, e.currentTarget);
+  $("#del-ok").addEventListener("click", () => { state.library = []; state.done.clear(); closeAll(); toast(t("del.toast")); });
+});
+
+/* ───────── Hero preview (static mini analysis) ───────── */
+function renderHeroPreview() {
+  const s = SAMPLES.lease; const lang = locale;
+  $("#hero-preview").innerHTML = `
+    <div style="display:grid;gap:12px;min-width:0">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><div style="font-weight:600;font-size:16px;letter-spacing:-0.01em">${esc(s.title)}</div><div class="an-meta" style="margin-top:6px"><span class="chip">${esc(kindLabel(s.kind))}</span><span class="status-line"><span class="done-dot"></span>${t("an.done")}</span></div></div>
+      <div class="seg" aria-hidden="true"><button tabindex="-1" aria-pressed="${lang === "en"}">EN</button><button tabindex="-1" aria-pressed="${lang === "fr"}">FR</button><button tabindex="-1" aria-pressed="${lang === "zh"}">中文</button></div></div>
+      <div class="card an-section" style="padding:18px"><header style="margin-bottom:10px"><h2>${icon("file")}${t("an.summary")}</h2></header><p style="font-size:15px;line-height:1.6">${esc(s.summary[lang])}</p></div>
+      <div style="display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+        <div class="card an-section" style="padding:16px"><header style="margin-bottom:10px"><h2>${icon("calendar")}${t("an.actions")}</h2></header>
+          <div class="actions-list">${s.actions.slice(1, 3).map((a) => `<div class="action" style="padding:10px">${dateTile(a.dueOn)}<div style="min-width:0"><h3 style="font-size:14px">${esc(a.title)}</h3><p style="font-size:12px">${esc(a.detail)}</p></div></div>`).join("")}</div></div>
+        <div class="card an-section" style="padding:16px"><header style="margin-bottom:10px"><h2>${icon("triangle")}${t("an.watch")}</h2></header>
+          ${s.watchOuts.slice(0, 2).map((w) => `<div class="watch ${w.severity}" style="padding:10px">${icon(w.severity === "critical" ? "octagon" : "triangle", "icon w-ico")}<div><h3 style="font-size:14px">${esc(w.title)}</h3><p style="font-size:12px">${esc(w.explanation.split(".")[0])}.</p></div></div>`).join("")}</div>
+      </div>
+    </div>
+    <div class="mini-paper" aria-hidden="true">
+      <div style="background:var(--bg-deep);border:1px solid var(--border);border-radius:12px;padding:16px;height:100%">
+        <div class="paper" style="padding:22px 20px;font-size:11px"><h4 style="font-size:11px">${esc(s.pages[0].h)}</h4>
+          ${s.pages[0].p.map((p, i) => `<p>${i === 4 ? esc(p).replace("security deposit of €1,700 no later than 20 November 2026", '<mark style="animation:none">security deposit of €1,700 no later than 20 November 2026</mark>') : esc(p)}</p>`).join("")}<span class="pg">1 / 3</span></div>
+      </div>
+    </div>`;
+}
+
+/* ───────── Hero canvas: noise resolving into lines (chaos → order) ───────── */
+const hero = { raf: 0, running: false, inView: true };
+function startHero() {
+  const cv = $("#hero-canvas"); if (!cv || hero.running) return;
+  const ctx = cv.getContext("2d"); if (!ctx) return;
+  hero.running = true;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  let W = 0, H = 0, parts = [];
+  const mobile = matchMedia("(max-width: 767px)").matches;
+  const N = mobile ? 900 : 2600;
+  function layout() {
+    W = cv.clientWidth; H = cv.clientHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    // targets: a stack of "document lines" in a band below the CTAs
+    const frame = document.querySelector(".hero-frame"), heroEl = document.querySelector(".hero");
+    const fTop = frame && heroEl ? frame.getBoundingClientRect().top - heroEl.getBoundingClientRect().top : H * 0.6;
+    const lineGap = mobile ? 10 : 12, lines = mobile ? 5 : 6;
+    const bandTop = fTop - lines * lineGap - 24; // lines settle just above the product frame
+    const widthMax = Math.min(W * 0.9, 1040);
+    const lens = [1, .92, .97, .7, 1, .85, .95, .6, .8];
+    const targets = [];
+    for (let l = 0; l < lines; l++) {
+      const len = widthMax * lens[l % lens.length]; const x0 = (W - widthMax) / 2; const y = bandTop + l * lineGap;
+      const count = Math.floor(N / lines);
+      for (let k = 0; k < count; k++) targets.push({ x: x0 + (k / count) * len, y });
+    }
+    parts = targets.map((tg, i) => ({
+      tx: tg.x, ty: tg.y,
+      nx: Math.random() * W, ny: Math.random() * (bandTop + 40),
+      ph: Math.random() * Math.PI * 2, sp: 0.4 + Math.random() * 0.8,
+      d: Math.random() * 0.45 + (tg.x / W) * 0.35, // left-to-right resolve
+      s: Math.random() < 0.08 ? 1.6 : 1,
+    }));
+  }
+  layout();
+  const ro = new ResizeObserver(() => layout()); ro.observe(cv); hero.ro = ro;
+  const io = new IntersectionObserver(([e]) => { hero.inView = e.isIntersecting; }); io.observe(cv); hero.io = io;
+  const ease = (x) => 1 - Math.pow(1 - x, 3);
+  const CYCLE = 11000; let t0 = performance.now();
+  function frame(now) {
+    hero.raf = requestAnimationFrame(frame);
+    if (!hero.inView || document.hidden) return;
+    const tm = ((now - t0) % CYCLE) / CYCLE; // 0..1
+    // 0-.12 noise, .12-.5 resolve, .5-.85 hold, .85-1 dissolve
+    let g = tm < .12 ? 0 : tm < .5 ? (tm - .12) / .38 : tm < .85 ? 1 : 1 - (tm - .85) / .15;
+    if (reduced) g = 1;
+    ctx.clearRect(0, 0, W, H);
+    const light = document.documentElement.dataset.theme === "light";
+    for (const p of parts) {
+      const local = Math.max(0, Math.min(1, (g - p.d * 0.6) / 0.4));
+      const e = ease(local);
+      const wob = (1 - e) * 10;
+      const x = p.nx + (p.tx - p.nx) * e + Math.sin(now * 0.0006 * p.sp + p.ph) * wob;
+      const y = p.ny + (p.ty - p.ny) * e + Math.cos(now * 0.0005 * p.sp + p.ph) * wob;
+      const a = 0.18 + e * 0.55;
+      ctx.fillStyle = light ? `rgba(91,63,214,${a * 0.8})` : (p.s > 1 ? `rgba(230,224,255,${a})` : `rgba(160,140,255,${a})`);
+      ctx.fillRect(x, y, p.s * (1 + e * 0.6), p.s);
+    }
+  }
+  if (reduced) { frame(performance.now()); cancelAnimationFrame(hero.raf); hero.raf = 0; return; }
+  hero.raf = requestAnimationFrame(frame);
+}
+function stopHero() {
+  if (!hero.running) return; cancelAnimationFrame(hero.raf); hero.ro?.disconnect(); hero.io?.disconnect(); hero.running = false;
+}
+
+/* ───────── Boot ───────── */
+hydrateIcons();
+try { const saved = localStorage.getItem("plainly-theme"); if (saved) document.documentElement.dataset.theme = saved; } catch {}
+setTheme(document.documentElement.dataset.theme);
+applyI18n();
+renderHeroPreview();
+$$("[data-sample-link]").forEach((a) => a.addEventListener("click", (e) => { e.preventDefault(); openSample(a.dataset.sampleLink); }));
+route();
+</script>
+</body>
+</html>
