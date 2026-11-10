@@ -1,6 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { connection } from "next/server";
 import { publicEnv } from "@/shared/config/env";
 import type { Database } from "@/shared/lib/db-types";
 
@@ -8,6 +9,9 @@ export type Supabase = Awaited<ReturnType<typeof createSupabase>>;
 
 /** Per-request Supabase client acting as the signed-in (or anonymous) user. RLS applies. */
 export async function createSupabase() {
+  // Session reads touch the clock (JWT expiry, quota day). Opt out of the runtime prerender
+  // before that, or Cache Components flags the time read as an unstable value.
+  await connection();
   const env = publicEnv();
   const cookieStore = await cookies();
   return createServerClient<Database>(
