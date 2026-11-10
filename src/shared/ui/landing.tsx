@@ -446,6 +446,7 @@ export function FinalCta() {
         />
         <LoopVideo
           name="brand-loop"
+          controls
           className="relative mx-auto mb-8 max-w-[560px] overflow-hidden rounded-xl border"
         />
         <h2 className="relative font-semibold text-[28px] leading-[1.15] md:text-[40px]">

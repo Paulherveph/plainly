@@ -8,7 +8,9 @@ import { useEffect, useImperativeHandle, useRef, useState } from "react";
 /**
  * Muted, inline motion video rendered from media/videos/ (public/videos/<name>.{webm,mp4,webp}).
  * Loads nothing until it is near the viewport, plays only while visible, and never autoplays
- * with reduced motion (the poster stays). Longer clips get a pause button (WCAG 2.2.2).
+ * with reduced motion. With `controls`, a clear play button sits on the poster whenever the
+ * video isn't playing (reduced motion, autoplay blocked by the browser, or paused by the viewer),
+ * and a small pause button shows while it plays (WCAG 2.2.2).
  * `themed` swaps between the dark and -light renders with the site theme.
  * `cycles` stops after N plays and rests on the last frame (for small decorative loops).
  */
@@ -52,7 +54,7 @@ export function LoopVideo({
       const v = shown(root.current);
       if (!v) return;
       v.currentTime = time;
-      if (!paused && !reducedMotion()) v.play().catch(() => {});
+      if (!paused && !reducedMotion()) v.play().catch(() => setPlaying(false));
     },
   }));
 
@@ -66,7 +68,8 @@ export function LoopVideo({
         if (!v) return;
         if (visible && !paused && (cycles == null || plays.current < cycles)) {
           v.preload = "auto";
-          v.play().catch(() => {});
+          // Autoplay can be refused (browser setting, energy saver): the play button stays visible.
+          v.play().catch(() => setPlaying(false));
         } else v.pause();
       },
       { threshold: 0.35 },
@@ -79,7 +82,7 @@ export function LoopVideo({
     const v = shown(root.current);
     if (!v) return;
     setPaused(!v.paused);
-    if (v.paused) v.play().catch(() => {});
+    if (v.paused) v.play().catch(() => setPlaying(false));
     else v.pause();
   }
 
@@ -113,14 +116,27 @@ export function LoopVideo({
       <div aria-hidden={label ? undefined : true}>
         {themed ? [video("", "hidden dark:block"), video("-light", "dark:hidden")] : video("")}
       </div>
-      {controls ? (
+      {controls && playing ? (
         <button
           type="button"
           onClick={toggle}
-          aria-label={playing ? t("pause") : t("play")}
+          aria-label={t("pause")}
           className="absolute right-3 bottom-3 grid size-9 place-items-center rounded-full border border-line-strong bg-background/80 text-foreground backdrop-blur-md transition-transform duration-150 hover:scale-105 active:scale-95 [&_svg]:size-4"
         >
-          {playing ? <PauseIcon /> : <PlayIcon />}
+          <PauseIcon />
+        </button>
+      ) : null}
+      {controls && !playing ? (
+        <button
+          type="button"
+          onClick={toggle}
+          aria-label={t("play")}
+          data-testid="video-play"
+          className="group absolute inset-0 grid place-items-center bg-[radial-gradient(closest-side,rgb(11_11_15/0.45),transparent)]"
+        >
+          <span className="grid size-16 place-items-center rounded-full border border-white/20 bg-background/75 text-foreground shadow-[0_0_40px_-6px_var(--brand-glow)] backdrop-blur-md transition-transform duration-150 group-hover:scale-105 group-active:scale-95 [&_svg]:size-6 [&_svg]:translate-x-0.5">
+            <PlayIcon />
+          </span>
         </button>
       ) : null}
     </div>

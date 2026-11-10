@@ -3,18 +3,26 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
+import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "./button";
 
 /**
  * Bordered so it reads as a button. The new theme grows as a circle from the toggle
  * (View Transitions API); without support or with reduced motion it switches instantly.
- * Both icons render and CSS picks one, so there is no hydration flash.
+ * Both icons render and CSS picks one, so there is no hydration flash. The label depends on the
+ * stored theme, which the server can't know: it uses the server's (dark) label until hydrated.
  */
+const noop = () => () => {};
 export function ThemeToggle() {
   const t = useTranslations("Nav");
   const { resolvedTheme, setTheme } = useTheme();
-  const isDark = resolvedTheme !== "light";
+  const hydrated = useSyncExternalStore(
+    noop,
+    () => true,
+    () => false,
+  );
+  const isDark = !hydrated || resolvedTheme !== "light";
 
   function toggle(event: React.MouseEvent<HTMLButtonElement>) {
     const next = isDark ? "light" : "dark";
