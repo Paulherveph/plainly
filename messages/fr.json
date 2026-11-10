@@ -24,7 +24,8 @@
     "language": "Langue",
     "themeLight": "Passer au thème clair",
     "themeDark": "Passer au thème sombre",
-    "signedIn": "Connecté"
+    "signedIn": "Connecté",
+    "install": "Installer l'app"
   },
   "Footer": {
     "note": "Pas un conseil juridique. Fichiers supprimés après 30 jours.",
@@ -271,5 +272,45 @@
     "chatQ1": "Puis-je avoir un chat ?",
     "chatA1": "Seulement avec l'accord écrit du propriétaire.",
     "chatQ2": "Le parking est-il inclus ?"
+  },
+  "Install": {
+    "eyebrow": "Ordinateur et mobile",
+    "title": "Gardez Plainly à portée de clic.",
+    "body": "Installez-le comme une application. Il s'ouvre dans sa propre fenêtre, avec sa propre icône. Pas de store, rien d'autre à télécharger.",
+    "desktopTitle": "Ordinateur",
+    "desktopBody": "Mac, Windows ou Linux, depuis Chrome, Edge ou Safari.",
+    "desktopCta": "Installer sur l'ordinateur",
+    "mobileTitle": "Mobile",
+    "mobileBody": "iPhone ou Android, depuis le navigateur du téléphone.",
+    "mobileCta": "Installer sur le mobile",
+    "installed": "Installé",
+    "done": "Plainly est installé.",
+    "stepsTitle": "Installer Plainly",
+    "stepsDesktop": "Sur cet ordinateur",
+    "stepsIos": "Sur iPhone ou iPad",
+    "stepsAndroid": "Sur Android",
+    "chromium1": "Cliquez sur l'icône d'installation à droite de la barre d'adresse.",
+    "chromium2": "Ou ouvrez le menu du navigateur et choisissez Installer Plainly.",
+    "safari1": "Dans la barre des menus, choisissez Fichier, puis Ajouter au Dock.",
+    "firefox1": "Firefox ne sait pas installer d'applications web. Ouvrez cette page dans Chrome, Edge ou Safari.",
+    "ios1": "Ouvrez cette page dans Safari et touchez le bouton Partager.",
+    "ios2": "Choisissez Sur l'écran d'accueil, puis touchez Ajouter.",
+    "android1": "Ouvrez le menu du navigateur (⋮).",
+    "android2": "Touchez Installer l'application.",
+    "onPhone": "Ouvrez cette adresse sur votre téléphone :",
+    "onComputer": "Ouvrez cette adresse sur votre ordinateur, dans Chrome, Edge ou Safari :",
+    "desktopPreview": "Plainly dans une fenêtre d'ordinateur",
+    "mobilePreview": "Plainly sur un téléphone"
+  },
+  "Video": {
+    "showreelEyebrow": "En action",
+    "showreelTitle": "Un bail entre. Une courte liste de choses à faire sort.",
+    "showreelLabel": "Vidéo : un bail d'exemple est expliqué section par section, une citation est vérifiée, ses échéances sont exportées et une question reçoit une réponse tirée du document.",
+    "explainerCta": "Voir la présentation en 30 secondes",
+    "explainerTitle": "Plainly en 30 secondes",
+    "explainerLabel": "Vidéo : pourquoi les papiers sont durs à lire, ce que fait Plainly, son fonctionnement en trois étapes, et la part de citations vérifiées.",
+    "howLabel": "Vidéo : les trois étapes dans la fenêtre de l'application Plainly.",
+    "play": "Lire la vidéo",
+    "pause": "Mettre la vidéo en pause"
   }
 }

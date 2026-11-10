@@ -24,7 +24,8 @@
     "language": "Language",
     "themeLight": "Switch to light theme",
     "themeDark": "Switch to dark theme",
-    "signedIn": "Signed in"
+    "signedIn": "Signed in",
+    "install": "Install app"
   },
   "Footer": {
     "note": "Not legal advice. Files are deleted after 30 days.",
@@ -271,5 +272,45 @@
     "chatQ1": "Can I have a cat?",
     "chatA1": "Only with the landlord's written consent.",
     "chatQ2": "Is parking included?"
+  },
+  "Install": {
+    "eyebrow": "Desktop and mobile",
+    "title": "Keep Plainly one click away.",
+    "body": "Install it like an app. It opens in its own window, with its own icon. No app store, nothing extra to download.",
+    "desktopTitle": "Desktop",
+    "desktopBody": "Mac, Windows or Linux, from Chrome, Edge or Safari.",
+    "desktopCta": "Install on desktop",
+    "mobileTitle": "Mobile",
+    "mobileBody": "iPhone or Android, from your phone's browser.",
+    "mobileCta": "Install on mobile",
+    "installed": "Installed",
+    "done": "Plainly is installed.",
+    "stepsTitle": "How to install Plainly",
+    "stepsDesktop": "On this computer",
+    "stepsIos": "On iPhone or iPad",
+    "stepsAndroid": "On Android",
+    "chromium1": "Click the install icon at the right of the address bar.",
+    "chromium2": "Or open the browser menu and choose Install Plainly.",
+    "safari1": "In the menu bar, choose File, then Add to Dock.",
+    "firefox1": "Firefox can't install web apps. Open this page in Chrome, Edge or Safari.",
+    "ios1": "Open this page in Safari and tap the Share button.",
+    "ios2": "Choose Add to Home Screen, then tap Add.",
+    "android1": "Open the browser menu (⋮).",
+    "android2": "Tap Install app.",
+    "onPhone": "Open this address on your phone:",
+    "onComputer": "Open this address on your computer, in Chrome, Edge or Safari:",
+    "desktopPreview": "Plainly in a desktop window",
+    "mobilePreview": "Plainly on a phone"
+  },
+  "Video": {
+    "showreelEyebrow": "See it work",
+    "showreelTitle": "A lease goes in. A short to-do list comes out.",
+    "showreelLabel": "Video: a sample lease is explained section by section, a quote is checked, its deadlines are exported and a question is answered from the document.",
+    "explainerCta": "Watch the 30-second explainer",
+    "explainerTitle": "Plainly in 30 seconds",
+    "explainerLabel": "Video: why paperwork is hard to read, what Plainly does, how it works in three steps, and how often its quotes are verified.",
+    "howLabel": "Video: the three steps in the Plainly app window.",
+    "play": "Play video",
+    "pause": "Pause video"
   }
 }

@@ -26,7 +26,7 @@ export function MobileMenu({ account }: { account: React.ReactNode }) {
       <div
         id="mobile-menu"
         hidden={!open}
-        className="absolute inset-x-0 top-16 border-b bg-background/95 px-5 pt-2 pb-5 backdrop-blur-xl lg:hidden"
+        className="absolute inset-x-0 top-16 animate-rise border-b bg-background px-5 pt-2 pb-5 shadow-[0_24px_40px_-24px_rgb(0_0_0/0.5)] lg:hidden"
       >
         <nav aria-label={t("main")}>
           <NavLinks variant="menu" onNavigate={() => setOpen(false)} />

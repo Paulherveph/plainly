@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { alternatesFor } from "@/shared/i18n/alternates";
-import { Faq, Features, FinalCta, Hero, HowItWorks, PrivacyBand } from "@/shared/ui/landing";
+import { Faq, Features, FinalCta, Hero, HowItWorks, InstallSection, PrivacyBand } from "@/shared/ui/landing";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -14,6 +14,7 @@ export default function LandingPage() {
       <HowItWorks />
       <Features />
       <PrivacyBand />
+      <InstallSection />
       <Faq />
       <FinalCta />
     </>

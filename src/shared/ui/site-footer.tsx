@@ -24,6 +24,9 @@ export function SiteFooter() {
           <Link href="/privacy" className="hover:text-foreground">
             {t("Nav.privacy")}
           </Link>
+          <Link href={{ pathname: "/", hash: "install" }} className="hover:text-foreground">
+            {t("Nav.install")}
+          </Link>
         </nav>
       </div>
     </footer>

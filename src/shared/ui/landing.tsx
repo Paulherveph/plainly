@@ -11,10 +11,12 @@ import {
   TriangleAlertIcon,
   UploadIcon,
 } from "lucide-react";
+import Image from "next/image";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/shared/i18n/navigation";
 import { buttonVariants } from "./button";
 import { HeroOrb } from "./hero-orb";
+import { InstallButtons } from "./install-app";
 
 /** Plain <a>: the sample route creates a document, so it must never be prefetched. */
 function TrySampleLink({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -452,5 +454,67 @@ export function FinalCta() {
         </div>
       </div>
     </section>
+  );
+}
+
+export function InstallSection() {
+  const t = useTranslations("Install");
+  return (
+    <section
+      id="install"
+      className="mx-auto max-w-[1120px] scroll-mt-24 px-5 pb-22 md:px-8 md:pb-30"
+      aria-labelledby="install-title"
+    >
+      <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">
+        <div className="reveal">
+          <span className="eyebrow">
+            <span className="eyebrow-dot" />
+            {t("eyebrow")}
+          </span>
+          <h2
+            id="install-title"
+            className="mt-4.5 font-semibold text-[28px] leading-[1.15] md:text-[40px] md:leading-[1.1]"
+          >
+            {t("title")}
+          </h2>
+          <p className="mt-3 mb-8 max-w-[480px] text-muted-foreground">{t("body")}</p>
+          <InstallButtons />
+        </div>
+        <DevicePreview desktopLabel={t("desktopPreview")} mobileLabel={t("mobilePreview")} />
+      </div>
+    </section>
+  );
+}
+
+/** Real screenshots of the app (media/capture.ts) in a desktop window and a phone. */
+function DevicePreview({ desktopLabel, mobileLabel }: { desktopLabel: string; mobileLabel: string }) {
+  return (
+    <div className="reveal relative pr-[12%] pb-[10%]">
+      <figure className="overflow-hidden rounded-xl border border-line-strong bg-surface shadow-[0_40px_100px_-40px_rgb(0_0_0/0.7),0_0_60px_-20px_var(--brand-glow)]">
+        <div className="flex items-center gap-1.5 border-b bg-surface px-3 py-2.5" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <i key={i} className="size-2 rounded-full border border-line-strong bg-surface-2" />
+          ))}
+        </div>
+        <Image
+          src="/images/app-desktop.webp"
+          alt={desktopLabel}
+          width={1440}
+          height={900}
+          sizes="(min-width: 1024px) 560px, 90vw"
+          className="block h-auto w-full"
+        />
+      </figure>
+      <figure className="absolute right-0 bottom-0 w-[30%] overflow-hidden rounded-[22px] border-[5px] border-[#1b1b25] bg-black shadow-[0_30px_60px_-20px_rgb(0_0_0/0.8)]">
+        <Image
+          src="/images/app-mobile.webp"
+          alt={mobileLabel}
+          width={780}
+          height={1688}
+          sizes="(min-width: 1024px) 180px, 30vw"
+          className="block h-auto w-full"
+        />
+      </figure>
+    </div>
   );
 }
