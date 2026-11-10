@@ -1,0 +1,265 @@
+/* Plainly motion kit: shared look. Tokens mirror src/app/globals.css (dark theme). */
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist-latin.woff2") format("woff2");
+  font-weight: 100 900;
+}
+@font-face {
+  font-family: "Geist";
+  src: url("./fonts/geist-latin-ext.woff2") format("woff2");
+  font-weight: 100 900;
+  unicode-range: U+0100-024F;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("./fonts/geist-mono-latin.woff2") format("woff2");
+  font-weight: 100 900;
+}
+:root {
+  --bg: #0b0b0f;
+  --bg-deep: #07070b;
+  --surface: #13131a;
+  --surface-2: #1b1b25;
+  --line: rgb(255 255 255 / 0.08);
+  --line-strong: rgb(255 255 255 / 0.14);
+  --text: #f4f4f6;
+  --muted: #9a9aa8;
+  --faint: #7c7c8a;
+  --brand: #9478ff;
+  --brand-soft: #c9bdff;
+  --brand-glow: rgb(148 120 255 / 0.45);
+  --ok: #3dd68c;
+  --critical: #ff5c6c;
+  --caution: #f5b83d;
+}
+:root.light {
+  --bg: #f6f6f9;
+  --bg-deep: #eeeef3;
+  --surface: #ffffff;
+  --surface-2: #f0f0f5;
+  --line: rgb(11 11 15 / 0.08);
+  --line-strong: rgb(11 11 15 / 0.14);
+  --text: #0b0b0f;
+  --muted: #565664;
+  --faint: #6e6e7c;
+  --brand-glow: rgb(148 120 255 / 0.3);
+}
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+html,
+body {
+  background: #000;
+  overflow: hidden;
+  height: 100%;
+}
+body {
+  display: grid;
+  place-items: center;
+  font-family: "Geist", system-ui, sans-serif;
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+html.render body {
+  display: block;
+  background: var(--bg);
+}
+#stage {
+  position: relative;
+  overflow: hidden;
+  background: var(--bg);
+  transform-origin: center;
+  flex: none;
+}
+html.render #stage {
+  /* biome-ignore lint/complexity/noImportantStyles: the preview harness sets an inline scale */
+  transform: none !important;
+}
+.layer,
+.abs {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+.layer {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.center {
+  display: grid;
+  place-items: center;
+}
+.mono {
+  font-family: "Geist Mono", ui-monospace, monospace;
+}
+.ch {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+.display {
+  font-weight: 600;
+  letter-spacing: -0.045em;
+  line-height: 1.02;
+}
+.grad {
+  background: linear-gradient(90deg, #c9bdff, var(--brand) 60%, #7b9bff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.bg-glow {
+  background:
+    radial-gradient(60% 50% at 50% 0%, rgb(148 120 255 / 0.2), transparent 70%),
+    radial-gradient(40% 40% at 15% 75%, rgb(60 80 200 / 0.1), transparent 70%),
+    radial-gradient(40% 40% at 85% 60%, rgb(148 120 255 / 0.1), transparent 70%);
+}
+.bg-grid {
+  background-image:
+    linear-gradient(var(--line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 64px 64px;
+  -webkit-mask-image: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
+  mask-image: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
+  opacity: 0.5;
+}
+.dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 28px 4px var(--brand-glow);
+  margin: -14px 0 0 -14px;
+}
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 22px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: rgb(19 19 26 / 0.6);
+  color: var(--muted);
+  font-size: 22px;
+}
+.eyebrow::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--brand);
+  box-shadow: 0 0 14px var(--brand);
+}
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  border: 1px solid rgb(148 120 255 / 0.3);
+  background: rgb(148 120 255 / 0.14);
+  color: #b4a3ff;
+  font-size: 20px;
+  white-space: nowrap;
+}
+.chip.ok {
+  border-color: transparent;
+  background: rgb(61 214 140 / 0.12);
+  color: var(--ok);
+}
+.card {
+  border-radius: 24px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgb(27 27 37 / 0.85), rgb(19 19 26 / 0.85));
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.05),
+    0 40px 80px -40px rgb(0 0 0 / 0.8);
+}
+.win {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  background: var(--bg);
+  box-shadow:
+    0 0 0 8px rgb(190 175 255 / 0.06),
+    0 0 120px -20px var(--brand-glow),
+    0 60px 140px -40px rgb(0 0 0 / 0.9);
+}
+.win-chrome {
+  display: flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface);
+  position: relative;
+}
+.win-dots {
+  display: flex;
+  gap: 9px;
+}
+.win-dots i {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  border: 1px solid var(--line-strong);
+  background: var(--surface-2);
+}
+.win-url {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  color: var(--faint);
+  font:
+    15px "Geist Mono",
+    monospace;
+}
+.win-view {
+  position: relative;
+  overflow: hidden;
+}
+.win-img {
+  display: block;
+  width: 100%;
+  will-change: transform;
+}
+.cursor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  margin: -4px 0 0 -6px;
+  filter: drop-shadow(0 6px 10px rgb(0 0 0 / 0.45));
+  z-index: 50;
+}
+.ring {
+  position: absolute;
+  left: 0;
+  top: 0;
+  border-radius: 14px;
+  border: 3px solid var(--brand);
+  box-shadow:
+    0 0 0 6px rgb(148 120 255 / 0.18),
+    0 0 40px var(--brand-glow);
+}
+.streams {
+  position: absolute;
+  inset: 0;
+}
+.scrub {
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: 10px;
+  accent-color: var(--brand);
+}
+html.render .scrub {
+  display: none;
+}

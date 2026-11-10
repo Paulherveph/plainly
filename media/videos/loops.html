@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · Empty-state loops (V5)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  /* Rendered on the card colour of the empty states, in both themes. */
+  #stage { background: var(--surface); }
+  .page { position: absolute; left: 0; top: 0; width: 210px; height: 270px; border-radius: 22px; background: var(--surface-2); border: 1px solid var(--line-strong); }
+  .bar { position: absolute; left: 0; top: 0; height: 12px; border-radius: 99px; background: var(--faint); transform-origin: 0 50%; }
+  .cal { position: absolute; left: 0; top: 0; width: 230px; height: 250px; border-radius: 26px; overflow: hidden; background: var(--surface-2); border: 1px solid var(--line-strong); text-align: center; }
+  .cal .m { height: 64px; display: grid; place-items: center; background: rgb(148 120 255 / 0.16); color: #b4a3ff; font: 600 28px "Geist Mono", monospace; letter-spacing: 0.14em; }
+  .cal .d { position: absolute; left: 0; right: 0; top: 64px; height: 186px; display: grid; place-items: center; font: 600 112px/1 "Geist Mono", monospace; }
+  .tick { position: absolute; left: 0; top: 0; width: 64px; height: 64px; border-radius: 50%; background: var(--ok); display: grid; place-items: center; }
+  .ring { border: 0; box-shadow: none; border-radius: 0; }
+  .days { position: absolute; left: 0; top: 0; font: 600 30px "Geist Mono", monospace; color: var(--muted); text-align: center; width: 200px; }
+  canvas { position: absolute; inset: 0; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, BRAND, clamp, ease, h, lerp, prog, rand, set, spring, video } from "./lib/engine.js";
+
+const W = 600, H = 400, CX = W / 2, CY = H / 2, D = 5;
+const scene = new URLSearchParams(location.search).get("scene") ?? "summary";
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+const dot = () => add(h("div", { class: "abs dot", style: "width:30px;height:30px;margin:-15px 0 0 -15px" }));
+
+/** 0 → 1 → 0 over the loop: forward at [a, a+d], back at [b, b+d]. Frame 0 equals frame D. */
+const there = (t, a, b, d = 0.8) => ease.inOutQuint(prog(t, a, d)) * (1 - ease.inOutQuint(prog(t, b, d)));
+
+const scenes = {
+  // A dense page collapses into three plain lines and a dot: the Plainly mark.
+  summary() {
+    const page = add(h("div", { class: "page" }));
+    const bars = Array.from({ length: 10 }, () => page.appendChild(h("div", { class: "bar" })));
+    const d = dot();
+    return (t) => {
+      const p = there(t, 0.5, 3.6, 1.0);
+      set(page, { x: CX - 105, y: CY - 135 + Math.sin((t / D) * Math.PI * 2) * 6, extra: { borderColor: p > 0.5 ? "rgb(148 120 255 / 0.5)" : "" } });
+      bars.forEach((b, i) => {
+        // Rows 0, 3, 6 become the three lines of the mark; the rest fold away.
+        const target = [0, 3, 6].indexOf(i);
+        const full = 150 - rand(i + 3) * 60;
+        const w = target >= 0 ? lerp(full, [150, 100, 62][target], p) : full * (1 - p);
+        const y = target >= 0 ? lerp(30 + i * 22, 78 + target * 52, p) : 30 + i * 22;
+        set(b, { x: 30, y, w, o: target >= 0 ? 1 : 1 - p, hgt: lerp(12, 20, target >= 0 ? p : 0), bg: target >= 0 && p > 0.5 ? "var(--text)" : "" });
+      });
+      const dp = spring(t - 1.2, { freq: 1.8, damping: 0.5 }) * (1 - ease.in(prog(t, 3.5, 0.4)));
+      set(d, { x: CX - 105 + 150, y: CY - 135 + 182 + Math.sin((t / D) * Math.PI * 2) * 6, s: Math.max(0, dp), o: Math.min(1, dp * 2) });
+    };
+  },
+  // A date settles on the calendar, the dot lands, a tick confirms.
+  deadline() {
+    const cal = add(h("div", { class: "cal" }, h("div", { class: "m" }, "NOV"), h("div", { class: "d" }, "18")));
+    const day = cal.lastChild;
+    const d = dot();
+    const tick = add(h("div", { class: "tick" }, h("svg", { viewBox: "0 0 24 24", width: 34, height: 34 }, h("path", { d: "M5 12.5l4.5 4.5L19 7.5", fill: "none", stroke: "#06210f", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" }))));
+    return (t) => {
+      const n = t < 0.9 ? 18 : t < 1.4 ? 19 : t < 4.3 ? 20 : 18;
+      day.textContent = String(n);
+      const flip = Math.max(spring(t - 0.9, { freq: 2.5, damping: 0.45 }) * (t < 1.4 ? 1 : 0), spring(t - 1.4, { freq: 2.5, damping: 0.45 }) * (t >= 1.4 && t < 4.3 ? 1 : 0));
+      set(day, { y: (1 - Math.min(1, flip)) * -26 * (t > 0.9 && t < 4.3 ? 1 : 0), o: t > 4.1 && t < 4.3 ? 1 - prog(t, 4.1, 0.2) : 1 });
+      set(cal, { x: CX - 115, y: CY - 125 });
+      const fall = clamp((t - 1.7) / 0.5);
+      const land = spring(t - 2.2, { freq: 2.2, damping: 0.4 });
+      const gone = ease.in(prog(t, 3.9, 0.35));
+      set(d, { x: CX + 92, y: lerp(-40, CY - 120, ease.in(fall)) + (t > 2.2 ? (1 - land) * 10 : 0), o: (t > 1.7 ? 1 : 0) * (1 - gone), s: 1 - gone });
+      const tk = spring(t - 2.5, { freq: 2, damping: 0.5 });
+      set(tick, { x: CX + 60, y: CY + 70, s: Math.max(0, tk) * (1 - gone), o: Math.min(1, tk * 2) * (1 - gone) });
+    };
+  },
+  // Thirty days run down; the file dissolves into dots and comes back.
+  expiry() {
+    const cv = add(h("canvas", { width: W, height: H }));
+    const g = cv.getContext("2d");
+    const page = add(h("div", { class: "page", style: "width:170px;height:220px" }));
+    const bars = Array.from({ length: 6 }, (_, i) => page.appendChild(h("div", { class: "bar", style: `width:${110 - (i % 3) * 22}px` })));
+    const label = add(h("div", { class: "days" }));
+    return (t) => {
+      g.clearRect(0, 0, W, H);
+      const run = ease.inOut(prog(t, 0.3, 2.4));
+      const dissolve = ease.inOut(prog(t, 2.8, 0.7)) * (1 - ease.inOut(prog(t, 4.1, 0.7)));
+      const days = Math.round(30 * (1 - run)) || 0;
+      label.textContent = t > 4.1 ? "30 days" : `${days} days`;
+      set(label, { x: CX - 100, y: CY + 140, o: 1 - dissolve });
+      // Countdown ring.
+      const back = ease.inOut(prog(t, 4.1, 0.7));
+      const frac = t > 4.1 ? back : 1 - run;
+      g.lineWidth = 8; g.lineCap = "round";
+      g.strokeStyle = "rgba(148,120,255,0.15)";
+      g.beginPath(); g.arc(CX, CY - 20, 150, 0, Math.PI * 2); g.stroke();
+      g.strokeStyle = BRAND; g.globalAlpha = 1 - dissolve;
+      g.beginPath(); g.arc(CX, CY - 20, 150, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * frac); g.stroke();
+      g.globalAlpha = 1;
+      set(page, { x: CX - 85, y: CY - 130, o: 1 - dissolve, s: 1 - dissolve * 0.15, blur: dissolve * 6 });
+      bars.forEach((b, i) => {
+        set(b, { x: 28, y: 34 + i * 28 });
+      });
+      // Dissolve: the page breaks into dots that drift up and fade.
+      for (let i = 0; i < 90; i++) {
+        const px = CX - 85 + rand(i) * 170, py = CY - 130 + rand(i + 50) * 220;
+        const k = dissolve;
+        if (k < 0.01) break;
+        g.fillStyle = `rgba(148,120,255,${0.8 * Math.sin(k * Math.PI)})`;
+        g.beginPath(); g.arc(px + (rand(i + 9) - 0.5) * 120 * k, py - 90 * k * rand(i + 4), 3 + 3 * rand(i + 2), 0, Math.PI * 2); g.fill();
+      }
+    };
+  },
+};
+
+video({ width: W, height: H, duration: D, poster: { summary: 2.6, deadline: 3.0, expiry: 1.4 }[scene], beats: [0, 1.0, 2.0, 3.0, 4.0, 4.99], render: scenes[scene]() });
+</script>
+</body>
+</html>

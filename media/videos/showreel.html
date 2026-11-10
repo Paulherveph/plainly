@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · Showreel (V1)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  .frag { font: 22px/1.4 "Geist Mono", monospace; color: var(--muted); white-space: nowrap; }
+  .headline { position: absolute; left: 0; right: 0; top: 300px; text-align: center; font-size: 150px; }
+  .headline .l2 { display: block; }
+  .cap { position: absolute; left: 0; right: 0; top: 70px; padding: 16px 0 20px; z-index: 5; background: radial-gradient(40% 100% at 50% 50%, rgb(11 11 15 / 0.85), transparent); text-align: center; font-size: 46px; font-weight: 600; letter-spacing: -0.03em; }
+  .cap small { display: block; margin-top: 10px; font-size: 24px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+  .file { display: flex; align-items: center; gap: 18px; padding: 18px 26px 18px 18px; border-radius: 18px; }
+  .file .ico { width: 54px; height: 68px; border-radius: 8px; background: #f4f3ef; position: relative; }
+  .file .ico::after { content: ""; position: absolute; inset: 14px 10px; background: repeating-linear-gradient(#c8c8d0 0 3px, transparent 3px 10px); }
+  .file b { display: block; font-size: 26px; font-weight: 600; }
+  .file span { color: var(--muted); font-size: 19px; }
+  .mask { position: absolute; top: 0; left: 176px; width: 604px; background: var(--bg); }
+  .mask::before { content: ""; position: absolute; left: 16px; right: 16px; top: 22px; height: 160px; border-radius: 12px; border: 1px solid var(--line); background:
+      linear-gradient(90deg, var(--surface-2), rgb(255 255 255 / 0.1), var(--surface-2)) 0 0 / 200% 100%; opacity: 0.6; }
+  .mask.plain::before { display: none; }
+  .mask::after { content: ""; position: absolute; left: 0; right: 0; top: -60px; height: 60px; background: linear-gradient(transparent, var(--bg)); }
+  .cal { width: 300px; padding: 22px; }
+  .cal .m { display: inline-block; padding: 4px 12px; border-radius: 8px; background: rgb(148 120 255 / 0.14); color: #b4a3ff; font: 600 18px "Geist Mono", monospace; letter-spacing: 0.1em; }
+  .cal .d { font: 600 86px/1 "Geist Mono", monospace; margin-top: 10px; }
+  .cal p { margin-top: 12px; font-size: 21px; color: var(--muted); }
+  .end { text-align: center; }
+  .end .word { font-size: 120px; font-weight: 600; letter-spacing: -0.05em; margin-top: 26px; }
+  .end .tag { font-size: 38px; color: var(--muted); margin-top: 14px; }
+  .cta { display: inline-flex; align-items: center; gap: 14px; margin-top: 46px; height: 76px; padding: 0 40px; border-radius: 999px; background: var(--text); color: var(--bg); font-size: 28px; font-weight: 600;
+         box-shadow: 0 0 0 1px rgb(255 255 255 / 0.1), 0 14px 50px -10px var(--brand-glow); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, appWindow, cursor, ease, h, lerp, letters, logoMark, prog, set, showSrc, spring, streams, typed, video, win } from "./lib/engine.js";
+
+const W = 1920, H = 1080;
+const S = "../screenshots/desktop/dark/";
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+
+// Background: glow, grid, light streams converging on the centre.
+add(h("div", { class: "layer bg-glow" }));
+const grid = add(h("div", { class: "layer bg-grid" }));
+const light = streams({ width: W, height: H, cx: W / 2, cy: H / 2, count: 34, seed: 4 });
+add(light.el);
+
+// Scene A: fragments of the real lease drift into one dot.
+const FRAGS = [
+  "§4 The Tenant shall pay a security deposit", "notwithstanding the foregoing", "§12 Renewal. This lease renews",
+  "jointly and severally liable", "no later than 20 November 2026", "§7 Late payment. Any rent unpaid",
+  "three (3) months' notice", "by registered letter", "hereinafter the Landlord", "§9 No animals may be kept",
+  "a late fee of 10% of the monthly rent", "prior written consent", "§6 certificate of home insurance", "for a period of twelve (12) months",
+];
+const frags = FRAGS.map((txt, i) => {
+  const el = add(h("div", { class: "abs frag" }, txt));
+  const a = (i / FRAGS.length) * Math.PI * 2 + 0.4;
+  return { el, x: W / 2 + Math.cos(a) * (520 + (i % 3) * 120) - 200, y: H / 2 + Math.sin(a) * (330 + (i % 2) * 70), r: (i % 5) - 2 };
+});
+const dot = add(h("div", { class: "abs dot" }));
+const headline = add(h("div", { class: "headline display" }));
+const l1 = letters(headline.appendChild(h("span", { class: "l1" })), "Paperwork,");
+const l2 = letters(headline.appendChild(h("span", { class: "l2" })), "in plain language.");
+// Gradient per letter: background-clip text does not paint transformed children.
+const GRAD = [[201, 189, 255], [148, 120, 255], [123, 155, 255]];
+l2.forEach((ch, i) => {
+  const u = i / (l2.length - 1);
+  const [a, b, q] = u < 0.6 ? [GRAD[0], GRAD[1], u / 0.6] : [GRAD[1], GRAD[2], (u - 0.6) / 0.4];
+  ch.style.color = `rgb(${a.map((v, j) => Math.round(lerp(v, b[j], q))).join(",")})`;
+});
+
+// The app window.
+const WX = 240, WY = 196, VIEW = 790;
+const app = appWindow({ src: `${S}06-documents-empty.webp`, width: 1440, url: "plainly.app/documents" });
+app.view.style.height = `${VIEW}px`;
+app.el.style.transformOrigin = "0 0";
+const wrap = add(h("div", { class: "abs", style: `left:${WX}px;top:${WY}px` }, app.el));
+const mask = h("div", { class: "mask" });
+app.view.append(mask);
+const ring = h("div", { class: "ring" });
+app.view.append(ring);
+
+const cap = add(h("div", { class: "cap" }));
+const file = add(h("div", { class: "abs card file" }, h("div", { class: "ico" }), h("div", {}, h("b", {}, "lease.pdf"), h("span", {}, "3 pages · 412 KB"))));
+const cal = add(h("div", { class: "abs card cal" }, h("span", { class: "m" }, "NOV"), h("div", { class: "d" }, "20"), h("p", {}, "Pay the security deposit")));
+const ics = add(h("div", { class: "abs chip" }, "plainly-deadlines.ics"));
+const okChip = add(h("div", { class: "abs chip ok" }, "✓ Quote found in the document"));
+const cur = add(cursor());
+
+const end = add(h("div", { class: "layer center" }, h("div", { class: "end" }, logoMark(150), h("div", { class: "word" }, "Plainly"), h("div", { class: "tag" }, "Paperwork, in plain language."), h("div", { class: "cta" }, "Try a sample · no sign-up →"))));
+const [endLogo, endWord, endTag, endCta] = end.firstChild.children;
+
+const CAPS = [
+  [2.6, 5.0, "Drop in a lease.", "PDF, photo or pasted text"],
+  [5.0, 9.0, "It explains itself, section by section.", "Summary, key facts, actions, watch-outs"],
+  [9.0, 11.8, "Every claim shows its source.", "No quote in the document, no claim"],
+  [11.8, 14.4, "Every date, in one list.", "Export to your calendar"],
+  [14.4, 17.2, "Ask it anything.", "Answers come from the document, or it says so"],
+];
+
+/** Camera on the window: zoom k around a window-local focus point, placed at (tx, ty) on stage. */
+function camera(k, fx, fy, tx = W / 2, ty = H / 2 + 110) {
+  const z = (k - 1) / 0.45; // 0..1 blend from neutral to the zoom target
+  const x = lerp(0, tx - WX - fx * k, Math.min(1, z));
+  const y = lerp(0, ty - WY - fy * k, Math.min(1, z));
+  set(app.el, { x, y, s: k });
+}
+
+function render(t) {
+  light.frame(t, { flow: 1, o: 0.55 * (1 - prog(t, 2.2, 0.6)) + 0.25 * prog(t, 17.2, 0.8) });
+  set(grid, { o: 0.5 });
+
+  // ── A. Hook (0 – 2.6)
+  for (const [i, f] of frags.entries()) {
+    const p = ease.inOutQuint(prog(t, 0.15 + i * 0.03, 1.5));
+    set(f.el, { x: lerp(f.x, W / 2 - 160, p), y: lerp(f.y, H / 2 - 14, p), r: lerp(f.r, 0, p), s: lerp(1, 0.2, p), o: prog(t, i * 0.03, 0.3) * (1 - p) * 0.9, blur: lerp(0, 3, p) });
+  }
+  const dotIn = spring(t - 1.45, { freq: 1.8, damping: 0.45 });
+  const toDrop = ease.inOut(prog(t, 2.35, 0.55));
+  set(dot, { x: lerp(W / 2, WX + 720, toDrop), y: lerp(H / 2 + 170, WY + 52 + 427, toDrop) - Math.sin(toDrop * Math.PI) * 120, s: dotIn * (1 - prog(t, 2.8, 0.25)), o: dotIn });
+  [...l1, ...l2].forEach((ch, i) => {
+    const sp = spring(t - 1.0 - i * 0.022, { freq: 2, damping: 0.55 });
+    const out = ease.in(prog(t, 2.2, 0.35));
+    set(ch, { y: lerp(70, 0, sp) - out * 60, o: Math.min(1, sp * 1.6) * (1 - out), blur: (1 - Math.min(1, sp)) * 6 });
+  });
+
+  // ── Window in / out
+  const winIn = spring(t - 2.45, { freq: 1.3, damping: 0.7 });
+  const winOut = ease.in(prog(t, 16.9, 0.5));
+  set(wrap, { y: lerp(90, 0, winIn) + winOut * 40, s: lerp(0.94, 1, winIn) - winOut * 0.4, o: Math.min(1, winIn * 1.5) * (1 - winOut) });
+
+  // ── Captions (outgoing and incoming text get separate timing)
+  const c = CAPS.find(([a, b]) => t >= a && t < b);
+  if (c) {
+    if (cap.dataset.k !== c[2]) { cap.innerHTML = ""; cap.append(c[2], h("small", {}, c[3])); cap.dataset.k = c[2]; }
+    const p = win(t, c[0] + 0.1, c[1], 0.3);
+    set(cap, { y: (1 - p) * 18, o: p });
+  } else set(cap, { o: 0 });
+
+  // ── B. Drop (2.6 – 5.0)
+  let scroll = 0, src = `${S}06-documents-empty.webp`, reveal = 99999, k = 1, fx = 0, fy = 0;
+  const carry = ease.inOut(prog(t, 3.0, 1.15));
+  const drop = prog(t, 4.15, 0.3);
+  const fileX = lerp(-360, WX + 720 - 170, carry), fileY = lerp(980, WY + 52 + 427 - 52, carry) - Math.sin(carry * Math.PI) * 160;
+  set(file, { x: fileX, y: fileY, r: lerp(-8, 0, carry), s: 1 - drop * 0.6, o: prog(t, 2.9, 0.2) * (1 - drop) });
+  const ringOn = win(t, 3.6, 4.7, 0.25);
+  set(ring, { x: 192 - 6, y: 265 - 6, w: 1056 + 12, hgt: 324 + 12, o: ringOn, s: 1 + spring(t - 4.2, { freq: 2.4, damping: 0.3 }) * 0.012 - 0.012 });
+
+  // ── C. Stream (5.0 – 9.0): sections arrive, then the page scrolls down to actions and watch-outs.
+  if (t >= 4.7 && t < 9.0) {
+    src = `${S}09-analysis-full.webp`;
+    const steps = [[4.75, 300], [5.35, 495], [5.95, 980], [6.55, 1590], [7.4, 2480]];
+    reveal = steps.reduce((acc, [at, y]) => (t >= at ? lerp(acc, y, ease.outQuart(prog(t, at, 0.45))) : acc), 120);
+    scroll = lerp(0, 1420, ease.inOut(prog(t, 6.9, 1.9)));
+  }
+  // ── D. Citation (9.0 – 11.8): zoom on the chip, click, the source sheet opens.
+  if (t >= 9.0 && t < 11.8) {
+    src = t < 10.45 ? `${S}08-analysis-ready.webp` : `${S}10-citation-sheet.webp`;
+    const zin = ease.inOut(prog(t, 9.05, 0.75)), zout = ease.inOut(prog(t, 10.4, 0.6));
+    k = lerp(1, 1.45, zin * (1 - zout));
+    fx = 536;
+    fy = 695;
+  }
+  if (t >= 11.8 && t < 14.4) src = `${S}12-deadlines.webp`;
+  if (t >= 14.4) src = `${S}11-chat.webp`;
+  showSrc(app.img, src);
+  set(app.img, { y: -scroll });
+  set(mask, { y: reveal - scroll, hgt: 4000, o: t >= 4.7 && t < 9 ? 1 : 0 });
+  camera(k, fx, fy);
+
+  // ── E. Deadlines: a date flies out to the calendar.
+  const fly = spring(t - 12.75, { freq: 1.4, damping: 0.62 });
+  set(cal, { x: lerp(WX + 300, 1470, fly), y: lerp(WY + 360, 430, fly), r: lerp(-6, 4, fly), s: lerp(0.6, 1, fly), o: win(t, 12.7, 14.4, 0.25) });
+  set(ics, { x: 1500, y: lerp(800, 770, spring(t - 13.2)), o: win(t, 13.15, 14.4, 0.25) });
+  set(okChip, { x: 1180, y: lerp(160, 150, spring(t - 10.6)), o: win(t, 10.55, 11.8, 0.25) });
+
+  // ── F. Chat: reveal messages one after another (mask slides down the conversation).
+  if (t >= 14.4 && t < 17.2) {
+    const chatSteps = [[14.55, 362], [15.0, 458], [15.55, 516], [16.1, 600]];
+    const r = chatSteps.reduce((acc, [at, y]) => (t >= at ? lerp(acc, y, ease.outQuart(prog(t, at, 0.4))) : acc), 292);
+    set(mask, { y: r, hgt: 4000, o: 1 });
+    mask.classList.add("plain");
+  } else {
+    mask.classList.remove("plain");
+  }
+
+  // ── Cursor: carries the file, clicks the chip, clicks export, rests.
+  let cx = 1500, cy = 1000, co = 0;
+  if (t < 4.6) { cx = fileX + 230; cy = fileY + 70; co = prog(t, 2.9, 0.2) * (1 - prog(t, 4.35, 0.25)); }
+  else if (t >= 9.0 && t < 10.7) { const p = ease.inOut(prog(t, 9.2, 0.6)); cx = lerp(1400, W / 2 + 60, p);
+    cy = lerp(900, H / 2 + 110 + 52 * 1.45 + 8, p); co = win(t, 9.1, 10.7, 0.2); }
+  else if (t >= 11.9 && t < 13.2) { const p = ease.inOut(prog(t, 11.95, 0.6)); cx = lerp(1300, WX + 1190, p); cy = lerp(900, WY + 52 + 277, p); co = win(t, 11.9, 13.2, 0.2); }
+  const press = Math.max(win(t, 10.15, 10.4, 0.1), win(t, 12.55, 12.8, 0.1));
+  set(cur, { x: cx, y: cy, s: 1 - press * 0.15, o: co });
+
+  // ── G. End card (17.2 – 20)
+  const e1 = spring(t - 17.35, { freq: 1.5, damping: 0.5 });
+  set(endLogo, { s: e1, r: lerp(-30, 0, Math.min(1, e1)), o: Math.min(1, e1 * 2) });
+  set(endWord, { y: lerp(40, 0, spring(t - 17.6)), o: prog(t, 17.6, 0.3) });
+  set(endTag, { y: lerp(30, 0, spring(t - 17.85)), o: prog(t, 17.85, 0.3) });
+  set(endCta, { y: lerp(30, 0, spring(t - 18.15)), s: lerp(0.9, 1, spring(t - 18.15)), o: prog(t, 18.15, 0.3) });
+  set(end, { o: t > 17.1 ? 1 : 0 });
+}
+
+video({ width: W, height: H, duration: 20, poster: 6.6, beats: [0.6, 1.9, 3.6, 4.3, 5.6, 7.6, 9.7, 10.9, 13.3, 15.4, 16.4, 18.8], render });
+</script>
+</body>
+</html>

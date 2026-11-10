@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · Brand loop (V4)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  #stage { background: var(--bg-deep); }
+  canvas { position: absolute; inset: 0; }
+  .track { position: absolute; left: 0; top: 0; width: 124px; height: 68px; border-radius: 999px; border: 2px solid var(--line-strong); }
+  .knob { position: absolute; left: 0; top: 0; width: 52px; height: 52px; margin: -26px 0 0 -26px; border-radius: 50%; }
+  .glyph { position: absolute; left: 0; top: 0; font-size: 200px; line-height: 1; font-weight: 600; letter-spacing: 0; transform-origin: 0 0; white-space: pre; }
+  .measure { position: absolute; left: 0; top: 0; visibility: hidden; font-weight: 600; line-height: 1; white-space: pre; }
+  .measure span { display: inline-block; }
+  .orbit { position: absolute; left: 0; top: 0; font: 600 44px "Geist", sans-serif; letter-spacing: 0.08em; transform-origin: 50% 50%; }
+  .callout { font: 600 64px "Geist", sans-serif; letter-spacing: -0.03em; }
+  .callout small { display: block; font-size: 24px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+  .pill { position: absolute; left: 0; top: 0; display: grid; place-items: center; background: var(--bg-deep); color: #b4a3ff; font: 600 54px "Geist Mono", monospace; overflow: hidden; }
+  .card { background: none; border: 0; box-shadow: none; }
+  .end { text-align: center; }
+  .end .w { font-size: 170px; font-weight: 600; letter-spacing: -0.05em; }
+  .end .a { font-size: 44px; color: var(--muted); margin-top: 10px; }
+  .end .b { font: 500 30px "Geist Mono", monospace; color: #b4a3ff; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, BRAND, clamp, cursor, ease, h, lerp, prog, set, spring, video, win } from "./lib/engine.js";
+
+// Letter positions are measured from real layout, so the fonts must be loaded first.
+await Promise.all([document.fonts.load('600 200px "Geist"', "Plaınly language"), document.fonts.load('600 54px "Geist Mono"')]);
+const W = 1920, H = 1080, CX = W / 2, CY = H / 2, D = 15;
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+const cv = add(h("canvas", { width: W, height: H }));
+const g = cv.getContext("2d");
+
+// Toggle + label. "ı" is dotless: the dot over the i is a separate element, so it can leave.
+const TX = 740, TY = CY;
+const track = add(h("div", { class: "track" }));
+const LABEL = "Plaın language", FINAL = "Plaınly", LS = 64, FS = 200;
+const measure = (text, size, left, top) => {
+  const m = add(h("div", { class: "measure", style: `font-size:${size}px;left:${left}px;top:${top}px` }, ...[...text].map((c) => h("span", {}, c))));
+  return [...m.children].map((s) => ({ x: left + s.offsetLeft, y: top + s.offsetTop, w: s.offsetWidth }));
+};
+const labelPos = measure(LABEL, LS, TX + 160, TY - LS / 2);
+const finalProbe = measure(FINAL, FS, 0, 0);
+const finalW = finalProbe.at(-1).x + finalProbe.at(-1).w;
+const finalPos = finalProbe.map((p) => ({ ...p, x: p.x + CX - finalW / 2, y: p.y + CY - FS / 2 + 10 }));
+const glyphs = [...LABEL].map((c) => add(h("div", { class: "glyph" }, c)));
+const extra = ["l", "y"].map((c) => add(h("div", { class: "glyph" }, c)));
+const tittle = add(h("div", { class: "knob", style: "width:14px;height:14px;margin:-7px 0 0 -7px;background:var(--muted)" }));
+// Tittle centres: above the ı, at both sizes.
+const tit = (p, size) => ({ x: p.x + p.w / 2 + size * 0.005, y: p.y + size * 0.2 });
+const titLabel = tit(labelPos[3], LS), titFinal = tit(finalPos[3], FS);
+const knob = add(h("div", { class: "knob" }));
+
+// Graph (drawn from the same spring that moves the dot).
+const G0 = { x: 520, y: 800 }, G1 = { x: 1300, y: 330 };
+const gs = (u) => spring(u * 1.6, { freq: 1.1, damping: 0.32 });
+const callout = add(h("div", { class: "abs callout" }, "98%", h("small", {}, "quotes verified")));
+
+// Shape: circle → rotating rounded square (a page) → pill (a citation chip).
+const circle = add(h("div", { class: "knob", style: `background:${BRAND}` }));
+const pill = add(h("div", { class: "pill" }, h("span", {}, "p.1 · §4")));
+
+// Orbiting words.
+const WORDS = ["SUMMARY", "DEADLINES", "QUOTES", "CHAT", "FRANÇAIS", "中文"];
+const orbit = WORDS.flatMap((w, wi) => [...w].map((c, ci) => ({ el: add(h("div", { class: "orbit" }, c)), wi, ci, n: w.length })));
+
+const end = add(h("div", { class: "layer center" }, h("div", { class: "end" }, h("div", { class: "w" }, "Plainly"), h("div", { class: "a" }, "Paperwork, in plain language."), h("div", { class: "b" }, "Every claim, quoted."))));
+const [eW, eA, eB] = end.firstChild.children;
+const cur = add(cursor());
+
+const OFF = { x: TX + 34, y: TY }, ON = { x: TX + 90, y: TY };
+const KNOB_GREY = "#5a5a6a";
+
+function drawGraph(u, alpha, reverse = false) {
+  if (alpha <= 0.001) return;
+  g.save();
+  g.globalAlpha = alpha;
+  g.strokeStyle = "rgba(255,255,255,0.14)";
+  g.lineWidth = 2;
+  g.beginPath(); g.moveTo(G0.x, G0.y); g.lineTo(G1.x + 60, G0.y); g.stroke();
+  g.setLineDash([10, 12]);
+  g.beginPath(); g.moveTo(G0.x, G1.y); g.lineTo(G1.x + 60, G1.y); g.stroke();
+  g.setLineDash([]);
+  g.strokeStyle = BRAND; g.lineWidth = 6; g.lineCap = "round";
+  g.shadowColor = "rgba(148,120,255,0.6)"; g.shadowBlur = 18;
+  g.beginPath();
+  const a = reverse ? u : 0, b = reverse ? 1 : u;
+  for (let i = 0; i <= 120; i++) {
+    const v = lerp(a, b, i / 120);
+    const x = lerp(G0.x, G1.x, v), y = lerp(G0.y, G1.y, gs(v));
+    i ? g.lineTo(x, y) : g.moveTo(x, y);
+  }
+  g.stroke();
+  g.restore();
+}
+
+function halftone(t, wave, alpha, focus) {
+  if (alpha <= 0.001) return;
+  const step = 34;
+  g.save();
+  g.globalAlpha = alpha;
+  for (let y = step / 2; y < H; y += step) for (let x = step / 2; x < W; x += step) {
+    const d = Math.hypot(x - focus.x, y - focus.y);
+    const r = clamp((wave - d) / 260) * (7 + 6 * Math.sin(d / 60 - t * 6) ** 2) * clamp(1 - d / 2600);
+    if (r < 0.3) continue;
+    g.fillStyle = d < wave - 500 ? "rgba(148,120,255,0.55)" : BRAND;
+    g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.fill();
+  }
+  g.restore();
+}
+
+function render(t) {
+  g.clearRect(0, 0, W, H);
+  // The last 0.7 s rebuild the opening state (toggle + label) so frame 15 equals frame 0.
+  const back = ease.inOut(prog(t, 14.3, 0.6));
+  const tl = t >= 14.3 ? 0 : t; // time used for the label and toggle
+  const lo = t >= 14.3 ? back : 1; // their opacity during the return
+  drawLabel(tl, lo);
+  drawScene(t);
+}
+
+function drawLabel(t, lo) {
+  // ── Toggle: click at 0.9, gone by 1.6.
+  const on = spring(t - 0.9, { freq: 2.2, damping: 0.5 });
+  const toggleO = (1 - prog(t, 1.3, 0.3)) * lo;
+  set(track, { x: TX, y: TY - 34, o: toggleO, bg: t < 1.6 && t > 0.9 ? `rgba(148,120,255,${0.25 * Math.min(1, on)})` : "transparent" });
+
+  // ── Letters: label → "Plainly" (1.25–2.3), and back to the label at the end.
+  glyphs.forEach((el, i) => {
+    const L = labelPos[i];
+    const keep = i < 5;
+    if (keep) {
+      const p = ease.inOutQuint(clamp((prog(t, 1.25 + i * 0.03, 0.95))));
+      const f = finalPos[i];
+      const k = lerp(LS / FS, 1, p);
+      const out = ease.in(prog(t, 2.75, 0.3));
+      set(el, { x: lerp(L.x, f.x, p), y: lerp(L.y, f.y, p) - out * 50, s: k, o: (1 - out) * lo, color: p > 0.5 ? "var(--text)" : "var(--muted)" });
+    } else if (L) {
+      const p = prog(t, 1.2 + (i - 6) * 0.04, 0.55);
+      set(el, { x: L.x + p * 30, y: L.y + ease.in(p) * 120, r: p * (i % 2 ? 40 : -30), s: LS / FS, o: (1 - p) * lo, color: "var(--muted)" });
+    }
+  });
+  extra.forEach((el, j) => {
+    const f = finalPos[5 + j];
+    const sp = spring(t - 1.95 - j * 0.08, { freq: 2, damping: 0.55 });
+    set(el, { x: f.x, y: f.y + (1 - Math.min(1, sp)) * 80, o: Math.min(1, sp * 2) * (1 - prog(t, 2.75, 0.3)) * lo, color: "var(--text)" });
+  });
+  // The label's own grey tittle hides while the purple dot owns the i.
+  set(tittle, { x: titLabel.x, y: titLabel.y, o: (1 - prog(t, 1.25, 0.12)) * lo, s: 1 });
+}
+
+function drawScene(t) {
+  const on = spring(t - 0.9, { freq: 2.2, damping: 0.5 });
+
+  // ── The dot: knob → tittle → jump → graph → line → circle → orbit centre → halftone → back to knob.
+  let dx = OFF.x, dy = OFF.y, ds = 1, dcol = KNOB_GREY, glow = 0;
+  if (t >= 0.9) { dx = lerp(OFF.x, ON.x, on); dcol = BRAND; glow = 1; }
+  if (t >= 1.3) {
+    const p = ease.inOut(prog(t, 1.3, 1.0));
+    dx = lerp(ON.x, titFinal.x, p); dy = lerp(ON.y, titFinal.y, p) - Math.sin(p * Math.PI) * 180; ds = lerp(1, 0.78, p);
+  }
+  if (t >= 2.6) {
+    const p = prog(t, 2.6, 0.5);
+    dx = lerp(titFinal.x, G0.x, ease.inOut(p)); dy = lerp(titFinal.y, G0.y, p * p) - Math.sin(p * Math.PI) * 260; ds = lerp(0.78, 0.55, p);
+  }
+  const gu = prog(t, 3.1, 1.6);
+  if (t >= 3.1) { dx = lerp(G0.x, G1.x, gu); dy = lerp(G0.y, G1.y, gs(gu)); ds = 0.55; }
+  drawGraph(gu, t >= 3.1 ? 1 - prog(t, 4.9, 0.3) : 0);
+  set(callout, { x: G1.x + 90, y: G1.y - 44 - (1 - spring(t - 4.35)) * 20, o: win(t, 4.35, 5.15, 0.2) });
+
+  // Shoot to centre along a line, grow into a frame-filling circle.
+  if (t >= 5.0) {
+    const p = ease.inOutQuint(prog(t, 5.0, 0.45));
+    dx = lerp(G1.x, CX, p); dy = lerp(G1.y, CY, p);
+    if (p > 0 && p < 1) { g.strokeStyle = BRAND; g.lineWidth = 4; g.globalAlpha = 1 - p; g.beginPath(); g.moveTo(G1.x, G1.y); g.lineTo(dx, dy); g.stroke(); g.globalAlpha = 1; }
+  }
+  const grow = ease.inOutQuint(prog(t, 5.4, 0.6)), shrink = ease.inOutQuint(prog(t, 7.4, 0.55));
+  const R = lerp(14, 1250, grow * (1 - shrink));
+  set(circle, { x: CX, y: CY, w: R * 2, hgt: R * 2, extra: { margin: `${-R}px 0 0 ${-R}px` }, o: t >= 5.4 && t < 8.0 ? 1 : 0 });
+  // Page → chip: one shape, three states, same centre.
+  const rot = spring(t - 6.0, { freq: 1.2, damping: 0.55 });
+  const stretch = ease.inOutQuint(prog(t, 6.8, 0.5));
+  const pw = lerp(260, 600, stretch), ph = lerp(300, 130, stretch);
+  set(pill, { x: CX - pw / 2, y: CY - ph / 2, w: pw, hgt: ph, r: lerp(-120, 0, rot) * (1 - stretch), s: (1 - shrink) * Math.min(1, rot * 1.4), o: t >= 6 && t < 7.9 ? 1 : 0, extra: { borderRadius: `${lerp(34, 65, stretch)}px` } });
+  pill.firstChild.style.opacity = String(prog(t, 7.0, 0.25));
+  if (t >= 5.4) { dx = CX; dy = CY; ds = t < 8 ? 0 : 0.55; }
+
+  // ── Orbit (8–11): words circle the dot, then letters fly outward into the halftone.
+  const ang0 = t * 0.5;
+  orbit.forEach(({ el, wi, ci, n }) => {
+    const a = ang0 + (wi / WORDS.length) * Math.PI * 2 + (ci - n / 2) * 0.075;
+    const inP = spring(t - 8.1 - wi * 0.06, { freq: 1.6, damping: 0.6 });
+    const outP = ease.in(prog(t, 10.1 + ci * 0.02 + wi * 0.03, 0.7));
+    const r = lerp(150, 330, Math.min(1, inP)) + outP * 900;
+    set(el, { x: CX + Math.cos(a) * r - 16, y: CY + Math.sin(a) * r - 26, r: (a * 180) / Math.PI + 90, s: 1 - outP * 0.7, o: Math.min(1, inP * 2) * (1 - outP) * (t >= 8 && t < 11.2 ? 1 : 0) });
+  });
+
+  // ── Halftone (10.6–12.4): grows from the dot past every edge, then flips to black for the end card.
+  const wave = lerp(0, 2600, ease.inOut(prog(t, 10.5, 1.5)));
+  const flip = ease.inOut(prog(t, 12.0, 0.4));
+  halftone(t, wave, (t >= 10.5 && t < 12.4 ? 1 : 0) * (1 - flip), { x: CX, y: CY });
+  // Return trip through a faint halftone ripple and the graph.
+  const ret = prog(t, 13.75, 0.45);
+  if (t >= 13.75 && t < 14.3) halftone(t, lerp(0, 700, ret), 0.35 * (1 - ret), { x: lerp(CX, G1.x, ret), y: lerp(CY, G1.y, ret) });
+  const gr = prog(t, 14.2, 0.45);
+  if (t >= 14.2 && t < 14.7) drawGraph(1 - gr, 0.3 * (1 - gr), true);
+  if (t >= 13.75) {
+    if (t < 14.2) { dx = lerp(CX, G1.x, ease.inOut(ret)); dy = lerp(CY, G1.y, ease.inOut(ret)); ds = 0.55; }
+    else if (t < 14.65) { const v = 1 - ease.inOut(gr); dx = lerp(G0.x, G1.x, v); dy = lerp(G0.y, G1.y, gs(v)); ds = 0.55; }
+    else { const p = ease.inOut(prog(t, 14.65, 0.3)); dx = lerp(G0.x, OFF.x, p); dy = lerp(G0.y, OFF.y, p) - Math.sin(p * Math.PI) * 120; ds = lerp(0.55, 1, p); }
+    dcol = t > 14.85 ? KNOB_GREY : BRAND; glow = 1 - prog(t, 14.8, 0.15);
+  }
+  const dotOn = t < 8 || t >= 13.7 || t < 5.4 ? 1 : 0;
+  const midDot = t >= 8.0 && t < 10.6 ? 1 : 0;
+  set(knob, { x: dx, y: dy, s: t >= 8 && t < 13.7 ? (midDot ? 0.55 : 0) : ds, o: dotOn || midDot ? 1 : 0, bg: dcol, extra: { boxShadow: glow > 0 ? `0 0 ${36 * glow}px ${6 * glow}px rgba(148,120,255,${0.5 * glow})` : "none" } });
+
+  // ── End card (12.2–13.7)
+  const e = spring(t - 12.25, { freq: 1.6, damping: 0.55 });
+  const eo = 1 - prog(t, 13.45, 0.3);
+  set(eW, { y: (1 - e) * 50, o: Math.min(1, e * 2) * eo });
+  set(eA, { y: (1 - spring(t - 12.45)) * 30, o: prog(t, 12.45, 0.25) * eo });
+  set(eB, { y: (1 - spring(t - 12.65)) * 30, o: prog(t, 12.65, 0.25) * eo });
+  set(end, { o: t > 12.1 && t < 13.8 ? 1 : 0 });
+
+  // ── Cursor: in, click, out; back at the end to the same spot as frame 0.
+  const cIn = ease.inOut(prog(t, 0.2, 0.65)), cOut = ease.in(prog(t, 1.05, 0.5)), cBack = ease.out(prog(t, 14.4, 0.6));
+  let cx = lerp(1020, ON.x - 8, cIn), cy = lerp(720, TY + 16, cIn);
+  if (t > 1.05) { cx = lerp(ON.x - 8, 1500, cOut); cy = lerp(TY + 16, 1200, cOut); }
+  if (t > 14.4) { cx = lerp(1500, 1020, cBack); cy = lerp(1200, 720, cBack); }
+  set(cur, { x: cx, y: cy, s: 1 - win(t, 0.8, 1.0, 0.08) * 0.15, o: 1 });
+}
+
+video({ width: W, height: H, duration: D, poster: 6.9, beats: [0, 0.9, 1.9, 2.4, 3.9, 4.6, 5.8, 6.4, 7.1, 9.0, 11.2, 12.8, 14.0, 14.5, 14.99], render });
+</script>
+</body>
+</html>

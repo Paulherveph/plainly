@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · Launch cut (V6)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  .shot { position: absolute; left: 0; top: 0; overflow: hidden; border-radius: 26px; border: 1px solid var(--line-strong);
+          box-shadow: 0 0 0 10px rgb(190 175 255 / 0.05), 0 0 140px -30px var(--brand-glow), 0 60px 140px -40px rgb(0 0 0 / 0.9); background: var(--bg); }
+  .shot img { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+  .kin { position: absolute; left: 0; right: 0; text-align: center; font-weight: 600; letter-spacing: -0.045em; line-height: 1.02; }
+  .kin em { font-style: normal; color: #b4a3ff; }
+  .tag { position: absolute; left: 0; right: 0; text-align: center; }
+  .tag span { display: inline-flex; align-items: center; gap: 14px; padding: 16px 30px; border-radius: 999px; background: rgb(11 11 15 / 0.86); border: 1px solid var(--line-strong); font-size: 34px; font-weight: 600; backdrop-filter: blur(10px); }
+  .tag span::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 14px var(--brand); }
+  .flash { background: var(--brand); }
+  .end { text-align: center; }
+  .end .w { font-size: 150px; font-weight: 600; letter-spacing: -0.05em; margin-top: 26px; }
+  .end .a { font-size: 44px; color: var(--muted); margin-top: 12px; }
+  .cta { display: inline-flex; margin-top: 48px; height: 86px; align-items: center; padding: 0 46px; border-radius: 999px; background: var(--text); color: var(--bg); font-size: 32px; font-weight: 600; box-shadow: 0 14px 50px -10px var(--brand-glow); }
+  .url { margin-top: 26px; font: 28px "Geist Mono", monospace; color: var(--faint); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, ease, h, lerp, logoMark, prog, set, spring, streams, video } from "./lib/engine.js";
+
+// 120 BPM: one beat = 0.5 s. Every cut, hit and caption lands on a beat (see media/videos/PROMPTS.md).
+const V = new URLSearchParams(location.search).has("vertical");
+const W = V ? 1080 : 1920, H = V ? 1920 : 1080;
+const DIR = `../screenshots/${V ? "mobile" : "desktop"}/dark/`;
+const IMG_W = V ? 1170 : 2880; // screenshot pixel widths (3x mobile, 2x desktop)
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+add(h("div", { class: "layer bg-glow" }));
+const light = streams({ width: W, height: H, cx: W / 2, cy: H / 2, count: 30, seed: 21 });
+add(light.el);
+
+// Shot frame: a rounded window that shows part of a screenshot, with a slow push.
+const FW = V ? 940 : 1600, FH = V ? 1360 : 860;
+const frame = add(h("div", { class: "shot" }));
+const img = frame.appendChild(h("img", { alt: "" }));
+const kin = add(h("div", { class: "kin" }));
+const tag = add(h("div", { class: "tag" }, h("span")));
+const flash = add(h("div", { class: "layer flash" }));
+const end = add(h("div", { class: "layer center" }, h("div", { class: "end" }, logoMark(V ? 190 : 160), h("div", { class: "w" }, "Plainly"), h("div", { class: "a" }, "Paperwork, in plain language."), h("div", { class: "cta" }, "Try a sample · no sign-up"), h("div", { class: "url" }, "plainly.app"))));
+const endKids = [...end.firstChild.children];
+
+// [start, end, screenshot | null, focus {x,y in CSS px of the screenshot, zoom}, kinetic text, tag]
+const CUTS = [
+  [0.0, 1.0, null, null, "Your lease: <em>3 pages</em> of legal text.", null],
+  [1.0, 2.0, null, null, "Somewhere in it are <em>3 deadlines</em>.", null],
+  [2.0, 3.0, null, null, "Do you know them?", null],
+  [3.0, 4.0, "01-landing-hero", { x: 0, y: 0, z: 1 }, null, "Drop it into Plainly"],
+  [4.0, 5.0, "07-analysis-streaming", { x: 0, y: 60, z: 1.05 }, null, "Streams in, section by section"],
+  [5.0, 6.0, "08-analysis-ready", { x: 150, y: 260, z: 1.35 }, null, "A summary you can read"],
+  [6.0, 7.0, "09-analysis-full", { x: 150, y: 1000, z: 1.2 }, null, "What you must do, and by when"],
+  [7.0, 8.0, "09-analysis-full", { x: 150, y: 1650, z: 1.2 }, null, "The clauses that can cost you"],
+  [8.0, 9.5, "08-analysis-ready", { x: 360, y: 640, z: 2.0 }, "Every claim <em>quotes the document</em>.", null],
+  [9.5, 10.5, "10-citation-sheet", { x: V ? 0 : 1000, y: 0, z: V ? 1 : 1.6 }, null, "Quote found on page 1"],
+  [10.5, 12.0, "11-chat", { x: 180, y: 260, z: 1.6 }, "Ask it anything.", null],
+  [12.0, 13.5, "11-chat", { x: 180, y: 460, z: 1.9 }, "If it isn't there, <em>it says so</em>.", null],
+  [13.5, 15.0, "12-deadlines", { x: 160, y: 180, z: 1.3 }, null, "Every date in one list · export to calendar"],
+  [15.0, 16.0, null, null, "English. <em>Français.</em> 中文.", null],
+  [16.0, 17.5, "13-documents-library", { x: 150, y: 120, z: 1.25 }, null, "No sign-up · deleted after 30 days"],
+  [17.5, 18.5, "14-privacy", { x: 150, y: 0, z: 1.2 }, null, "Not legal advice. Plain explanations."],
+  [18.5, 25.0, "end", null, null, null],
+];
+
+function render(t) {
+  light.frame(t, { o: 0.4 });
+  const cut = CUTS.find(([a, b]) => t >= a && t < b) ?? CUTS.at(-1);
+  const [a, b, src, f, text, label] = cut;
+  const local = t - a, len = b - a;
+
+  // Beat hit: a 2-frame accent flash and a punch on every cut.
+  set(flash, { o: a > 0 && local < 0.07 ? 0.18 * (1 - local / 0.07) : 0 });
+  const punch = 1 + 0.05 * (1 - spring(local, { freq: 3, damping: 0.6 }));
+
+  if (src && src !== "end") {
+    if (img.dataset.src !== src) { img.src = `${DIR}${src}.webp`; img.dataset.src = src; }
+    const cssScale = (V ? 390 : 1440) / IMG_W; // screenshot px → CSS px
+    const fit = FW / (V ? 390 : 1440); // CSS px → frame px at zoom 1
+    const z = (V ? 1 + (f.z - 1) * 0.35 : f.z) * lerp(1, 1.06, ease.linear(local / len)); // slow push
+    const k = cssScale * fit * z;
+    // Vertical: centre the zoomed phone screenshot horizontally so no text is cut at the edge.
+    const fx = V ? (390 - 390 / z) / 2 : f.x, fy = V ? f.y * 0.55 : f.y;
+    set(img, { x: -fx * fit * z, y: -fy * fit * z, s: k });
+    set(frame, { x: (W - FW) / 2, y: (H - FH) / 2 + (text ? (V ? 140 : 90) : 0), w: FW, hgt: FH, s: punch, o: 1 });
+  } else set(frame, { o: 0 });
+
+  if (text) {
+    if (kin.dataset.k !== text) { kin.innerHTML = text; kin.dataset.k = text; }
+    const sp = spring(local, { freq: 2.4, damping: 0.6 });
+    const size = src ? (V ? 76 : 70) : V ? 120 : 132;
+    set(kin, { y: src ? (V ? 120 : 40) : H / 2 - size * (V ? 1.2 : 0.6) + (1 - sp) * 40, s: lerp(1.15, 1, Math.min(1, sp)), o: Math.min(1, sp * 2), extra: { fontSize: `${size}px`, padding: V ? "0 60px" : "0 120px" } });
+  } else set(kin, { o: 0 });
+
+  if (label) {
+    if (tag.dataset.k !== label) { tag.firstChild.textContent = label; tag.dataset.k = label; }
+    const sp = spring(local - 0.08, { freq: 2.4, damping: 0.6 });
+    set(tag, { y: H - (V ? 300 : 150) + (1 - sp) * 30, o: Math.min(1, sp * 2) });
+  } else set(tag, { o: 0 });
+
+  // End card on the downbeat at 18.5 s, elements on the next beats.
+  set(end, { o: src === "end" ? 1 : 0 });
+  endKids.forEach((el, i) => {
+    const sp = spring(t - 18.5 - i * 0.25, { freq: 1.8, damping: 0.55 });
+    set(el, { y: (1 - Math.min(1, sp)) * 40, s: i === 0 ? sp : 1, o: Math.min(1, sp * 2) });
+  });
+}
+
+video({ width: W, height: H, duration: 25, poster: 19.8, beats: [0.3, 1.3, 2.3, 3.3, 5.3, 6.3, 8.6, 9.8, 11.0, 12.6, 14.0, 15.3, 16.5, 17.8, 20.0], render });
+</script>
+</body>
+</html>

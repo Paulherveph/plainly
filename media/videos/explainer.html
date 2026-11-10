@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · 30-second explainer (V3)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  .wall { position: absolute; left: 0; top: 0; width: 1920px; columns: 4; column-gap: 64px; padding: 0 90px; font: 21px/1.75 "Geist Mono", monospace; color: rgb(154 154 168 / 0.55); }
+  .wall p { margin-bottom: 22px; break-inside: avoid; }
+  .wall mark { background: none; color: var(--critical); }
+  .shade { background: radial-gradient(55% 45% at 50% 50%, rgb(11 11 15 / 0.92), rgb(11 11 15 / 0.55) 70%, rgb(11 11 15 / 0.2)); }
+  .big { position: absolute; left: 0; right: 0; text-align: center; font-size: 100px; }
+  .word { display: inline-block; margin: 0 18px; }
+  .sum { width: 1120px; padding: 46px 52px; }
+  .sum h3 { display: flex; align-items: center; gap: 14px; font-size: 30px; font-weight: 600; }
+  .sum h3::before { content: ""; width: 12px; height: 12px; border-radius: 50%; background: var(--brand); box-shadow: 0 0 14px var(--brand); }
+  .sum p { margin-top: 22px; font-size: 38px; line-height: 1.45; min-height: 220px; }
+  .title { position: absolute; left: 0; right: 0; top: 120px; text-align: center; font-size: 76px; }
+  .title small { display: block; margin-top: 14px; font-size: 30px; font-weight: 400; color: var(--muted); letter-spacing: 0; }
+  .step { width: 500px; padding: 30px; }
+  .step .n { font: 22px "Geist Mono", monospace; color: #b4a3ff; }
+  .step h4 { margin-top: 14px; font-size: 42px; font-weight: 600; letter-spacing: -0.03em; }
+  .step p { margin-top: 8px; font-size: 23px; color: var(--muted); }
+  .step .shot { margin-top: 24px; height: 250px; border-radius: 14px; border: 1px solid var(--line-strong); overflow: hidden; }
+  .step .shot img { width: 100%; display: block; }
+  .num { font: 600 300px/1 "Geist", sans-serif; letter-spacing: -0.06em; }
+  .claim { width: 760px; padding: 26px 30px; display: flex; justify-content: space-between; align-items: center; font-size: 30px; }
+  .claim .bad { border-color: transparent; background: rgb(255 92 108 / 0.12); color: var(--critical); }
+  .strike { position: absolute; left: 30px; top: 50%; height: 3px; background: var(--critical); }
+  .end { text-align: center; }
+  .end .w { font-size: 130px; font-weight: 600; letter-spacing: -0.05em; margin-top: 26px; }
+  .end .tag { font-size: 40px; color: var(--muted); margin-top: 14px; }
+  .cta { display: inline-flex; margin-top: 46px; height: 78px; align-items: center; padding: 0 42px; border-radius: 999px; background: var(--text); color: var(--bg); font-size: 29px; font-weight: 600; box-shadow: 0 14px 50px -10px var(--brand-glow); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, ease, h, lerp, letters, logoMark, prog, set, spring, streams, typed, video, win } from "./lib/engine.js";
+
+const W = 1920, H = 1080;
+const S = "../screenshots/desktop/dark/";
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+add(h("div", { class: "layer bg-glow" }));
+const light = streams({ width: W, height: H, cx: W / 2, cy: H / 2, count: 30, seed: 9 });
+add(light.el);
+
+// 1. The problem: a wall of the real lease, jargon in red.
+const LEASE = [
+  "RESIDENTIAL LEASE AGREEMENT. This agreement is made between Marc Petit (hereinafter the <mark>Landlord</mark>) and Amina Diallo (hereinafter the <mark>Tenant</mark>).",
+  "§1 Term. The lease begins on 1 December 2026 and runs for a period of twelve (12) months, <mark>renewable by tacit agreement</mark>.",
+  "§2 Rent. The monthly rent is €850, payable on or before the 5th day of each month by bank transfer.",
+  "§4 Deposit. The Tenant shall pay a security deposit of €1,700 <mark>no later than</mark> 20 November 2026.",
+  "§7 Late payment. Any rent unpaid more than five days after the due date incurs a late fee of 10% of the monthly rent.",
+  "§11 The Tenants are <mark>jointly and severally liable</mark> for all obligations arising under this agreement.",
+  "§12 Renewal. <mark>Notwithstanding the foregoing</mark>, this lease renews automatically unless terminated by three (3) months' notice by registered letter.",
+  "§9 No animals may be kept in the premises without the <mark>prior written consent</mark> of the Landlord.",
+  "§6 Insurance. The Tenant must provide a certificate of home insurance before 1 December 2026.",
+  "§10 Access. The Landlord may enter the premises with at least 24 hours' notice for inspection or repairs.",
+];
+const wall = add(h("div", { class: "wall" }));
+for (let i = 0; i < 3; i++) for (const p of LEASE) { const el = h("p"); el.innerHTML = p; wall.append(el); }
+const marks = [...wall.querySelectorAll("mark")];
+const shade = add(h("div", { class: "layer shade" }));
+const big1 = add(h("div", { class: "big display", style: "top:380px" }));
+const w1 = ["Leases.", "Visa letters.", "Job offers."].map((t) => big1.appendChild(h("span", { class: "word" }, t)));
+const big2 = add(h("div", { class: "big display", style: "top:330px" }));
+const l2a = letters(big2.appendChild(h("div")), "Dense legal text.");
+const l2b = letters(big2.appendChild(h("div", { style: "color:var(--muted)" })), "Easy to misread.");
+
+// 2. What Plainly does.
+const t2 = add(h("div", { class: "title display" }, "Plainly rewrites it in plain words.", h("small", {}, "A short summary, in English, French or Chinese.")));
+const sumText = h("p");
+const sum = add(h("div", { class: "abs card sum" }, h("h3", {}, "Summary"), sumText));
+const SUMMARY = "This is a 12-month lease in Lyon starting 1 December. You pay €850 rent plus €60 charges each month, and a €1,700 deposit by 20 November.";
+
+// 3. How it works.
+const t3 = add(h("div", { class: "title display" }, "Three steps. About thirty seconds."));
+const STEPS = [
+  ["01", "Upload", "A PDF, a photo, or pasted text.", "06-documents-empty.webp", 0],
+  ["02", "Understand", "Summary, key facts, watch-outs.", "08-analysis-ready.webp", 120],
+  ["03", "Act", "Deadlines, ready for your calendar.", "12-deadlines.webp", 160],
+];
+const steps = STEPS.map(([n, t, p, src, off]) => {
+  const img = h("img", { src: S + src, alt: "", style: `transform:translateY(-${off}px)` });
+  return add(h("div", { class: "abs card step" }, h("div", { class: "n" }, n), h("h4", {}, t), h("p", {}, p), h("div", { class: "shot" }, img)));
+});
+const dot = add(h("div", { class: "abs dot" }));
+
+// 4. Proof.
+const num = add(h("div", { class: "abs num grad" }, "0%"));
+const numLabel = add(h("div", { class: "abs", style: "font-size:36px;color:var(--muted);width:1100px;text-align:center" }, "of quotes found word for word in the document"));
+const strike = h("div", { class: "strike" });
+const claim = add(h("div", { class: "abs card claim" }, h("span", {}, "Parking: one space included"), h("span", { class: "chip bad" }, "Quote not found"), strike));
+const claimLabel = add(h("div", { class: "abs display", style: "font-size:64px;width:1200px;text-align:center" }, "A claim without a quote is removed."));
+
+// 5. Name.
+const end = add(h("div", { class: "layer center" }, h("div", { class: "end" }, logoMark(160), h("div", { class: "w" }, "Plainly"), h("div", { class: "tag" }, "Paperwork, in plain language."), h("div", { class: "cta" }, "Try a sample · no sign-up →"))));
+const [eLogo, eWord, eTag, eCta] = end.firstChild.children;
+
+function render(t) {
+  light.frame(t, { o: 0.15 + 0.45 * win(t, 6, 12, 0.6) + 0.35 * prog(t, 24, 1) });
+
+  // ── 1. Problem (0–6)
+  const wallOut = ease.inOutQuint(prog(t, 5.6, 0.9));
+  set(wall, { y: -t * 34, sy: 1 - wallOut * 0.9, o: (1 - wallOut) * prog(t, 0, 0.4), blur: wallOut * 6 });
+  wall.style.transformOrigin = `50% ${t * 34 + H / 2}px`;
+  marks.forEach((m, i) => {
+    m.style.opacity = String(0.4 + 0.6 * win(t, 0.6 + (i % 7) * 0.4, 5.8, 0.3));
+  });
+  set(shade, { o: win(t, 0, 6.2, 0.3) });
+  w1.forEach((w, i) => {
+    const sp = spring(t - 0.35 - i * 0.55, { freq: 2.2, damping: 0.55 });
+    set(w, { y: lerp(60, 0, sp) - ease.in(prog(t, 2.55, 0.3)) * 40, s: lerp(1.2, 1, Math.min(1, sp)), o: Math.min(1, sp * 2) * (1 - prog(t, 2.55, 0.3)) });
+  });
+  [...l2a, ...l2b].forEach((ch, i) => {
+    const sp = spring(t - 2.95 - i * 0.02 - (i >= l2a.length ? 0.4 : 0), { freq: 2, damping: 0.6 });
+    set(ch, { y: lerp(50, 0, sp) - ease.in(prog(t, 5.5, 0.35)) * 40, o: Math.min(1, sp * 1.6) * (1 - prog(t, 5.5, 0.35)) });
+  });
+
+  // ── 2. What Plainly does (6–12)
+  set(t2, { y: (1 - spring(t - 6.4)) * 30, o: win(t, 6.4, 11.9, 0.35) });
+  const sIn = spring(t - 6.2, { freq: 1.4, damping: 0.65 });
+  set(sum, { x: (W - 1120) / 2, y: lerp(560, 420, sIn), sy: lerp(0.2, 1, Math.min(1, sIn)), o: Math.min(1, sIn * 2) * (1 - prog(t, 11.6, 0.35)) });
+  sumText.textContent = typed(SUMMARY, prog(t, 7.0, 3.4));
+
+  // ── 3. How (12–18)
+  set(t3, { y: (1 - spring(t - 12.15)) * 30, o: win(t, 12.15, 17.9, 0.35) });
+  const active = t < 16.2 ? -1 : Math.min(2, Math.floor((t - 16.2) / 0.6));
+  steps.forEach((el, i) => {
+    const sp = spring(t - 12.5 - i * 0.6, { freq: 1.7, damping: 0.6 });
+    const on = active === i ? 1 : 0;
+    set(el, { x: 150 + i * 560, y: lerp(420, 330, sp) - on * 14, o: Math.min(1, sp * 2) * (1 - prog(t, 17.7, 0.3)), extra: { borderColor: on ? "rgb(148 120 255 / 0.6)" : "" } });
+  });
+  const dx = active < 0 ? 150 + 250 : 150 + 250 + active * 560;
+  const dIn = active < 0 ? 0 : 1 - prog(t, 17.7, 0.3);
+  set(dot, { x: dx, y: 300, s: dIn, o: dIn });
+
+  // ── 4. Proof (18–24)
+  const nSp = spring(t - 18.3, { freq: 0.9, damping: 0.8 });
+  num.textContent = `${Math.round(98 * Math.min(1, nSp))}%`;
+  set(num, { x: W / 2 - 330, y: lerp(260, 200, nSp), o: win(t, 18.2, 21.2, 0.3) });
+  set(numLabel, { x: W / 2 - 550, y: 540, o: win(t, 18.7, 21.2, 0.3) });
+  const cIn = spring(t - 21.3, { freq: 1.6, damping: 0.6 });
+  const cut = ease.inOut(prog(t, 22.1, 0.4));
+  const away = ease.in(prog(t, 23.0, 0.45));
+  set(claim, { x: W / 2 - 380 + away * 900, y: lerp(470, 400, cIn), r: away * 8, o: Math.min(1, cIn * 2) * (1 - away) });
+  set(strike, { w: cut * 420 });
+  set(claimLabel, { x: W / 2 - 600, y: 600 + (1 - spring(t - 22.5)) * 30, o: win(t, 22.5, 24, 0.3) });
+
+  // ── 5. Name (24–30)
+  const e1 = spring(t - 24.2, { freq: 1.5, damping: 0.5 });
+  set(eLogo, { s: e1, r: lerp(-30, 0, Math.min(1, e1)), o: Math.min(1, e1 * 2) });
+  set(eWord, { y: lerp(40, 0, spring(t - 24.5)), o: prog(t, 24.5, 0.3) });
+  set(eTag, { y: lerp(30, 0, spring(t - 24.8)), o: prog(t, 24.8, 0.3) });
+  set(eCta, { y: lerp(30, 0, spring(t - 25.2)), o: prog(t, 25.2, 0.3) });
+  set(end, { o: t > 24 ? 1 : 0 });
+}
+
+video({ width: W, height: H, duration: 30, poster: 25.8, beats: [1.6, 4.4, 8.5, 10.8, 13.8, 16.7, 19.6, 22.4, 23.2, 26.5], render });
+</script>
+</body>
+</html>

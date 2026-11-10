@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Plainly · How it works (V2)</title>
+<link rel="stylesheet" href="./lib/base.css" />
+<style>
+  .file { display: flex; align-items: center; gap: 18px; padding: 18px 26px 18px 18px; border-radius: 18px; }
+  .file .ico { width: 54px; height: 68px; border-radius: 8px; background: #f4f3ef; position: relative; }
+  .file .ico::after { content: ""; position: absolute; inset: 14px 10px; background: repeating-linear-gradient(#c8c8d0 0 3px, transparent 3px 10px); }
+  .file b { display: block; font-size: 26px; font-weight: 600; }
+  .file span { color: var(--muted); font-size: 19px; }
+  .mask { position: absolute; top: 0; left: 176px; width: 604px; background: var(--bg); }
+  .mask::after { content: ""; position: absolute; left: 0; right: 0; top: -60px; height: 60px; background: linear-gradient(transparent, var(--bg)); }
+  .check { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 7px; background: var(--ok); display: grid; place-items: center; }
+  .check svg { width: 15px; height: 15px; }
+  .badge { position: absolute; left: 0; top: 0; display: inline-flex; align-items: center; gap: 14px; height: 60px; padding: 0 26px 0 14px; border-radius: 999px; font-size: 26px; font-weight: 600; }
+  .badge i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 50%; background: rgb(148 120 255 / 0.16); color: #b4a3ff; font: 600 17px "Geist Mono", monospace; font-style: normal; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<script type="module">
+import { $, appWindow, cursor, ease, h, lerp, prog, set, showSrc, spring, video, win } from "./lib/engine.js";
+
+const W = 1600, H = 1000;
+const S = "../screenshots/desktop/dark/";
+const stage = $("#stage");
+const add = (el) => {
+  stage.append(el);
+  return el;
+};
+add(h("div", { class: "layer bg-glow" }));
+add(h("div", { class: "layer bg-grid" }));
+
+const WX = 80, WY = 60, VIEW = 880;
+const app = appWindow({ src: `${S}06-documents-empty.webp`, width: 1440, url: "plainly.app/documents" });
+app.view.style.height = `${VIEW}px`;
+add(h("div", { class: "abs", style: `left:${WX}px;top:${WY}px` }, app.el));
+const mask = h("div", { class: "mask" });
+const ring = h("div", { class: "ring" });
+const check = h("div", { class: "check" }, h("svg", { viewBox: "0 0 24 24" }, h("path", { d: "M5 12.5l4.5 4.5L19 7.5", fill: "none", stroke: "#06210f", "stroke-width": 3, "stroke-linecap": "round", "stroke-linejoin": "round" })));
+app.view.append(mask, ring, check);
+const file = add(h("div", { class: "abs card file" }, h("div", { class: "ico" }), h("div", {}, h("b", {}, "lease.pdf"), h("span", {}, "3 pages"))));
+const badge = add(h("div", { class: "card badge" }, h("i"), h("span")));
+const cur = add(cursor());
+
+const CH = [
+  [0, "01", "Upload"],
+  [4, "02", "Understand"],
+  [8, "03", "Act"],
+];
+
+function render(t) {
+  const ch = t < 4 ? 0 : t < 8 ? 1 : 2;
+  const local = t - CH[ch][0];
+
+  // Chapter badge, bottom-left over the window: swaps with separate out/in timing.
+  if (badge.dataset.k !== String(ch)) {
+    badge.firstChild.textContent = CH[ch][1];
+    badge.lastChild.textContent = CH[ch][2];
+    badge.dataset.k = String(ch);
+  }
+  const bIn = spring(local - 0.05, { freq: 2, damping: 0.6 });
+  set(badge, { x: WX + 36, y: WY + 52 + VIEW - 96 + (1 - bIn) * 24 + ease.in(prog(local, 3.75, 0.25)) * 16, o: Math.min(1, bIn * 1.5) * (1 - prog(local, 3.75, 0.25)) });
+
+  let src = `${S}06-documents-empty.webp`, scroll = 0, reveal = -1, cx = 1400, cy = 900, co = 0;
+
+  if (ch === 0) {
+    const carry = ease.inOut(prog(local, 0.5, 1.4));
+    const drop = prog(local, 1.95, 0.3);
+    const fx = lerp(-340, WX + 720 - 170, carry), fy = lerp(920, WY + 52 + 427 - 52, carry) - Math.sin(carry * Math.PI) * 140;
+    set(file, { x: fx, y: fy, r: lerp(-8, 0, carry), s: 1 - drop * 0.6, o: prog(local, 0.4, 0.2) * (1 - drop) });
+    set(ring, { x: 186, y: 259, w: 1068, hgt: 336, o: win(local, 1.3, 2.6, 0.25) });
+    cx = fx + 230; cy = fy + 70; co = prog(local, 0.4, 0.2) * (1 - prog(local, 2.1, 0.25));
+    if (local > 2.6) { src = `${S}07-analysis-streaming.webp`; }
+  } else {
+    set(file, { o: 0 });
+    set(ring, { o: 0 });
+  }
+  if (ch === 1) {
+    src = `${S}09-analysis-full.webp`;
+    const steps = [[0.1, 300], [0.7, 495], [1.3, 980], [1.9, 1590], [2.6, 2480]];
+    reveal = steps.reduce((acc, [at, y]) => (local >= at ? lerp(acc, y, ease.outQuart(prog(local, at, 0.45))) : acc), 120);
+    scroll = lerp(0, 900, ease.inOut(prog(local, 1.6, 2.0)));
+  }
+  if (ch === 2) {
+    src = `${S}12-deadlines.webp`;
+    // Tick the first upcoming deadline (row1 checkbox at window-local ≈ 210, 482).
+    const p = ease.inOut(prog(local, 0.4, 0.8));
+    cx = lerp(1300, WX + 222, p); cy = lerp(900, WY + 52 + 486, p); co = win(local, 0.35, 2.6, 0.25);
+    const tick = spring(local - 1.3, { freq: 2.4, damping: 0.45 });
+    set(check, { x: 205, y: 471, s: tick, o: Math.min(1, tick * 2) * (1 - prog(local, 3.7, 0.3)) });
+    set(cur, { s: 1 - win(local, 1.15, 1.4, 0.1) * 0.15 });
+  } else set(check, { o: 0 });
+
+  showSrc(app.img, src);
+  set(app.img, { y: -scroll });
+  set(mask, { y: reveal - scroll, hgt: 4000, o: reveal >= 0 ? 1 : 0 });
+  set(cur, { x: cx, y: cy, o: co, s: ch === 2 ? 1 - win(local, 1.15, 1.4, 0.1) * 0.15 : 1 });
+
+  // Each chapter fades in from the window background; the last returns to frame 0 for a clean loop.
+  const fadeIn = ease.out(prog(local, 0, 0.25));
+  const fadeOut = ease.in(prog(local, 3.75, 0.25));
+  set(app.view, { o: Math.min(fadeIn, 1 - fadeOut) * 0.9 + 0.1 * (ch === 0 && local < 0.25 ? 1 : 0) });
+}
+
+video({ width: W, height: H, duration: 12, poster: 6.2, beats: [0.3, 1.2, 2.2, 3.2, 4.6, 6.2, 8.6, 9.6, 11.9], render });
+</script>
+</body>
+</html>
