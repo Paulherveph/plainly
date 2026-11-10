@@ -14,7 +14,8 @@ const buttonVariants = cva(
           "border border-line-strong bg-[color-mix(in_oklab,var(--surface)_62%,transparent)] backdrop-blur-md hover:bg-surface-2",
         secondary: "bg-secondary text-secondary-foreground hover:bg-surface-2",
         ghost: "text-muted-foreground hover:bg-surface-2 hover:text-foreground",
-        destructive: "bg-critical text-white hover:brightness-110",
+        // Fixed dark red in both themes: white text stays above 4.5:1.
+        destructive: "bg-[#c4233a] text-white hover:bg-[#ad1d32]",
         link: "text-brand-text underline-offset-4 hover:underline",
       },
       size: {

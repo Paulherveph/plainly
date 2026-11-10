@@ -20,7 +20,8 @@
       "!playwright-report",
       "!test-results",
       "!docs",
-      "!samples"
+      "!samples",
+      "!src/shared/ui/crystalized-ball.tsx"
     ]
   },
   "formatter": {

@@ -52,7 +52,7 @@ export function DeleteEverything() {
           <AlertDialogAction
             onClick={confirm}
             disabled={pending}
-            className="bg-critical text-white hover:bg-critical/90"
+            className="bg-[#c4233a] text-white hover:bg-[#ad1d32]"
           >
             {t("confirmButton")}
           </AlertDialogAction>

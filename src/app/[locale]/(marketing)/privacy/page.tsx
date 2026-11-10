@@ -1,12 +1,13 @@
 import { ShieldIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { alternatesFor } from "@/shared/i18n/alternates";
 import { DeleteEverything } from "@/shared/ui/delete-everything";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/privacy">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Privacy" });
-  return { title: t("title"), description: t("lead") };
+  return { title: t("title"), description: t("lead"), alternates: alternatesFor(locale, "/privacy") };
 }
 
 export default async function PrivacyPage({ params }: PageProps<"/[locale]/privacy">) {

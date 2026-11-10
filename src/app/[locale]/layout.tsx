@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { getTranslations } from "next-intl/server";
 import { Account } from "@/server/account";
+import { publicEnv } from "@/shared/config/env";
 import { routing } from "@/shared/i18n/routing";
 import { SiteFooter } from "@/shared/ui/site-footer";
 import { SiteHeader } from "@/shared/ui/site-header";
@@ -22,9 +23,10 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
   return {
+    metadataBase: new URL(publicEnv().NEXT_PUBLIC_SITE_URL),
     title: { default: t("title"), template: "%s · Plainly" },
     description: t("description"),
-    alternates: { languages: Object.fromEntries(routing.locales.map((l) => [l, `/${l}`])) },
+    openGraph: { title: t("title"), description: t("description"), siteName: "Plainly", type: "website" },
   };
 }
 
