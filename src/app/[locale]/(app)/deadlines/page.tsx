@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
 import { DeadlineList } from "@/modules/deadlines/ui/deadline-list";
+import { DeadlinesSkeleton } from "@/modules/deadlines/ui/deadlines-skeleton";
 import { container } from "@/server/container";
+import { RevealSuspense } from "@/shared/ui/reveal-suspense";
+import { SkeletonRegion } from "@/shared/ui/skeleton";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/deadlines">): Promise<Metadata> {
   const { locale } = await params;
@@ -21,9 +23,15 @@ export default async function DeadlinesPage({ params }: PageProps<"/[locale]/dea
         </h1>
         <p className="mt-2 text-muted-foreground">{t("sub")}</p>
       </div>
-      <Suspense fallback={<div className="skeleton-line mt-8 h-40" aria-hidden="true" />}>
+      <RevealSuspense
+        fallback={
+          <SkeletonRegion>
+            <DeadlinesSkeleton />
+          </SkeletonRegion>
+        }
+      >
         <Deadlines />
-      </Suspense>
+      </RevealSuspense>
     </section>
   );
 }

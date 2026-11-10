@@ -5,11 +5,12 @@ import { LocaleSwitch } from "./locale-switch";
 import { LogoMark } from "./logo";
 import { MobileMenu } from "./mobile-menu";
 import { NavLinks } from "./nav-links";
+import { Skeleton } from "./skeleton";
 import { ThemeToggle } from "./theme-toggle";
 
 export function SiteHeader({ account }: { account: React.ReactNode }) {
   const t = useTranslations("Nav");
-  const slot = <Suspense fallback={<span className="inline-block h-8 w-32" />}>{account}</Suspense>;
+  const slot = <Suspense fallback={<Skeleton className="h-8 w-32 rounded-full" />}>{account}</Suspense>;
   return (
     <header className="site-header vt-header sticky top-0 z-40 border-b bg-background/70 backdrop-blur-xl backdrop-saturate-150">
       <div className="relative mx-auto flex h-16 max-w-[1120px] items-center gap-4 px-5 md:px-8">

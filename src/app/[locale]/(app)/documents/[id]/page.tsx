@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
 import { z } from "zod";
 import { AnalysisScreen } from "@/modules/analysis/ui/analysis-screen";
+import { AnalysisSkeleton } from "@/modules/analysis/ui/analysis-skeleton";
 import type { StoredMessage } from "@/modules/chat/application/ports";
 import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
 import { container } from "@/server/container";
+import { RevealSuspense } from "@/shared/ui/reveal-suspense";
+import { SkeletonRegion } from "@/shared/ui/skeleton";
 
 const OutputLocale = z.enum(["en", "fr", "zh"]);
 
@@ -19,9 +21,15 @@ export async function generateMetadata({ params }: PageProps<"/[locale]/document
 
 export default function DocumentPage(props: PageProps<"/[locale]/documents/[id]">) {
   return (
-    <Suspense fallback={<ScreenSkeleton />}>
+    <RevealSuspense
+      fallback={
+        <SkeletonRegion>
+          <AnalysisSkeleton />
+        </SkeletonRegion>
+      }
+    >
       <DocumentView {...props} />
-    </Suspense>
+    </RevealSuspense>
   );
 }
 
@@ -72,19 +80,4 @@ function toUIMessage(m: StoredMessage): ChatUIMessage {
             { type: "data-citations", data: { citations: m.citations, refused: m.refused } },
           ],
   };
-}
-
-function ScreenSkeleton() {
-  return (
-    <div className="mx-auto max-w-[1120px] px-5 pt-12 md:px-8" aria-hidden="true">
-      <div className="skeleton-line h-8 w-2/3" />
-      <div className="mt-8 grid gap-4 lg:grid-cols-[1.25fr_1fr]">
-        <div className="grid gap-4">
-          <div className="skeleton-line h-32" />
-          <div className="skeleton-line h-48" />
-        </div>
-        <div className="skeleton-line hidden h-96 lg:block" />
-      </div>
-    </div>
-  );
 }

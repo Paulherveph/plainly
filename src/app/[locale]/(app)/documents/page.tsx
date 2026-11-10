@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { Suspense } from "react";
 import { DocumentInput } from "@/modules/documents/ui/document-input";
 import { DocumentLibrary } from "@/modules/documents/ui/document-library";
+import { LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { SamplePicker } from "@/modules/documents/ui/sample-picker";
+import { QuotaSkeleton } from "@/modules/quota/ui/quota-skeleton";
 import { container } from "@/server/container";
+import { RevealSuspense } from "@/shared/ui/reveal-suspense";
+import { SkeletonRegion } from "@/shared/ui/skeleton";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/documents">): Promise<Metadata> {
   const { locale } = await params;
@@ -24,9 +27,9 @@ export default async function DocumentsPage({ params }: PageProps<"/[locale]/doc
           </h1>
           <p className="mt-2 text-muted-foreground">{t("sub")}</p>
         </div>
-        <Suspense fallback={<span className="h-5 w-48" />}>
+        <RevealSuspense fallback={<QuotaSkeleton />}>
           <QuotaMeter />
-        </Suspense>
+        </RevealSuspense>
       </div>
 
       <DocumentInput />
@@ -40,9 +43,15 @@ export default async function DocumentsPage({ params }: PageProps<"/[locale]/doc
       <SamplePicker />
 
       <SectionLabel>{t("libraryTitle")}</SectionLabel>
-      <Suspense fallback={<LibrarySkeleton />}>
+      <RevealSuspense
+        fallback={
+          <SkeletonRegion>
+            <LibrarySkeleton />
+          </SkeletonRegion>
+        }
+      >
         <Library />
-      </Suspense>
+      </RevealSuspense>
     </section>
   );
 }
@@ -86,14 +95,4 @@ async function Library() {
     );
   }
   return <DocumentLibrary documents={docs.value} now={new Date().toISOString()} />;
-}
-
-function LibrarySkeleton() {
-  return (
-    <div className="mt-4 grid gap-2 rounded-xl border bg-surface p-4" aria-hidden="true">
-      {[0, 1, 2].map((i) => (
-        <div key={i} className="skeleton-line h-10" />
-      ))}
-    </div>
-  );
 }
