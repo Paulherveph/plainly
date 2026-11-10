@@ -7,6 +7,13 @@ import { makeAnswerQuestion } from "@/modules/chat/application/answer-question";
 import type { DocumentAnswerer } from "@/modules/chat/application/ports";
 import { FakeAnswerer } from "@/modules/chat/infrastructure/fake-answerer";
 import { SupabaseMessageRepository } from "@/modules/chat/infrastructure/supabase-message-repository";
+import {
+  makeCollectDeadlines,
+  makeExportDeadlines,
+  makeListDeadlines,
+  makeSetDeadlineDone,
+} from "@/modules/deadlines/application/use-cases";
+import { SupabaseDeadlineRepository } from "@/modules/deadlines/infrastructure/supabase-deadline-repository";
 import { makeDeleteEverything } from "@/modules/documents/application/delete-everything";
 import {
   makeGetDocument,
@@ -64,6 +71,7 @@ export async function container() {
   const analyses = new SupabaseAnalysisRepository(supabase);
   const quota = new SupabaseQuotaService(supabase);
   const messages = new SupabaseMessageRepository(supabase);
+  const deadlines = new SupabaseDeadlineRepository(supabase);
 
   return {
     currentUser: () => getSessionUser(supabase),
@@ -84,11 +92,15 @@ export async function container() {
       analyses,
       analyzer: await getAnalyzer(),
       quota,
+      onAnalyzed: makeCollectDeadlines({ deadlines }),
     }),
     findAnalysis: analyses.find.bind(analyses),
     deleteEverything: makeDeleteEverything({ documents, files }),
     answerQuestion: makeAnswerQuestion({ documents, files, messages, answerer: await getAnswerer(), quota }),
     listMessages: messages.list.bind(messages),
+    listDeadlines: makeListDeadlines({ deadlines }),
+    setDeadlineDone: makeSetDeadlineDone({ deadlines }),
+    exportDeadlines: makeExportDeadlines({ deadlines, now: () => new Date() }),
   };
 }
 

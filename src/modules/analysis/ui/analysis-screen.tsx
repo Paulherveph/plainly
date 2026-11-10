@@ -48,8 +48,6 @@ export type AnalysisScreenProps = {
   today: string;
   /** Stored chat for this document, shown once the analysis is ready. */
   chatHistory: ChatUIMessage[];
-  /** Optional per-action controls (e.g. add to calendar), by index. */
-  actionExtra?: (index: number) => React.ReactNode;
 };
 
 export function AnalysisScreen({
@@ -59,7 +57,6 @@ export function AnalysisScreen({
   initial,
   today,
   chatHistory,
-  actionExtra,
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
   const tc = useTranslations("Common");
@@ -151,7 +148,7 @@ export function AnalysisScreen({
                   verified={verified}
                   onCite={setSheetCite}
                   today={today}
-                  extra={verified ? actionExtra : undefined}
+                  documentId={doc.id}
                 />
               ) : (
                 <SectionSkeleton id="actions" title={t("actions")} icon={<CalendarIcon />} />

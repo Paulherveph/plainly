@@ -46,8 +46,9 @@ function DropZone() {
   const zoneRef = useRef<HTMLDivElement>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [uploading, setUploading] = useState<string | null>(null);
-  const [, startTransition] = useTransition();
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+  const uploading = pending ? fileName : null;
 
   function submit(file: File) {
     setError(null);
@@ -56,14 +57,13 @@ function DropZone() {
       return setError(t("errorUnsupported"));
     if (file.size > MAX_FILE_BYTES) return setError(t("errorTooLarge"));
     if (file.size === 0) return setError(t("errorEmpty"));
-    setUploading(file.name);
+    setFileName(file.name);
     const data = new FormData();
     data.set("file", file);
     startTransition(async () => {
       const res = await uploadFileAction(data);
       if (res.ok) router.push(`/documents/${res.value.id}`);
       else {
-        setUploading(null);
         setError(toMessage(res.error));
       }
     });

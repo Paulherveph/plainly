@@ -163,8 +163,8 @@ export function ActionsSection({
   verified,
   onCite,
   today,
-  extra,
-}: View & { today: string; extra?: (index: number) => React.ReactNode }) {
+  documentId,
+}: View & { today: string; documentId?: string }) {
   const t = useTranslations("Analysis");
   const actions = (data.actions ?? []).filter((a) => a?.title);
   return (
@@ -199,7 +199,16 @@ export function ActionsSection({
                         </span>
                       ) : null}
                       {a?.cite ? <CitationChip cite={a.cite as Cite} onOpen={onCite} /> : null}
-                      {extra?.(i)}
+                      {a?.dueOn && documentId ? (
+                        <a
+                          href={`/api/deadlines/ics?documentId=${documentId}&dueOn=${a.dueOn}`}
+                          download
+                          className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-muted-foreground text-xs transition-colors hover:bg-surface-2 hover:text-foreground"
+                        >
+                          <CalendarIcon className="size-3.5" aria-hidden="true" />
+                          {t("addToCalendar")}
+                        </a>
+                      ) : null}
                     </div>
                   ) : null}
                 </div>

@@ -17,16 +17,17 @@ const SAMPLES: { id: SampleId; title: "sampleLease" | "sampleVisa" | "sampleOffe
 export function SamplePicker() {
   const t = useTranslations("Documents");
   const router = useRouter();
-  const [busy, setBusy] = useState<SampleId | null>(null);
-  const [, startTransition] = useTransition();
+  // `pending` ends when the navigation completes, so a restored page is never stuck "busy".
+  const [picked, setPicked] = useState<SampleId | null>(null);
+  const [pending, startTransition] = useTransition();
+  const busy = pending ? picked : null;
 
   function open(id: SampleId) {
-    setBusy(id);
+    setPicked(id);
     startTransition(async () => {
       const res = await createSampleAction(id);
       if (res.ok) router.push(`/documents/${res.value.id}`);
       else {
-        setBusy(null);
         toast.error(t("errorGeneric"));
       }
     });
