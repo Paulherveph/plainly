@@ -34,3 +34,18 @@ Short ADRs for choices a reviewer might question. Newest last.
 **Decision.** The layout, header and marketing pages are static. Everything that reads the session (library, quota, analysis, deadlines, the account button) and URL-dependent client hooks (active nav link, locale switch) sit behind `<Suspense>` with matching skeletons. Analysis streams from a Route Handler as NDJSON (partial, then verified final); chat uses the AI SDK UI message stream with a `data-citations` part. Mutations are Server Actions.
 **Why.** Pages show their shell instantly, and only personal data waits for the request.
 **Consequence.** The CSP allows inline scripts, because a nonce would make every page dynamic. See `docs/SECURITY.md` #29.
+
+## ADR 6 — An installable web app instead of native apps
+
+**Context.** Users asked for a desktop and a mobile app, but the PRD lists a mobile app as a non-goal.
+**Decision.** Make Plainly a PWA: `src/app/manifest.ts`, icons, standalone display. The landing install section has Desktop and Mobile buttons. They open the browser's own install prompt where one exists (Chrome, Edge, Android), and otherwise show the exact steps for the visitor's device (iOS Add to Home Screen, Safari Add to Dock, Firefox fallback). `installTarget()` is a pure, tested UA helper.
+**Why.** It opens in its own window with its own icon on every platform, with no second codebase, no store review and no update channel. The non-goal stands.
+**Trade-off.** No offline mode and no push notifications. Neither is needed while every analysis runs on the server.
+
+## ADR 7 — Motion videos are rendered files, not live animations
+
+**Context.** The landing and the empty states use motion videos built from the `z.md` prompts.
+**Decision.** Each video is one HTML file whose frames are a pure function of time (`seek(t)`). `media/render.mjs` renders it frame by frame to MP4 and WebM with a poster, and the site embeds them muted, lazily and only in view.
+**Why.** The pages ship no animation runtime, which keeps the single hero effect rule (DESIGN §2) and the Lighthouse budget. The same source renders the 16:9 and 9:16 social cuts, and any frame can be re-rendered exactly.
+**Trade-off.** Video text is English only. Changing a video means re-rendering it (about a minute each).
+

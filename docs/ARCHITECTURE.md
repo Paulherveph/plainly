@@ -56,6 +56,16 @@ src/
 supabase/migrations/             # SQL, applied with the Supabase CLI
 evals/                           # sample documents + scoring
 e2e/                             # Playwright
+media/                           # Marketing assets, built from the real app (not shipped code)
+│  ├─ capture.ts                 # Screenshots of every screen (desktop/mobile, dark/light)
+│  ├─ screenshots/               # WebP shots committed; PNG masters in raw/ (gitignored)
+│  ├─ videos/                    # One HTML file per video, driven by seek(t) (lib/engine.js)
+│  ├─ render.mjs                 # Frame-by-frame render → public/videos/ (site) or out/ (social)
+│  └─ icons.mjs                  # Favicon / PWA icons from src/app/icon.svg
+public/
+│  ├─ videos/                    # Rendered MP4 + WebM + poster per video
+│  ├─ images/                    # Device-frame screenshots for the install section
+│  └─ icons/                     # PWA icons (manifest: src/app/manifest.ts)
 docs/
 ```
 

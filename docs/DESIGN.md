@@ -28,7 +28,19 @@ Light theme: invert surfaces, keep the same accent, check contrast (AA). Theme t
 - Stagger lists by 40 ms, max 8 items.
 - Stream results in section by section. Skeletons match the final layout.
 - Everything respects `prefers-reduced-motion`: fall back to opacity only.
+- Tokens in `globals.css`: `--dur-1/2/3` (150/200/250 ms), `--ease-out`, `--ease-in`, `--ease-spring`.
+- **Pages** enter with a fade and an 8 px rise, and leave faster (`[locale]/template.tsx`, React `<ViewTransition>`).
+  The header and footer are named, so they stay still.
+- **Skeleton → content**: `RevealSuspense` fades the skeleton out and the content in.
+- **Scroll**: `.reveal` is a CSS scroll-driven animation, so it plays scrolling down and back up, with no JS.
+  The header gains its hairline once the page scrolls.
+- **Lists**: `.stagger` with `--i` on each row, 40 ms apart, max 8.
+- **Theme switch**: the new theme grows as a circle from the bordered toggle (View Transitions API).
+- **Videos** (`media/videos/`) are content, not effects. They are muted, load lazily, play only in view,
+  show the poster only with reduced motion, and have a pause button when longer than 5 s.
 - **One** hero effect on the whole site. No parallax stacks, no cursor gimmicks elsewhere.
+
+Every page has a skeleton that matches its layout (`loading.tsx` + module `*-skeleton.tsx`).
 
 ## 3. Hero
 

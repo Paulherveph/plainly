@@ -2,8 +2,7 @@
 
 **Paperwork, in plain language.** Drop in a lease, a visa letter, a job offer or a contract. Plainly explains what it says, lists what you have to do and by when, and answers your questions, all from the document itself. Every point links to the sentence it came from.
 
-<!-- Replace with a 20-second demo GIF (see docs/PROMPTS.md, "Demo video"). -->
-![Demo: a lease is analysed, a deadline is highlighted, a citation opens its source](docs/demo.gif)
+[![Showreel: a lease is analysed section by section, a citation opens its source, deadlines are exported](public/videos/showreel.webp)](public/videos/showreel.mp4)
 
 - English, French and Chinese interface, and explanations in any of the three, whatever the document's language.
 - No signup: guests can analyse right away and keep their work by signing in later.
@@ -109,6 +108,14 @@ pnpm eval       # 10 documents: deadline recall, fact recall, quote verification
 ## Quality
 
 Lighthouse on a production build (mobile, simulated throttling): accessibility 100 and best practices 100 on every page, performance 93 to 96, observed LCP about 0.5 s. Desktop performance 100.
+
+## Media
+
+Screenshots and videos are built from the running app, so they always match the product.
+
+- `node media/capture.ts` captures every screen at desktop and mobile size, in dark and light (`media/SHOTS.md` lists each shot and where it is used).
+- `media/videos/` holds one HTML file per video. `media/render-all.sh` renders them to `public/videos/` and the social cuts to `media/out/`. `media/videos/PROMPTS.md` has the prompt and beat map behind each one.
+- Plainly installs as a web app on desktop and mobile (see ADR 6).
 
 ## Project kit
 
