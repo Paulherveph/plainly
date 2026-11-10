@@ -17,6 +17,8 @@ import { Link } from "@/shared/i18n/navigation";
 import { buttonVariants } from "./button";
 import { HeroOrb } from "./hero-orb";
 import { InstallButtons } from "./install-app";
+import { ExplainerButton, HowSteps } from "./landing-video";
+import { LoopVideo } from "./loop-video";
 
 /** Plain <a>: the sample route creates a document, so it must never be prefetched. */
 function TrySampleLink({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -67,6 +69,7 @@ export function Hero() {
             </li>
           ))}
         </ul>
+        <ExplainerButton />
       </div>
 
       <div className="relative mx-auto mt-4 h-[260px] max-w-[520px] md:h-[400px]">
@@ -272,18 +275,20 @@ export function HowItWorks() {
   return (
     <section className="mx-auto max-w-[1120px] px-5 py-22 md:px-8 md:py-30" aria-labelledby="how-title">
       <SectionHead id="how-title" eyebrow={t("howEyebrow")} title={t("howTitle")} />
-      <ol className="grid gap-4 md:grid-cols-3">
-        {steps.map((s) => (
-          <li key={s.n} className="glass reveal relative overflow-hidden rounded-2xl p-7">
-            <span className="font-mono text-[13px] text-brand-text">{s.n}</span>
-            <div className="mt-4.5 grid size-11 place-items-center rounded-xl border border-brand/25 bg-brand-soft text-brand-text [&_svg]:size-4.5">
-              {s.icon}
-            </div>
-            <h3 className="mt-4.5 font-semibold text-xl">{s.title}</h3>
-            <p className="mt-2 text-[15px] text-muted-foreground">{s.body}</p>
-          </li>
-        ))}
-      </ol>
+      <HowSteps steps={steps} />
+    </section>
+  );
+}
+
+/** "See it work": the 20-second showreel (V1) in a browser frame. */
+export function Showreel() {
+  const t = useTranslations("Video");
+  return (
+    <section className="mx-auto max-w-[1120px] px-5 pt-16 md:px-8 md:pt-24" aria-labelledby="reel-title">
+      <SectionHead id="reel-title" eyebrow={t("showreelEyebrow")} title={t("showreelTitle")} />
+      <figure className="reveal overflow-hidden rounded-[20px] border border-line-strong bg-background shadow-[0_0_80px_-20px_var(--brand-glow),0_40px_100px_-40px_rgb(0_0_0/0.7)]">
+        <LoopVideo name="showreel" label={t("showreelLabel")} controls />
+      </figure>
     </section>
   );
 }
@@ -438,6 +443,10 @@ export function FinalCta() {
         <div
           aria-hidden="true"
           className="-translate-x-1/2 absolute -top-30 left-1/2 h-75 w-150 bg-[radial-gradient(closest-side,rgb(148_120_255/0.3),transparent)]"
+        />
+        <LoopVideo
+          name="brand-loop"
+          className="relative mx-auto mb-8 max-w-[560px] overflow-hidden rounded-xl border"
         />
         <h2 className="relative font-semibold text-[28px] leading-[1.15] md:text-[40px]">
           {t("finalTitle")}

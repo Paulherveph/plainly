@@ -276,7 +276,7 @@
   "Install": {
     "eyebrow": "电脑和手机",
     "title": "把 Plainly 放在手边。",
-    "body": "像应用一样安装。它在独立窗口中打开，有自己的图标。不用应用商店，也不用另外下载。",
+    "body": "安装后，它会在独立窗口中打开，有自己的图标。不需要应用商店。",
     "desktopTitle": "电脑",
     "desktopBody": "Mac、Windows 或 Linux，使用 Chrome、Edge 或 Safari。",
     "desktopCta": "安装到电脑",
@@ -304,7 +304,7 @@
   },
   "Video": {
     "showreelEyebrow": "实际演示",
-    "showreelTitle": "放进一份租约，得到一张简短的待办清单。",
+    "showreelTitle": "从一份 3 页的租约，到一张简短的待办清单。",
     "showreelLabel": "视频：一份示例租约被逐节解释，一条引文被核对，截止日期被导出，一个问题根据文件得到回答。",
     "explainerCta": "观看 30 秒介绍",
     "explainerTitle": "30 秒了解 Plainly",

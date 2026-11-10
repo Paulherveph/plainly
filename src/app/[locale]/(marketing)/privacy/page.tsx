@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { alternatesFor } from "@/shared/i18n/alternates";
 import { DeleteEverything } from "@/shared/ui/delete-everything";
+import { LoopVideo } from "@/shared/ui/loop-video";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]/privacy">): Promise<Metadata> {
   const { locale } = await params;
@@ -33,7 +34,15 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
           </ul>
         </Section>
         <Section title={t("howLongTitle")}>
-          <p className="mt-3 text-muted-foreground">{t("howLong")}</p>
+          <div className="mt-3 flex flex-col gap-5 sm:flex-row sm:items-center">
+            <p className="text-muted-foreground">{t("howLong")}</p>
+            <LoopVideo
+              name="loop-expiry"
+              themed
+              cycles={2}
+              className="w-40 shrink-0 overflow-hidden rounded-xl border"
+            />
+          </div>
         </Section>
         <Section title={t("whoTitle")}>
           <p className="mt-3 text-muted-foreground">{t("who")}</p>

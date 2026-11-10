@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { setDeadlineDoneAction } from "@/server/actions/deadlines";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "@/shared/ui/button";
+import { LoopVideo } from "@/shared/ui/loop-video";
 import { type Deadline, daysFrom, groupDeadlines } from "../domain/deadline";
 
 export function DeadlineList({ deadlines, today }: { deadlines: Deadline[]; today: string }) {
@@ -30,9 +31,12 @@ export function DeadlineList({ deadlines, today }: { deadlines: Deadline[]; toda
   if (deadlines.length === 0) {
     return (
       <div className="mt-3 rounded-xl border bg-surface px-6 py-12 text-center">
-        <div className="mx-auto mb-3.5 grid size-12 place-items-center rounded-2xl border bg-surface-2 text-muted-foreground">
-          <CalendarIcon className="size-5" />
-        </div>
+        <LoopVideo
+          name="loop-deadline"
+          themed
+          cycles={2}
+          className="mx-auto mb-3.5 w-36 overflow-hidden rounded-xl"
+        />
         <h2 className="font-semibold">{t("emptyTitle")}</h2>
         <p className="mt-1 text-muted-foreground text-sm">{t("emptyBody")}</p>
         <Button asChild variant="outline" size="sm" className="mt-4">

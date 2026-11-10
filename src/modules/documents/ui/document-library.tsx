@@ -6,6 +6,7 @@ import { useFormatter, useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { Link } from "@/shared/i18n/navigation";
 import { Input } from "@/shared/ui/input";
+import { LoopVideo } from "@/shared/ui/loop-video";
 import { type DocumentStatus, type DocumentSummary, daysUntil } from "../domain/document";
 
 /** `now` comes from the server (request time) so rendering stays deterministic. */
@@ -24,7 +25,14 @@ export function DocumentLibrary({ documents, now }: { documents: DocumentSummary
   );
 
   if (documents.length === 0) {
-    return <Empty icon={<FileTextIcon />} title={t("emptyTitle")} body={t("emptyBody")} />;
+    return (
+      <Empty
+        icon={<LoopVideo name="loop-summary" themed cycles={2} className="w-36 overflow-hidden rounded-xl" />}
+        bare
+        title={t("emptyTitle")}
+        body={t("emptyBody")}
+      />
+    );
   }
 
   return (
@@ -141,12 +149,26 @@ export function StatusBadge({ status }: { status: DocumentStatus }) {
   );
 }
 
-function Empty({ icon, title, body }: { icon: React.ReactNode; title: string; body: string }) {
+function Empty({
+  icon,
+  title,
+  body,
+  bare = false,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  body: string;
+  bare?: boolean;
+}) {
   return (
     <div className="mt-3 rounded-xl border bg-surface px-6 py-12 text-center">
-      <div className="mx-auto mb-3.5 grid size-12 place-items-center rounded-2xl border bg-surface-2 text-muted-foreground [&_svg]:size-5">
-        {icon}
-      </div>
+      {bare ? (
+        <div className="mx-auto mb-3.5 w-fit">{icon}</div>
+      ) : (
+        <div className="mx-auto mb-3.5 grid size-12 place-items-center rounded-2xl border bg-surface-2 text-muted-foreground [&_svg]:size-5">
+          {icon}
+        </div>
+      )}
       <h3 className="font-semibold">{title}</h3>
       <p className="mt-1 text-muted-foreground text-sm">{body}</p>
     </div>

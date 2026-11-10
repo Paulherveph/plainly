@@ -276,7 +276,7 @@
   "Install": {
     "eyebrow": "Desktop and mobile",
     "title": "Keep Plainly one click away.",
-    "body": "Install it like an app. It opens in its own window, with its own icon. No app store, nothing extra to download.",
+    "body": "Install it and it opens in its own window, with its own icon. You don't need an app store.",
     "desktopTitle": "Desktop",
     "desktopBody": "Mac, Windows or Linux, from Chrome, Edge or Safari.",
     "desktopCta": "Install on desktop",
@@ -304,7 +304,7 @@
   },
   "Video": {
     "showreelEyebrow": "See it work",
-    "showreelTitle": "A lease goes in. A short to-do list comes out.",
+    "showreelTitle": "From a 3-page lease to a short to-do list.",
     "showreelLabel": "Video: a sample lease is explained section by section, a quote is checked, its deadlines are exported and a question is answered from the document.",
     "explainerCta": "Watch the 30-second explainer",
     "explainerTitle": "Plainly in 30 seconds",

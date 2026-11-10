@@ -276,7 +276,7 @@
   "Install": {
     "eyebrow": "Ordinateur et mobile",
     "title": "Gardez Plainly à portée de clic.",
-    "body": "Installez-le comme une application. Il s'ouvre dans sa propre fenêtre, avec sa propre icône. Pas de store, rien d'autre à télécharger.",
+    "body": "Installez-le : il s'ouvre dans sa propre fenêtre, avec sa propre icône. Aucun store nécessaire.",
     "desktopTitle": "Ordinateur",
     "desktopBody": "Mac, Windows ou Linux, depuis Chrome, Edge ou Safari.",
     "desktopCta": "Installer sur l'ordinateur",
@@ -304,7 +304,7 @@
   },
   "Video": {
     "showreelEyebrow": "En action",
-    "showreelTitle": "Un bail entre. Une courte liste de choses à faire sort.",
+    "showreelTitle": "D'un bail de 3 pages à une courte liste de choses à faire.",
     "showreelLabel": "Vidéo : un bail d'exemple est expliqué section par section, une citation est vérifiée, ses échéances sont exportées et une question reçoit une réponse tirée du document.",
     "explainerCta": "Voir la présentation en 30 secondes",
     "explainerTitle": "Plainly en 30 secondes",
