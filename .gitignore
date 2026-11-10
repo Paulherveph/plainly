@@ -53,3 +53,7 @@ z.md
 
 # eval output (timestamped)
 /evals/results-*.json
+
+# Screenshot PNG masters (webp copies are committed)
+media/screenshots/raw/
+media/out/
