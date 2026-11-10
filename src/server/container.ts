@@ -3,6 +3,10 @@ import { makeAnalyzeDocument } from "@/modules/analysis/application/analyze-docu
 import type { DocumentAnalyzer } from "@/modules/analysis/application/ports";
 import { FakeAnalyzer } from "@/modules/analysis/infrastructure/fake-analyzer";
 import { SupabaseAnalysisRepository } from "@/modules/analysis/infrastructure/supabase-analysis-repository";
+import { makeAnswerQuestion } from "@/modules/chat/application/answer-question";
+import type { DocumentAnswerer } from "@/modules/chat/application/ports";
+import { FakeAnswerer } from "@/modules/chat/infrastructure/fake-answerer";
+import { SupabaseMessageRepository } from "@/modules/chat/infrastructure/supabase-message-repository";
 import { makeDeleteEverything } from "@/modules/documents/application/delete-everything";
 import {
   makeGetDocument,
@@ -19,6 +23,7 @@ import { serverEnv } from "@/shared/config/env";
 import { createSupabase, getSessionUser } from "./supabase";
 
 let analyzer: Promise<DocumentAnalyzer> | undefined;
+let answerer: Promise<DocumentAnswerer> | undefined;
 
 /** The Anthropic SDK is only loaded when it is used (never with USE_FAKE_AI). */
 function getAnalyzer(): Promise<DocumentAnalyzer> {
@@ -35,6 +40,19 @@ function getAnalyzer(): Promise<DocumentAnalyzer> {
   return analyzer;
 }
 
+function getAnswerer(): Promise<DocumentAnswerer> {
+  answerer ??= (async () => {
+    const env = serverEnv();
+    if (env.USE_FAKE_AI) return new FakeAnswerer();
+    const [{ createAnthropic }, { AnthropicAnswerer }] = await Promise.all([
+      import("@ai-sdk/anthropic"),
+      import("@/modules/chat/infrastructure/anthropic-answerer"),
+    ]);
+    return new AnthropicAnswerer(createAnthropic({ apiKey: env.ANTHROPIC_API_KEY }), env.AI_MODEL_ANALYSIS);
+  })();
+  return answerer;
+}
+
 /**
  * Composition root: wires adapters to ports for one request.
  * Every adapter uses the session-bound Supabase client, so RLS applies to all of it.
@@ -45,6 +63,7 @@ export async function container() {
   const files = new SupabaseFileStore(supabase);
   const analyses = new SupabaseAnalysisRepository(supabase);
   const quota = new SupabaseQuotaService(supabase);
+  const messages = new SupabaseMessageRepository(supabase);
 
   return {
     currentUser: () => getSessionUser(supabase),
@@ -68,6 +87,8 @@ export async function container() {
     }),
     findAnalysis: analyses.find.bind(analyses),
     deleteEverything: makeDeleteEverything({ documents, files }),
+    answerQuestion: makeAnswerQuestion({ documents, files, messages, answerer: await getAnswerer(), quota }),
+    listMessages: messages.list.bind(messages),
   };
 }
 

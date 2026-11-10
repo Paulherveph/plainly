@@ -4,6 +4,8 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 import { z } from "zod";
 import { AnalysisScreen } from "@/modules/analysis/ui/analysis-screen";
+import type { StoredMessage } from "@/modules/chat/application/ports";
+import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
 import { container } from "@/server/container";
 
 const OutputLocale = z.enum(["en", "fr", "zh"]);
@@ -32,7 +34,10 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
   if (!user) notFound();
   const doc = await c.getDocument(user.id, id);
   if (!doc.ok) notFound();
-  const cached = await c.findAnalysis(doc.value.id, outputLocale);
+  const [cached, history] = await Promise.all([
+    c.findAnalysis(doc.value.id, outputLocale),
+    c.listMessages(doc.value.id, 50),
+  ]);
   const initial =
     cached.ok && cached.value ? { analysis: cached.value.analysis, dropped: cached.value.dropped } : null;
 
@@ -50,8 +55,23 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
       locale={outputLocale}
       initial={initial}
       today={new Date().toISOString().slice(0, 10)}
+      chatHistory={history.ok ? history.value.map(toUIMessage) : []}
     />
   );
+}
+
+function toUIMessage(m: StoredMessage): ChatUIMessage {
+  return {
+    id: m.id,
+    role: m.role,
+    parts:
+      m.role === "user"
+        ? [{ type: "text", text: m.text }]
+        : [
+            { type: "text", text: m.text },
+            { type: "data-citations", data: { citations: m.citations, refused: m.refused } },
+          ],
+  };
 }
 
 function ScreenSkeleton() {

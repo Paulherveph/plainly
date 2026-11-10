@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
+import { ChatPanel } from "@/modules/chat/ui/chat-panel";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "@/shared/ui/button";
 import { QuotaDialog } from "@/shared/ui/quota-dialog";
@@ -44,8 +46,8 @@ export type AnalysisScreenProps = {
   initial: { analysis: Analysis; dropped: number } | null;
   /** YYYY-MM-DD, computed on the server at request time (overdue state). */
   today: string;
-  /** Rendered once the analysis is ready (the chat). */
-  chat?: React.ReactNode;
+  /** Stored chat for this document, shown once the analysis is ready. */
+  chatHistory: ChatUIMessage[];
   /** Optional per-action controls (e.g. add to calendar), by index. */
   actionExtra?: (index: number) => React.ReactNode;
 };
@@ -56,7 +58,7 @@ export function AnalysisScreen({
   locale,
   initial,
   today,
-  chat,
+  chatHistory,
   actionExtra,
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
@@ -173,7 +175,14 @@ export function AnalysisScreen({
                   {t("dropped", { count: state.dropped })}
                 </p>
               ) : null}
-              {verified ? chat : null}
+              {verified ? (
+                <ChatPanel
+                  documentId={doc.id}
+                  locale={locale}
+                  initialMessages={chatHistory}
+                  onCite={showOnPage}
+                />
+              ) : null}
             </>
           )}
           <p className="flex items-center gap-2 px-0.5 text-faint text-xs">
