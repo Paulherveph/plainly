@@ -105,16 +105,26 @@ function Group({
         {title}
         <span className="font-mono text-faint">{items.length}</span>
       </h2>
-      <ul className="overflow-hidden rounded-xl border bg-surface">
-        {items.map((d) => (
-          <Row key={d.id} d={d} today={today} onToggle={onToggle} />
+      <ul className="stagger overflow-hidden rounded-xl border bg-surface">
+        {items.map((d, i) => (
+          <Row key={d.id} d={d} i={i} today={today} onToggle={onToggle} />
         ))}
       </ul>
     </section>
   );
 }
 
-function Row({ d, today, onToggle }: { d: Deadline; today: string; onToggle: (d: Deadline) => void }) {
+function Row({
+  d,
+  i,
+  today,
+  onToggle,
+}: {
+  d: Deadline;
+  i: number;
+  today: string;
+  onToggle: (d: Deadline) => void;
+}) {
   const t = useTranslations("Deadlines");
   const format = useFormatter();
   const days = daysFrom(today, d.dueOn);
@@ -122,6 +132,7 @@ function Row({ d, today, onToggle }: { d: Deadline; today: string; onToggle: (d:
   return (
     <li
       data-testid="deadline"
+      style={{ "--i": i } as React.CSSProperties}
       className={cn(
         "grid grid-cols-[auto_1fr_auto] items-center gap-x-3.5 gap-y-1 border-b px-4 py-3.5 transition-[background-color,opacity] last:border-b-0 hover:bg-surface-2 sm:grid-cols-[auto_88px_1fr_auto]",
         d.done && "opacity-55",

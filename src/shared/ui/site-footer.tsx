@@ -5,7 +5,7 @@ import { LogoMark } from "./logo";
 export function SiteFooter() {
   const t = useTranslations();
   return (
-    <footer className="mt-10 border-t py-10 pb-14">
+    <footer className="vt-footer mt-10 border-t py-10 pb-14">
       <div className="mx-auto flex max-w-[1120px] flex-col gap-5 px-5 md:flex-row md:items-center md:justify-between md:px-8">
         <div>
           <Link href="/" className="inline-flex items-center gap-2 font-semibold text-[15px]">

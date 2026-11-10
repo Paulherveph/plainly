@@ -11,7 +11,7 @@ export function SiteHeader({ account }: { account: React.ReactNode }) {
   const t = useTranslations("Nav");
   const slot = <Suspense fallback={<span className="inline-block h-8 w-32" />}>{account}</Suspense>;
   return (
-    <header className="sticky top-0 z-40 border-b bg-background/70 backdrop-blur-xl backdrop-saturate-150">
+    <header className="site-header vt-header sticky top-0 z-40 border-b bg-background/70 backdrop-blur-xl backdrop-saturate-150">
       <div className="relative mx-auto flex h-16 max-w-[1120px] items-center gap-4 px-5 md:px-8">
         <Link
           href="/"

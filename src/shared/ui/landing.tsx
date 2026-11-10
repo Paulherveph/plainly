@@ -75,7 +75,7 @@ export function Hero() {
         <HeroOrb />
       </div>
 
-      <div className="relative mx-auto -mt-8 max-w-[1120px] px-5 pb-10 md:-mt-24 md:px-8">
+      <div className="reveal relative mx-auto -mt-8 max-w-[1120px] px-5 pb-10 md:-mt-24 md:px-8">
         <ProductPreview />
         <div
           aria-hidden="true"
@@ -240,7 +240,7 @@ function SectionHead({
   id: string;
 }) {
   return (
-    <div className="mb-12 flex flex-col items-center text-center">
+    <div className="reveal mb-12 flex flex-col items-center text-center">
       {eyebrow ? (
         <span className="eyebrow mb-4.5">
           <span className="eyebrow-dot" />
@@ -272,7 +272,7 @@ export function HowItWorks() {
       <SectionHead id="how-title" eyebrow={t("howEyebrow")} title={t("howTitle")} />
       <ol className="grid gap-4 md:grid-cols-3">
         {steps.map((s) => (
-          <li key={s.n} className="glass relative overflow-hidden rounded-2xl p-7">
+          <li key={s.n} className="glass reveal relative overflow-hidden rounded-2xl p-7">
             <span className="font-mono text-[13px] text-brand-text">{s.n}</span>
             <div className="mt-4.5 grid size-11 place-items-center rounded-xl border border-brand/25 bg-brand-soft text-brand-text [&_svg]:size-4.5">
               {s.icon}
@@ -361,7 +361,7 @@ function Tile({
 }) {
   return (
     <article
-      className={`glass flex min-h-[260px] flex-col overflow-hidden rounded-2xl p-7 ${className ?? ""}`}
+      className={`glass reveal flex min-h-[260px] flex-col overflow-hidden rounded-2xl p-7 ${className ?? ""}`}
     >
       <h3 className="font-semibold text-xl">{title}</h3>
       <p className="mt-1.5 max-w-[420px] text-[15px] text-muted-foreground">{body}</p>
@@ -374,7 +374,7 @@ export function PrivacyBand() {
   const t = useTranslations("Landing");
   return (
     <section className="mx-auto max-w-[1120px] px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="priv-title">
-      <div className="glass grid items-center gap-8 rounded-2xl p-9 lg:grid-cols-2 lg:p-14">
+      <div className="glass reveal grid items-center gap-8 rounded-2xl p-9 lg:grid-cols-2 lg:p-14">
         <div>
           <span className="eyebrow">
             <LockIcon className="size-3.5" aria-hidden="true" />
@@ -412,7 +412,7 @@ export function Faq() {
       <SectionHead id="faq-title" title={t("faqTitle")} />
       <div className="mx-auto max-w-[760px]">
         {([1, 2, 3, 4, 5] as const).map((n) => (
-          <details key={n} className="group border-b">
+          <details key={n} className="reveal group border-b">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-1 py-5.5 font-medium text-[17px] [&::-webkit-details-marker]:hidden">
               {t(`faq${n}Q`)}
               <PlusIcon
@@ -432,7 +432,7 @@ export function FinalCta() {
   const t = useTranslations("Landing");
   return (
     <section className="mx-auto max-w-[1120px] px-5 pb-10 md:px-8">
-      <div className="glass relative overflow-hidden rounded-2xl px-6 py-16 text-center">
+      <div className="glass reveal relative overflow-hidden rounded-2xl px-6 py-16 text-center">
         <div
           aria-hidden="true"
           className="-translate-x-1/2 absolute -top-30 left-1/2 h-75 w-150 bg-[radial-gradient(closest-side,rgb(148_120_255/0.3),transparent)]"

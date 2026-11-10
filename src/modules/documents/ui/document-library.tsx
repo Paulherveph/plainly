@@ -67,9 +67,9 @@ export function DocumentLibrary({ documents, now }: { documents: DocumentSummary
       {rows.length === 0 ? (
         <Empty icon={<SearchIcon />} title={t("noMatchTitle")} body={t("noMatchBody")} />
       ) : (
-        <ul className="mt-3 overflow-hidden rounded-xl border bg-surface">
-          {rows.map((d) => (
-            <li key={d.id} className="border-b last:border-b-0">
+        <ul className="stagger mt-3 overflow-hidden rounded-xl border bg-surface">
+          {rows.map((d, i) => (
+            <li key={d.id} className="border-b last:border-b-0" style={{ "--i": i } as React.CSSProperties}>
               <Link
                 href={`/documents/${d.id}`}
                 className="grid grid-cols-[auto_1fr_auto] items-center gap-3.5 px-4 py-3.5 transition-colors hover:bg-surface-2"
