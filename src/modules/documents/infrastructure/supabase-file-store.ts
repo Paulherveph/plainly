@@ -31,6 +31,12 @@ export class SupabaseFileStore implements FileStore {
     return error || !data ? err({ kind: "storage_failed" }) : ok(data.signedUrl);
   }
 
+  async remove(paths: readonly string[]): Promise<Result<null, AppError>> {
+    if (paths.length === 0) return ok(null);
+    const { error } = await this.db.storage.from(BUCKET).remove([...paths]);
+    return error ? err({ kind: "storage_failed" }) : ok(null);
+  }
+
   /** Lists {userId}/{documentId}/* and removes every file. */
   async removeUserFolder(userId: string): Promise<Result<null, AppError>> {
     const bucket = this.db.storage.from(BUCKET);

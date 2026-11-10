@@ -7,7 +7,7 @@ import { titleFromFilename } from "@/modules/documents/domain/document";
 import { container } from "@/server/container";
 import type { AppError } from "@/shared/lib/errors";
 import { log } from "@/shared/lib/log";
-import { err, type Result } from "@/shared/lib/result";
+import { err, ok, type Result } from "@/shared/lib/result";
 
 type Created = Result<{ id: string }, AppError>;
 
@@ -50,4 +50,15 @@ export async function createSampleAction(sampleId: SampleId): Promise<Created> {
   const parsed = Sample.safeParse(sampleId);
   if (!parsed.success) return err({ kind: "not_found" });
   return withUser((c, userId) => c.uploadDocument({ userId, source: "sample", sampleId: parsed.data }));
+}
+
+/** "Delete everything now": files, documents, analyses, chats and deadlines of the current user. */
+export async function deleteEverythingAction(): Promise<Result<null, AppError>> {
+  const c = await container();
+  const user = await c.currentUser();
+  if (!user) return ok(null); // no session, nothing stored
+  const result = await c.deleteEverything(user.id);
+  log("privacy.delete_everything", { ok: result.ok, error: result.ok ? null : result.error.kind });
+  if (result.ok) revalidatePath("/[locale]", "layout");
+  return result;
 }
