@@ -19,7 +19,8 @@
       "!src/shared/lib/db-types.ts",
       "!playwright-report",
       "!test-results",
-      "!docs"
+      "!docs",
+      "!samples"
     ]
   },
   "formatter": {
@@ -49,5 +50,17 @@
         "organizeImports": "on"
       }
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/modules/analysis/ui/**"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noArrayIndexKey": "off"
+          }
+        }
+      }
+    }
+  ]
 }

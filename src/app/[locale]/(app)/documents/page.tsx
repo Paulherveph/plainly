@@ -1,11 +1,99 @@
-import { useTranslations } from "next-intl";
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
+import { DocumentInput } from "@/modules/documents/ui/document-input";
+import { DocumentLibrary } from "@/modules/documents/ui/document-library";
+import { SamplePicker } from "@/modules/documents/ui/sample-picker";
+import { container } from "@/server/container";
 
-export default function DocumentsPage() {
-  const t = useTranslations("Documents");
+export async function generateMetadata({ params }: PageProps<"/[locale]/documents">): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Documents" });
+  return { title: t("title") };
+}
+
+export default async function DocumentsPage({ params }: PageProps<"/[locale]/documents">) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "Documents" });
   return (
-    <section className="mx-auto max-w-[1120px] px-5 pt-14 pb-24 md:px-8">
-      <h1 className="font-semibold text-3xl md:text-4xl">{t("title")}</h1>
-      <p className="mt-2 text-muted-foreground">{t("sub")}</p>
+    <section className="mx-auto max-w-[1120px] px-5 pt-10 pb-24 md:px-8 md:pt-14">
+      <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="font-semibold text-3xl tracking-tight md:text-[40px] md:leading-[1.1]">
+            {t("title")}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{t("sub")}</p>
+        </div>
+        <Suspense fallback={<span className="h-5 w-48" />}>
+          <QuotaMeter />
+        </Suspense>
+      </div>
+
+      <DocumentInput />
+
+      <SectionLabel>
+        {t("samplesTitle")}
+        <span className="rounded-full border bg-surface-2 px-2.5 py-0.5 font-normal text-xs normal-case tracking-normal">
+          {t("samplesNote")}
+        </span>
+      </SectionLabel>
+      <SamplePicker />
+
+      <SectionLabel>{t("libraryTitle")}</SectionLabel>
+      <Suspense fallback={<LibrarySkeleton />}>
+        <Library />
+      </Suspense>
     </section>
+  );
+}
+
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="mt-12 flex items-center justify-between gap-3 font-medium text-[13px] text-muted-foreground uppercase tracking-[0.06em]">
+      {children}
+    </h2>
+  );
+}
+
+async function QuotaMeter() {
+  const t = await getTranslations("Documents");
+  const status = await (await container()).quota.status("analysis");
+  if (!status.ok) return null;
+  const { remaining, limit } = status.value;
+  return (
+    <div className="flex items-center gap-2.5 text-muted-foreground text-[13px]" data-testid="quota">
+      <div className="h-1.5 w-18 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
+        <div className="h-full rounded-full bg-brand" style={{ width: `${(remaining / limit) * 100}%` }} />
+      </div>
+      {t("quota", { left: remaining, max: limit })}
+    </div>
+  );
+}
+
+async function Library() {
+  const t = await getTranslations("Documents");
+  const c = await container();
+  const user = await c.currentUser();
+  const docs = user ? await c.listDocuments(user.id) : null;
+  if (!docs?.ok) {
+    return (
+      <p
+        role="alert"
+        className="mt-4 rounded-xl border bg-surface px-4 py-6 text-center text-muted-foreground text-sm"
+      >
+        {t("loadError")}
+      </p>
+    );
+  }
+  return <DocumentLibrary documents={docs.value} now={new Date().toISOString()} />;
+}
+
+function LibrarySkeleton() {
+  return (
+    <div className="mt-4 grid gap-2 rounded-xl border bg-surface p-4" aria-hidden="true">
+      {[0, 1, 2].map((i) => (
+        <div key={i} className="skeleton-line h-10" />
+      ))}
+    </div>
   );
 }

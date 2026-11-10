@@ -228,7 +228,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      consume_quota: {
+        Args: { p_kind: string }
+        Returns: {
+          quota: number
+          used: number
+        }[]
+      }
       owns_document: { Args: { p_document_id: string }; Returns: boolean }
+      quota_limit: { Args: { p_kind: string }; Returns: number }
+      refund_quota: { Args: { p_kind: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never

@@ -2,6 +2,7 @@
 
 import { cn } from "cn";
 import { useTranslations } from "next-intl";
+import { Suspense } from "react";
 import { Link, usePathname } from "@/shared/i18n/navigation";
 
 const ITEMS = [
@@ -10,17 +11,25 @@ const ITEMS = [
   { href: "/privacy", key: "privacy" },
 ] as const;
 
-export function NavLinks({
-  variant = "bar",
-  onNavigate,
-}: {
-  variant?: "bar" | "menu";
-  onNavigate?: () => void;
-}) {
+type Props = { variant?: "bar" | "menu"; onNavigate?: () => void };
+
+/** The active state needs the URL, which streams in; the links themselves render in the static shell. */
+export function NavLinks(props: Props) {
+  return (
+    <Suspense fallback={<Links {...props} pathname={null} />}>
+      <ActiveLinks {...props} />
+    </Suspense>
+  );
+}
+
+function ActiveLinks(props: Props) {
+  return <Links {...props} pathname={usePathname()} />;
+}
+
+function Links({ variant = "bar", onNavigate, pathname }: Props & { pathname: string | null }) {
   const t = useTranslations("Nav");
-  const pathname = usePathname();
   return ITEMS.map((item) => {
-    const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
+    const active = pathname !== null && (pathname === item.href || pathname.startsWith(`${item.href}/`));
     return (
       <Link
         key={item.href}

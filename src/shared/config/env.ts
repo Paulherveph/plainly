@@ -10,6 +10,9 @@ const bool = z
   .optional()
   .transform((v) => v === "true" || v === "1");
 
+/** Empty strings (e.g. `KEY=` in .env or an exported blank variable) count as unset. */
+const optional = (schema: z.ZodString) => z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
+
 const PublicEnv = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
@@ -17,12 +20,12 @@ const PublicEnv = z.object({
 });
 
 const ServerEnv = PublicEnv.extend({
-  SUPABASE_SECRET_KEY: z.string().min(1).optional(),
-  ANTHROPIC_API_KEY: z.string().min(1).optional(),
+  SUPABASE_SECRET_KEY: optional(z.string().min(1)),
+  ANTHROPIC_API_KEY: optional(z.string().min(1)),
   AI_MODEL_ANALYSIS: z.string().min(1).default("claude-sonnet-5-5"),
   AI_MODEL_FAST: z.string().min(1).default("claude-haiku-5-5"),
   USE_FAKE_AI: bool,
-  CRON_SECRET: z.string().min(16).optional(),
+  CRON_SECRET: optional(z.string().min(16)),
 }).refine((e) => e.USE_FAKE_AI || e.ANTHROPIC_API_KEY, {
   message: "Set ANTHROPIC_API_KEY, or USE_FAKE_AI=true for local work and tests.",
   path: ["ANTHROPIC_API_KEY"],
@@ -52,6 +55,8 @@ let cachedServer: ServerEnv | undefined;
 export function serverEnv(): ServerEnv {
   if (typeof window !== "undefined") throw new Error("serverEnv() must not run in the browser");
   if (cachedServer) return cachedServer;
+  // An empty ANTHROPIC_BASE_URL (some shells export one) makes @ai-sdk/anthropic throw on import.
+  if (process.env.ANTHROPIC_BASE_URL === "") delete process.env.ANTHROPIC_BASE_URL;
   const parsed = ServerEnv.safeParse(process.env);
   if (!parsed.success) throw new Error(`Invalid server env: ${format(parsed.error)}`);
   cachedServer = parsed.data;
