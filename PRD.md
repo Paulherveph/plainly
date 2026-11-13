@@ -1,6 +1,6 @@
 # Plainly — Product Requirements Document
 
-**Version** 1.0 · **Owner** Paul Hervé Tatieze · **Status** Ready to build
+**Version** 1.1 · **Owner** Paul Hervé Tatieze · **Status** Ready to build
 **Tagline** Understand any document in plain language.
 
 ---
@@ -43,7 +43,7 @@ Output can be read in English, French or Chinese, whatever language the original
 **Non-goals (KISS, do not build)**
 - Legal advice or verdicts. Plainly explains, it does not decide.
 - OCR pipeline, vector database, RAG infrastructure (Claude reads PDFs and images natively; documents are capped).
-- Payments, teams, sharing, email notifications, native apps.
+- Teams, public API and native apps are out of scope until after launch (see `docs/ROADMAP.md`). Sharing and email notifications stay out of the MVP.
 - Editing or signing documents.
 
 ## 5. Core flow
@@ -67,10 +67,13 @@ Guests are signed in anonymously (Supabase anonymous auth) so they can try it at
 | F4 | **Source proof** | Each fact, action and watch-out shows page and quote. Quotes that fail verification against the document text are removed, and a count of removed claims is logged |
 | F5 | **Ask the document** | Streaming chat. Answers only from the document. If not found, says so. Citations are clickable and highlight the source |
 | F6 | **Deadlines** | Dated actions collected on `/deadlines`, sorted, with overdue state. Export one or all as `.ics` |
-| F7 | **Auth** | Anonymous by default. Upgrade with Google or magic link without losing data |
+| F7 | **Auth** | Anonymous by default. Sign up and sign in with Google or email (magic link or one-time code). Guest data is kept on upgrade, and merged if the email already has an account. Account page with usage, plan, export and delete. See `docs/AUTH.md` |
 | F8 | **Privacy** | Private storage, row-level security, signed URLs, "Delete everything now" button, automatic deletion after 30 days |
 | F9 | **i18n** | UI in en, fr, zh. Locale in the URL |
-| F10 | **Limits** | Daily quota (guest 5, member 20 analyses). Friendly message when reached |
+| F10 | **Limits** | Credits and plan entitlements (Guest, Free, Pro, credit packs). See `docs/PRICING.md` |
+| F15 | **Multi-provider AI** | Fallback across providers and cost metering. See `docs/AI_PROVIDERS.md` |
+| F16 | **Pricing page and upgrade flow** | See `docs/PRICING.md` |
+| F17 | **Terms of Service page** | en, fr, zh |
 
 ### P1 — should ship
 
@@ -89,23 +92,11 @@ Guests are signed in anonymously (Supabase anonymous auth) so they can try it at
 
 ### 7.1 Models
 
-| Task | Model (env-configurable) | Why |
-|------|--------------------------|-----|
-| Analysis, chat | `claude-sonnet-5-5` | Strong reading and reasoning at fair cost |
-| Title, document type, language detection | `claude-haiku-5-5` | Fast and cheap |
-
-Model IDs live in env (`AI_MODEL_ANALYSIS`, `AI_MODEL_FAST`). Check current IDs with Context7 or the Anthropic docs before release.
+Models are configured as profiles (`analysis`, `chat`, `fast`, `translate`) through `AI_PROFILE_*` env vars, each a comma-separated `provider:model` list in fallback order. No provider name or model ID appears in domain or application code. See `docs/AI_PROVIDERS.md`.
 
 ### 7.2 Pipeline
 
-```
-upload ─▶ validate (type, size, pages) ─▶ store (private bucket)
-       ─▶ extract text server-side (for quote verification only)
-       ─▶ Claude reads the original file natively ─▶ structured output (Zod schema)
-       ─▶ verify each quote against extracted text ─▶ persist ─▶ stream to UI
-```
-
-Use the Vercel AI SDK for streaming structured output. Verify the exact API names with Context7, they have changed between major versions.
+Text-first route: extract text, route scanned pages to vision, cache the result, retrieve pages for chat. Samples are precomputed and cost zero tokens. See `docs/TOKEN_ECONOMY.md`.
 
 ### 7.3 Output schema (Zod 4)
 
@@ -117,6 +108,7 @@ const Cite = z.object({
 
 export const Analysis = z.object({
   documentType: z.string(),
+  documentDate: z.iso.date().nullable(),
   language: z.enum(["en", "fr", "zh", "other"]),
   summary: z.string().max(600),
   keyFacts: z.array(z.object({ label: z.string(), value: z.string(), cite: Cite })),
@@ -124,6 +116,7 @@ export const Analysis = z.object({
     title: z.string(),
     detail: z.string(),
     dueOn: z.iso.date().nullable(),
+    dueRule: z.string().max(120).nullable(), // relative deadlines, e.g. "within 30 days of receipt"
     cite: Cite,
   })),
   watchOuts: z.array(z.object({
@@ -135,6 +128,8 @@ export const Analysis = z.object({
   glossary: z.array(z.object({ term: z.string(), plain: z.string() })),
 });
 ```
+
+Array caps: keyFacts 8, actions 8, watchOuts 6. Glossary is generated on demand.
 
 ### 7.4 Guardrails
 
@@ -160,6 +155,8 @@ deadlines   id, document_id, user_id, label, due_on date, quote, page, done bool
 usage       user_id, day date, analyses int, chats int, PRIMARY KEY (user_id, day)
 ```
 
+Added by Handoff 01, all with RLS: `profiles`, `plans`, `subscriptions`, `credit_ledger` (append-only), `ai_usage`, `document_pages` (page text + tsvector for retrieval), `analysis_cache`. Page text is stored and deleted with the document; the Privacy page says so.
+
 Policy pattern: `user_id = (select auth.uid())` for select, insert, update, delete.
 Storage bucket `documents` is private, path `{user_id}/{document_id}/original.ext`.
 Migrations live in `supabase/migrations/` and are applied with the Supabase CLI, never by hand through MCP.
@@ -179,7 +176,10 @@ Migrations live in `supabase/migrations/` and are applied with the Supabase CLI,
 | PDF text | `unpdf` | Only for quote verification |
 | Quality | Biome, Vitest, Playwright, dependency-cruiser | `pnpm check` runs all |
 | Hosting | Vercel | Preview per PR |
-| Package manager | pnpm | Node 20.19 or newer |
+| Bot protection | Cloudflare Turnstile | |
+| Email | Resend | Auth and reminder emails |
+| Billing | Merchant-of-Record provider behind a `BillingProvider` port | `docs/PRICING.md` |
+| Package manager | pnpm workspace (`apps/web`) | Node 20.19 or newer |
 
 Keep an up-to-date `docs/DECISIONS.md` (short ADRs) for each choice that surprised you.
 
@@ -194,28 +194,11 @@ Keep an up-to-date `docs/DECISIONS.md` (short ADRs) for each choice that surpris
 
 ## 11. Roadmap
 
-Walking skeleton today. Polished MVP in about 2 days of focused work.
-
-| Phase | Time | Outcome | Done when |
-|-------|------|---------|-----------|
-| 0 Setup | 45 min | Repo, MCP, CI, env, Supabase project | `pnpm check` passes on an empty app |
-| 1 Foundation | 1 h | Layout, i18n, auth (anonymous), design tokens | Guest lands on the app shell |
-| 2 Analysis | 2 h | Upload, analyze a sample, streamed result with proof | F1–F4 acceptance passes |
-| 3 Chat | 1 h | Ask the document with citations | F5 passes |
-| 4 Deadlines | 45 min | List, overdue, `.ics` | F6 passes |
-| 5 Safety | 45 min | RLS tests, quota, delete, retention | F8, F10 pass |
-| 6 Landing and polish | 1.5 h | Hero, motion, empty states, copy pass | Lighthouse targets met |
-| 7 Ship | 1 h | Deploy, README, evals, case study, portfolio entry | Live URL, public repo |
+Stages S0 to S7 with a gate each: see `docs/ROADMAP.md`.
 
 ## 12. Launch checklist
 
-- [ ] Live on Vercel with a custom subdomain
-- [ ] A visitor can analyse a sample with zero signup
-- [ ] README has a 20-second GIF, architecture diagram, stack, how to run, how to test
-- [ ] E2E happy path green in CI (uses `FakeAnalyzer`, no API cost)
-- [ ] Evals score published in the README
-- [ ] Privacy page and "not legal advice" visible
-- [ ] Case study added to paulherveph.vercel.app in en, fr, zh
+See the launch gate in `docs/QUALITY_GATE.md`.
 
 ## 13. Portfolio case study outline
 
@@ -234,3 +217,8 @@ Walking skeleton today. Polished MVP in about 2 days of focused work.
 | API cost spikes | Caps, quota, caching, cheap model for small tasks |
 | Scope creep | Non-goals list. Anything new goes to P2 |
 | Visitors test with real documents and fear leaks | Prominent samples, plain privacy statement |
+
+---
+
+**Changelog**
+- 1.1 — Handoff 01: payments and accounts in scope, credits and plans, multi-provider AI profiles, text-first pipeline, new tables, monorepo, staged roadmap and launch gate.
