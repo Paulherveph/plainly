@@ -19,10 +19,12 @@
     "e2e": "pnpm --filter @plainly/web e2e",
     "db:test": "DO_NOT_TRACK=1 supabase test db",
     "test:db": "DO_NOT_TRACK=1 supabase test db",
-    "db:types": "supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts"
+    "db:types": "supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts",
+    "lighthouse": "node scripts/lighthouse.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",
-    "@playwright/test": "^1.65.0"
+    "@playwright/test": "^1.65.0",
+    "lighthouse": "^13.6.0"
   }
 }
