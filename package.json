@@ -20,7 +20,11 @@
     "db:test": "DO_NOT_TRACK=1 supabase test db",
     "test:db": "DO_NOT_TRACK=1 supabase test db",
     "db:types": "supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts",
-    "lighthouse": "node scripts/lighthouse.mjs"
+    "lighthouse": "node scripts/lighthouse.mjs",
+    "ai:try": "pnpm --filter @plainly/web ai:try",
+    "ai:eval": "pnpm --filter @plainly/web ai:eval",
+    "ai:report": "pnpm --filter @plainly/web ai:report",
+    "ai:samples": "pnpm --filter @plainly/web ai:samples"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",

@@ -1,0 +1,12 @@
+[
+  { "doc": "lease", "question": "Is there a swimming pool in the building?" },
+  { "doc": "lease", "question": "Who won the last football World Cup?" },
+  { "doc": "offer", "question": "What is the name of the CEO's dog?" },
+  { "doc": "offer", "question": "What will the weather be like on my first day?" },
+  { "doc": "visa", "question": "What is the capital of Australia?" },
+  { "doc": "visa", "question": "Which airline should I book to travel home?" },
+  { "doc": "bank-overdraft", "question": "What is the bank's share price today?" },
+  { "doc": "phone-contract", "question": "Does the contract include a free television?" },
+  { "doc": "tax-notice", "question": "What is the best restaurant near the tax office?" },
+  { "doc": "university-admission", "question": "What grade will I get in my first exam?" }
+]

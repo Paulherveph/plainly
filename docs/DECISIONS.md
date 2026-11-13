@@ -68,3 +68,22 @@ Short ADRs for choices a reviewer might question. Newest last.
 5. **Dependency.** `lighthouse` (root devDependency): `docs/QUALITY_GATE.md` section 4 requires a `pnpm lighthouse` command. Scripts live in a new root folder `scripts/`; media tooling stays in `assets/media/`.
 6. **Real GPU.** Headless Chromium reports SwiftShader, which the page rejects on purpose. Gate measurements use `--use-gl=angle --use-angle=gl --ignore-gpu-blocklist --enable-gpu`, which gives this machine's Intel GPU. The e2e tests that need the live orb report a GPU name instead, because CI has no GPU.
 **Trade-off.** The software-renderer path (what Lighthouse sees by default) scores 87 to 89 performance, just under 90. The spec asks for 90 with the orb enabled.
+
+## ADR 10: Text first; scanned pages are transcribed once with the cheap model (2026-11-14, S2)
+**Context.** TOKEN_ECONOMY asks to send page images only for scanned pages. unpdf can only render a page to an image with a canvas package (`@napi-rs/canvas`, a native dependency of about 30 MB).
+**Decision.** Every page is extracted as text. Pages with fewer than 40 letters or digits are flagged `vision_pages`. Before the first analysis, the file is sent once to the `fast` profile with the list of scanned pages, and only those pages are transcribed. The transcription replaces the empty pages, and every later call (analysis, chat, translation) is text only.
+**Consequences.** No native dependency, no per-page images. A mixed PDF still uploads the whole file once to the cheap model, which is acceptable because it happens once per document. If transcription cost shows up in `pnpm ai:report`, add page rendering then. ADR 1 (Claude reads the PDF natively) is superseded for analysis and chat.
+
+## ADR 11: One gateway, profiles from env, metering per attempt (2026-11-14, S2)
+**Context.** Tokens are the main cost, and a provider outage must not reach the user.
+**Decision.** `AiGateway` is the only path to a provider: `AiSdkGateway` in production and `FakeAiGateway` for tests, E2E and load tests. Each `AI_PROFILE_*` is an ordered list of `provider:model`. The gateway allows at most 2 fallbacks, makes one repair retry on invalid output, keeps an in-memory circuit breaker (60 s), and reads `provider_disabled:*` and `profile_override:*` flags. Every attempt writes an `ai_usage` row through `record_ai_usage()`, which takes `user_id` from the JWT.
+**Consequences.** Switching models is a config change. A model without a price row cannot be configured, and production refuses models without a passing `pnpm ai:eval` unless `AI_ALLOW_UNVERIFIED_MODELS=true`. Only `@ai-sdk/anthropic` is installed. Adding another provider takes one package, one case in `loadProvider`, a price row and an env key.
+
+## ADR 12: Analysis survives a closed tab; chat stops with the reader (2026-11-14, S2)
+**Context.** TOKEN_ECONOMY technique 9 says to abort when the stream closes. Use case B14 says the analysis must finish when the tab is closed.
+**Decision.** Analysis runs as a job: the route keeps it alive with `after()` and ignores the request signal, so the result is stored and shown on return. Chat passes `request.signal` to the provider, so pressing stop or closing the tab aborts the call, and the answer is free.
+**Consequences.** An analysis cannot be cancelled once it starts. A failed run shows the partial result marked as incomplete, with Resume, which re-runs the analysis. Credits are charged only for a completed run. Partial results are not stored server side (B13, simplified).
+
+## ADR 13: Per-user analysis cache (2026-11-14, S2)
+**Decision.** `analysis_cache` is keyed by `(user_id, sha256(normalized text) : locale : ANALYSIS_VERSION : analysis models)` under RLS. Users never share cache rows, so an upload cannot reveal whether another user holds the same document.
+**Consequences.** Two different users with the same file each pay once. Re-uploads by the same user are free (A16). Bumping `ANALYSIS_VERSION` invalidates the cache when prompts change (B20).

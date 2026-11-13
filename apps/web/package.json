@@ -11,7 +11,11 @@
     "arch": "depcruise src --config .dependency-cruiser.cjs",
     "check": "pnpm typecheck && pnpm test && pnpm arch",
     "eval": "vitest run evals",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "ai:try": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-try.ts",
+    "ai:eval": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-eval.ts",
+    "ai:report": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-report.ts",
+    "ai:samples": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-samples.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.99",
@@ -45,6 +49,7 @@
     "@types/react-dom": "^19",
     "dependency-cruiser": "^18.7.2",
     "tailwindcss": "4.3.3",
+    "tsx": "^4.23.15",
     "typescript": "^5",
     "vitest": "^5.1.0"
   },
