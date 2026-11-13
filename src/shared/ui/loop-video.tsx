@@ -28,6 +28,17 @@ type Props = {
   ref?: React.Ref<LoopVideoHandle>;
 };
 
+/**
+ * Some GPUs/drivers fail to decode VP9 after its metadata loads (MEDIA_ERR_DECODE). Browsers
+ * don't try the next <source> after a decode error, so switch to the MP4 ourselves.
+ * Returns false when there is nothing left to fall back to.
+ */
+export function fallBackToMp4(v: HTMLVideoElement): boolean {
+  if (!v.currentSrc.endsWith(".webm")) return false;
+  v.src = v.currentSrc.replace(/\.webm$/, ".mp4");
+  return true;
+}
+
 const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 /** With `themed`, two videos exist and CSS hides one: act on the one that is displayed. */
 const shown = (root: HTMLElement | null) =>
@@ -48,16 +59,29 @@ export function LoopVideo({
   const [playing, setPlaying] = useState(false);
   const [paused, setPaused] = useState(false); // the viewer pressed pause
   const plays = useRef(0);
+  // Whether we asked this video to play: an error pauses it, so `paused` can't tell us.
+  const wantsPlay = useRef(false);
+
+  function play(v: HTMLVideoElement) {
+    wantsPlay.current = true;
+    v.play().catch(() => setPlaying(false));
+  }
+
+  function pause(v: HTMLVideoElement) {
+    wantsPlay.current = false;
+    v.pause();
+  }
 
   useImperativeHandle(ref, () => ({
     seek(time) {
       const v = shown(root.current);
       if (!v) return;
       v.currentTime = time;
-      if (!paused && !reducedMotion()) v.play().catch(() => setPlaying(false));
+      if (!paused && !reducedMotion()) play(v);
     },
   }));
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: play/pause only touch a ref and a state setter, both stable
   useEffect(() => {
     const el = root.current;
     if (!el || reducedMotion()) return;
@@ -69,8 +93,8 @@ export function LoopVideo({
         if (visible && !paused && (cycles == null || plays.current < cycles)) {
           v.preload = "auto";
           // Autoplay can be refused (browser setting, energy saver): the play button stays visible.
-          v.play().catch(() => setPlaying(false));
-        } else v.pause();
+          play(v);
+        } else pause(v);
       },
       { threshold: 0.35 },
     );
@@ -82,8 +106,8 @@ export function LoopVideo({
     const v = shown(root.current);
     if (!v) return;
     setPaused(!v.paused);
-    if (v.paused) v.play().catch(() => setPlaying(false));
-    else v.pause();
+    if (v.paused) play(v);
+    else pause(v);
   }
 
   const video = (suffix: string, extra?: string) => (
@@ -100,6 +124,9 @@ export function LoopVideo({
       className={cn("block h-auto w-full", extra)}
       onPlay={() => setPlaying(true)}
       onPause={() => setPlaying(false)}
+      onError={(e) => {
+        if (fallBackToMp4(e.currentTarget) && wantsPlay.current) play(e.currentTarget);
+      }}
       onTimeUpdate={(e) => onTime?.(e.currentTarget.currentTime)}
       onEnded={(e) => {
         plays.current += 1;

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { useRef, useState } from "react";
 import { Button } from "./button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogTrigger } from "./dialog";
-import { LoopVideo, type LoopVideoHandle } from "./loop-video";
+import { fallBackToMp4, LoopVideo, type LoopVideoHandle } from "./loop-video";
 
 /** Hero button that opens the 30-second explainer (V3) with native controls. */
 export function ExplainerButton() {
@@ -29,6 +29,8 @@ export function ExplainerButton() {
           muted
           playsInline
           aria-label={t("explainerLabel")}
+          // autoPlay restarts it once the MP4 loads.
+          onError={(e) => fallBackToMp4(e.currentTarget)}
         >
           <source src="/videos/explainer.webm" type="video/webm" />
           <source src="/videos/explainer.mp4" type="video/mp4" />

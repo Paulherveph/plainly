@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 
 test("the tab shows the Plainly icon and the app is installable", async ({ page, request }) => {
@@ -39,6 +40,20 @@ test("the landing videos are lazy and the steps follow the video", async ({ page
   await act.scrollIntoViewIfNeeded();
   await act.click();
   await expect(act).toHaveAttribute("aria-pressed", "true");
+});
+
+test("a video whose WebM fails to decode falls back to the MP4 and plays", async ({ page }) => {
+  // Real header (metadata loads), scrambled frames: the browser fails with MEDIA_ERR_DECODE,
+  // like a GPU that can't decode VP9.
+  const webm = readFileSync("public/videos/steps.webm");
+  for (let i = 8192; i < webm.length; i += 7) webm.writeUInt8(webm.readUInt8(i) ^ 0x5a, i);
+  await page.route("**/videos/steps.webm", (r) => r.fulfill({ body: webm, contentType: "video/webm" }));
+
+  await page.goto("/en");
+  const steps = page.locator('video[poster="/videos/steps.webp"]');
+  await steps.scrollIntoViewIfNeeded();
+  await expect.poll(() => steps.evaluate((v: HTMLVideoElement) => v.currentSrc)).toMatch(/\/steps\.mp4$/);
+  await expect.poll(() => steps.evaluate((v: HTMLVideoElement) => v.currentTime)).toBeGreaterThan(0.5);
 });
 
 test("navigating shows the page skeleton before the data arrives", async ({ page, isMobile }) => {
