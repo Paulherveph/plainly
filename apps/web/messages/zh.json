@@ -82,7 +82,12 @@
     "faq5Q": "需要注册吗？",
     "faq5A": "不需要。访客每天可分析 5 次。用 Google 或邮箱链接登录即可保存文件，每天 20 次。",
     "finalTitle": "收到一封看不懂的信？",
-    "finalBody": "先试一个示例，只要十秒钟。"
+    "finalBody": "先试一个示例，只要十秒钟。",
+    "pricingTitle": "免费开始。",
+    "pricingGuest": "次分析每天，无需账号",
+    "pricingMember": "次分析每天，登录后",
+    "pricingRead": "已有的结果永远可以查看",
+    "proofCount": "已解读 {count} 份文件"
   },
   "Documents": {
     "title": "你的文件",

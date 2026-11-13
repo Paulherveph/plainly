@@ -1,4 +1,5 @@
 // Vendored from React Bits (reactbits.dev, "Crystalized Ball", installed with the shadcn CLI). Not linted; do not edit by hand.
+// Local patch (docs/HERO.md): device pixel ratio capped at 1.5 instead of 2, in applyResize.
 // @ts-nocheck -- upstream code targets a looser tsconfig (no noUncheckedIndexedAccess); its prop types still apply to callers.
 'use client';
 
@@ -1247,7 +1248,7 @@ const CrystalizedBall = ({
     const applyResize = () => {
       width = Math.max(1, container.clientWidth);
       height = Math.max(1, container.clientHeight);
-      renderer.dpr = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(PIXEL_BUDGET / (width * height)));
+      renderer.dpr = Math.min(window.devicePixelRatio || 1, 1.5, Math.sqrt(PIXEL_BUDGET / (width * height)));
       renderer.setSize(width, height);
       sceneTarget.setSize(gl.canvas.width, gl.canvas.height);
     };

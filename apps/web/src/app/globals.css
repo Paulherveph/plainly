@@ -82,6 +82,11 @@
   --paper-ink: #1c1c22;
 }
 
+/* Marketing pages use a fluid container; app pages keep their 1120px reading width (docs/HERO.md). */
+@theme {
+  --container-marketing: clamp(1120px, 80vw, 1440px);
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -206,6 +211,11 @@
 }
 
 @layer components {
+  /* Orb diameter. The spec caps it at 680px, but 30% of the viewport at 2560px is 768px, so the cap is higher. */
+  .hero-stage {
+    --orb: clamp(280px, 38vw, 1000px);
+  }
+
   .glass {
     background: linear-gradient(
       180deg,

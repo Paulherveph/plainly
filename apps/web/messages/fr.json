@@ -82,7 +82,12 @@
     "faq5Q": "Faut-il un compte ?",
     "faq5A": "Non. Vous avez 5 analyses par jour tout de suite. Connectez-vous avec Google ou un lien e-mail pour garder vos documents et passer à 20.",
     "finalTitle": "Une lettre que vous ne comprenez pas ?",
-    "finalBody": "Essayez d'abord un exemple. Dix secondes suffisent."
+    "finalBody": "Essayez d'abord un exemple. Dix secondes suffisent.",
+    "pricingTitle": "Gratuit pour commencer.",
+    "pricingGuest": "analyses par jour, sans compte",
+    "pricingMember": "analyses par jour une fois connecté",
+    "pricingRead": "Vos résultats restent toujours lisibles",
+    "proofCount": "{count, plural, one {# document expliqué} other {# documents expliqués}}"
   },
   "Documents": {
     "title": "Vos documents",

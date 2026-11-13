@@ -18,7 +18,6 @@ import { buttonVariants } from "./button";
 import { HeroOrb } from "./hero-orb";
 import { InstallButtons } from "./install-app";
 import { ExplainerButton, HowSteps } from "./landing-video";
-import { LoopVideo } from "./loop-video";
 
 /** Plain <a>: the sample route creates a document, so it must never be prefetched. */
 function TrySampleLink({ className, children }: { className?: string; children: React.ReactNode }) {
@@ -33,24 +32,29 @@ function TrySampleLink({ className, children }: { className?: string; children: 
 export function Hero() {
   const t = useTranslations("Landing");
   return (
-    <section className="relative isolate overflow-hidden pt-18 md:pt-26" aria-labelledby="hero-title">
+    <section
+      className="hero-stage relative isolate overflow-hidden pt-14 md:pt-16"
+      aria-labelledby="hero-title"
+    >
       <div aria-hidden="true" className="-z-10 pointer-events-none absolute inset-0">
         <div className="absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgb(148_120_255/0.2),transparent_70%),radial-gradient(40%_40%_at_15%_70%,rgb(60_80_200/0.12),transparent_70%),radial-gradient(40%_40%_at_85%_60%,rgb(148_120_255/0.1),transparent_70%)]" />
         <div className="absolute inset-0 bg-[linear-gradient(var(--line)_1px,transparent_1px),linear-gradient(90deg,var(--line)_1px,transparent_1px)] bg-size-[64px_64px] opacity-40 [mask-image:radial-gradient(60%_55%_at_50%_30%,#000_20%,transparent_75%)]" />
       </div>
 
-      <div className="mx-auto flex max-w-[1120px] flex-col items-center px-5 text-center md:px-8">
+      <div className="relative z-10 mx-auto flex max-w-marketing flex-col items-center px-5 text-center md:px-8">
         <span className="eyebrow">
           <span className="eyebrow-dot" />
           {t("eyebrow")}
         </span>
         <h1
           id="hero-title"
-          className="text-gradient mt-5.5 max-w-[820px] font-semibold text-[44px] leading-[1.04] tracking-[-0.045em] sm:text-[64px] lg:text-[76px]"
+          className="text-gradient mt-5.5 max-w-[16ch] text-balance font-semibold text-[clamp(2.75rem,1.4rem+4.6vw,5.5rem)] leading-[1.05] tracking-[-0.045em]"
         >
           {t("titleStart")} <span className="text-brand-gradient">{t("titleEnd")}</span>
         </h1>
-        <p className="mt-5 max-w-[540px] text-[17px] text-muted-foreground md:text-[19px]">{t("sub")}</p>
+        <p className="mt-5 max-w-[34em] text-[clamp(1rem,0.9rem+0.4vw,1.25rem)] text-muted-foreground">
+          {t("sub")}
+        </p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <TrySampleLink className={buttonVariants({ size: "lg" })}>
             {t("ctaSample")}
@@ -72,7 +76,7 @@ export function Hero() {
         <ExplainerButton />
       </div>
 
-      <div className="relative mx-auto mt-4 h-[260px] max-w-[520px] md:h-[400px]">
+      <div className="relative mx-auto mt-2 aspect-square w-(--orb)">
         <div
           aria-hidden="true"
           className="-translate-x-1/2 absolute top-0 left-1/2 h-[46%] w-0.5 bg-[linear-gradient(180deg,transparent,rgb(190_175_255/0.6)_45%,#fff)] shadow-[0_0_24px_6px_var(--brand-glow),0_0_120px_40px_rgb(148_120_255/0.18)]"
@@ -80,8 +84,10 @@ export function Hero() {
         <HeroOrb />
       </div>
 
-      <div className="reveal relative mx-auto -mt-8 max-w-[1120px] px-5 pb-10 md:-mt-24 md:px-8">
-        <ProductPreview />
+      <div className="reveal relative mx-auto -mt-[calc(var(--orb)*0.3)] max-w-marketing px-5 pb-10 md:px-8">
+        <div className="[filter:blur(calc((1-var(--calm,1))*2px))] [opacity:calc(0.8+var(--calm,1)*0.2)]">
+          <ProductPreview />
+        </div>
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-x-0 bottom-0 h-44 bg-[linear-gradient(180deg,transparent,var(--bg))]"
@@ -107,7 +113,7 @@ function ProductPreview() {
               <i key={i} className="size-2.5 rounded-full border border-line-strong bg-surface-2" />
             ))}
           </span>
-          <span className="mx-auto rounded-full border bg-background px-3.5 py-1 font-mono text-faint text-xs">
+          <span className="mx-auto rounded-full border bg-background px-3.5 py-1 font-mono text-muted-foreground text-xs">
             plainly.app/documents/lease
           </span>
           <span className="w-11" />
@@ -273,22 +279,10 @@ export function HowItWorks() {
     { n: "03", icon: <CalendarIcon />, title: t("how3Title"), body: t("how3Body") },
   ];
   return (
-    <section className="mx-auto max-w-[1120px] px-5 py-22 md:px-8 md:py-30" aria-labelledby="how-title">
+    <section className="mx-auto max-w-marketing px-5 py-22 md:px-8 md:py-30" aria-labelledby="how-title">
       <SectionHead id="how-title" eyebrow={t("howEyebrow")} title={t("howTitle")} />
       <HowSteps steps={steps} />
-    </section>
-  );
-}
-
-/** "See it work": the 20-second showreel (V1) in a browser frame. */
-export function Showreel() {
-  const t = useTranslations("Video");
-  return (
-    <section className="mx-auto max-w-[1120px] px-5 pt-16 md:px-8 md:pt-24" aria-labelledby="reel-title">
-      <SectionHead id="reel-title" eyebrow={t("showreelEyebrow")} title={t("showreelTitle")} />
-      <figure className="reveal overflow-hidden rounded-[20px] border border-line-strong bg-background shadow-[0_0_80px_-20px_var(--brand-glow),0_40px_100px_-40px_rgb(0_0_0/0.7)]">
-        <LoopVideo name="showreel" label={t("showreelLabel")} controls />
-      </figure>
+      <Features />
     </section>
   );
 }
@@ -298,13 +292,13 @@ export function Features() {
   const d = useTranslations("LandingDemo");
   const tc = useTranslations("Chat");
   return (
-    <section className="mx-auto max-w-[1120px] px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="feat-title">
-      <SectionHead
+    <div className="mt-20 md:mt-28">
+      <h3
         id="feat-title"
-        eyebrow={t("featEyebrow")}
-        title={t("featTitle")}
-        muted={t("featTitleMuted")}
-      />
+        className="reveal mb-10 text-center font-semibold text-2xl leading-[1.15] md:text-[32px]"
+      >
+        {t("featTitle")} <span className="text-muted-foreground">{t("featTitleMuted")}</span>
+      </h3>
       <div className="grid gap-4 lg:grid-cols-6">
         <Tile className="lg:col-span-4" title={t("featQuoteTitle")} body={t("featQuoteBody")}>
           <blockquote className="max-w-[520px] rounded-[10px] border border-l-[3px] border-l-brand bg-background p-4 font-mono text-[13.5px] leading-relaxed">
@@ -351,7 +345,7 @@ export function Features() {
           </div>
         </Tile>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -380,7 +374,7 @@ function Tile({
 export function PrivacyBand() {
   const t = useTranslations("Landing");
   return (
-    <section className="mx-auto max-w-[1120px] px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="priv-title">
+    <section className="mx-auto max-w-marketing px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="priv-title">
       <div className="glass reveal grid items-center gap-8 rounded-2xl p-9 lg:grid-cols-2 lg:p-14">
         <div>
           <span className="eyebrow">
@@ -412,10 +406,44 @@ export function PrivacyBand() {
   );
 }
 
+/** Real limits only, passed in from the quota domain. A pricing link joins the header after Stage S4. */
+export function PricingTeaser({ guestLimit, memberLimit }: { guestLimit: number; memberLimit: number }) {
+  const t = useTranslations("Landing");
+  const items = [
+    { value: String(guestLimit), label: t("pricingGuest") },
+    { value: String(memberLimit), label: t("pricingMember") },
+    { value: "✓", label: t("pricingRead") },
+  ];
+  return (
+    <section className="mx-auto max-w-marketing px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="pricing-title">
+      <SectionHead id="pricing-title" title={t("pricingTitle")} />
+      <ul className="reveal mx-auto grid max-w-[900px] gap-4 sm:grid-cols-3">
+        {items.map((i) => (
+          <li key={i.label} className="glass rounded-2xl p-6 text-center">
+            <div className="font-semibold text-4xl text-brand-text tabular-nums">{i.value}</div>
+            <p className="mt-2 text-[15px] text-muted-foreground">{i.label}</p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/** Shown only when a real number exists. Never pass an invented one. */
+export function SocialProof({ documentsExplained }: { documentsExplained?: number }) {
+  const t = useTranslations("Landing");
+  if (!documentsExplained || documentsExplained <= 0) return null;
+  return (
+    <p className="mx-auto max-w-marketing px-5 pb-10 text-center text-muted-foreground text-sm md:px-8">
+      {t("proofCount", { count: documentsExplained })}
+    </p>
+  );
+}
+
 export function Faq() {
   const t = useTranslations("Landing");
   return (
-    <section className="mx-auto max-w-[1120px] px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="faq-title">
+    <section className="mx-auto max-w-marketing px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="faq-title">
       <SectionHead id="faq-title" title={t("faqTitle")} />
       <div className="mx-auto max-w-[760px]">
         {([1, 2, 3, 4, 5] as const).map((n) => (
@@ -438,16 +466,11 @@ export function Faq() {
 export function FinalCta() {
   const t = useTranslations("Landing");
   return (
-    <section className="mx-auto max-w-[1120px] px-5 pb-10 md:px-8">
+    <section className="mx-auto max-w-marketing px-5 pb-10 md:px-8">
       <div className="glass reveal relative overflow-hidden rounded-2xl px-6 py-16 text-center">
         <div
           aria-hidden="true"
           className="-translate-x-1/2 absolute -top-30 left-1/2 h-75 w-150 bg-[radial-gradient(closest-side,rgb(148_120_255/0.3),transparent)]"
-        />
-        <LoopVideo
-          name="brand-loop"
-          controls
-          className="relative mx-auto mb-8 max-w-[560px] overflow-hidden rounded-xl border"
         />
         <h2 className="relative font-semibold text-[28px] leading-[1.15] md:text-[40px]">
           {t("finalTitle")}
@@ -472,7 +495,7 @@ export function InstallSection() {
   return (
     <section
       id="install"
-      className="mx-auto max-w-[1120px] scroll-mt-24 px-5 pb-22 md:px-8 md:pb-30"
+      className="mx-auto max-w-marketing scroll-mt-24 px-5 pb-22 md:px-8 md:pb-30"
       aria-labelledby="install-title"
     >
       <div className="grid items-center gap-12 lg:grid-cols-[1fr_1.15fr]">

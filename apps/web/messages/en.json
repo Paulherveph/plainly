@@ -82,7 +82,12 @@
     "faq5Q": "Do I need an account?",
     "faq5A": "No. You get 5 analyses a day straight away. Sign in with Google or an email link to keep your documents and get 20 a day.",
     "finalTitle": "Got a letter you don't understand?",
-    "finalBody": "Try a sample first. It takes ten seconds."
+    "finalBody": "Try a sample first. It takes ten seconds.",
+    "pricingTitle": "Free to start.",
+    "pricingGuest": "analyses a day, no account",
+    "pricingMember": "analyses a day when you sign in",
+    "pricingRead": "Past results stay readable, always",
+    "proofCount": "{count, plural, one {# document explained} other {# documents explained}}"
   },
   "Documents": {
     "title": "Your documents",
