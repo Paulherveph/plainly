@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Contact sheet of a video's stills: media/sheet.sh <stills-dir> <out.png> [cols]
+# Contact sheet of a video's stills: assets/media/sheet.sh <stills-dir> <out.png> [cols]
 set -euo pipefail
 dir=$1; out=$2; cols=${3:-3}
 n=$(ls "$dir"/*.png | wc -l); rows=$(( (n + cols - 1) / cols ))

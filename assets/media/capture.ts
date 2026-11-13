@@ -1,7 +1,7 @@
 /**
  * Captures real screenshots of every Plainly screen for the videos, the install section and the README.
- * Run against a dev server with the fake AI:  BASE=http://localhost:3200 node media/capture.ts
- * Output: media/screenshots/{desktop,mobile}/{dark,light}/NN-name.webp (+ PNG masters in raw/, gitignored).
+ * Run against a dev server with the fake AI:  BASE=http://localhost:3200 node assets/media/capture.ts
+ * Output: assets/media/screenshots/{desktop,mobile}/{dark,light}/NN-name.webp (+ PNG masters in raw/, gitignored).
  */
 import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
@@ -9,7 +9,7 @@ import { type Browser, chromium, type Page } from "@playwright/test";
 
 const BASE = process.env.BASE ?? "http://localhost:3200";
 const ONLY = process.env.ONLY; // e.g. "desktop-dark"
-const OUT = "media/screenshots";
+const OUT = "assets/media/screenshots";
 
 const devices = {
   desktop: { viewport: { width: 1440, height: 900 }, deviceScaleFactor: 2, isMobile: false, hasTouch: false },

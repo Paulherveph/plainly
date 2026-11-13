@@ -2,7 +2,7 @@
 
 **Paperwork, in plain language.** Drop in a lease, a visa letter, a job offer or a contract. Plainly explains what it says, lists what you have to do and by when, and answers your questions, all from the document itself. Every point links to the sentence it came from.
 
-[![Showreel: a lease is analysed section by section, a citation opens its source, deadlines are exported](public/videos/showreel.webp)](public/videos/showreel.mp4)
+[![Showreel: a lease is analysed section by section, a citation opens its source, deadlines are exported](apps/web/public/videos/showreel.webp)](apps/web/public/videos/showreel.mp4)
 
 - English, French and Chinese interface, and explanations in any of the three, whatever the document's language.
 - No signup: guests can analyse right away and keep their work by signing in later.
@@ -81,7 +81,7 @@ Requirements: Node 20.19+, pnpm 10, Docker and the Supabase CLI.
 pnpm install
 supabase start                 # local Postgres, Auth and Storage
 supabase migration up          # schema, RLS, quota functions
-cp .env.example .env.local     # then fill in the keys from `supabase status`
+cp apps/web/.env.example apps/web/.env.local     # then fill in the keys from `supabase status`
 pnpm dev                       # http://localhost:3000
 ```
 
@@ -98,7 +98,7 @@ pnpm eval       # 10 documents: deadline recall, fact recall, quote verification
 
 ## Evals
 
-`evals/` holds 10 documents (leases, visa and work-permit letters, an offer, bank, tax, insurance and phone notices) in English, French and Chinese, with the deadlines and facts each one should yield. `pnpm eval` reports deadline recall, fact recall, the share of claims whose quotes pass verification, and any dates the model added that the document doesn't state.
+`apps/web/evals/` holds 10 documents (leases, visa and work-permit letters, an offer, bank, tax, insurance and phone notices) in English, French and Chinese, with the deadlines and facts each one should yield. `pnpm eval` reports deadline recall, fact recall, the share of claims whose quotes pass verification, and any dates the model added that the document doesn't state.
 
 | Run | Deadline recall | Fact recall | Quotes verified | Unexpected dates |
 |---|---:|---:|---:|---:|
@@ -113,10 +113,10 @@ Lighthouse on a production build (mobile, simulated throttling): accessibility 1
 
 Screenshots and videos are built from the running app, so they always match the product.
 
-- `node media/capture.ts` captures every screen at desktop and mobile size, in dark and light (`media/SHOTS.md` lists each shot and where it is used).
-- `media/videos/` holds one HTML file per video. `media/render-all.sh` renders them to `public/videos/` and the social cuts to `media/out/`. `media/videos/PROMPTS.md` has the prompt and beat map behind each one.
+- `node assets/media/capture.ts` captures every screen at desktop and mobile size, in dark and light (`assets/media/SHOTS.md` lists each shot and where it is used).
+- `assets/media/videos/` holds one HTML file per video. `assets/media/render-all.sh` renders them to `apps/web/public/videos/` and the social cuts to `assets/media/out/`. `assets/media/videos/PROMPTS.md` has the prompt and beat map behind each one.
 - Plainly installs as a web app on desktop and mobile (see ADR 6).
 
 ## Project kit
 
-`CLAUDE.md`, `PRD.md` and `docs/` are the brief this project was built from. `mockup/index.html` is the clickable HTML mockup made before implementation.
+`CLAUDE.md`, `PRD.md` and `docs/` are the brief this project was built from. `assets/mockup/index.html` is the clickable HTML mockup made before implementation.

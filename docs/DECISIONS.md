@@ -45,7 +45,7 @@ Short ADRs for choices a reviewer might question. Newest last.
 ## ADR 7 — Motion videos are rendered files, not live animations
 
 **Context.** The landing and the empty states use motion videos built from the `z.md` prompts.
-**Decision.** Each video is one HTML file whose frames are a pure function of time (`seek(t)`). `media/render.mjs` renders it frame by frame to MP4 and WebM with a poster, and the site embeds them muted, lazily and only in view.
+**Decision.** Each video is one HTML file whose frames are a pure function of time (`seek(t)`). `assets/media/render.mjs` renders it frame by frame to MP4 and WebM with a poster, and the site embeds them muted, lazily and only in view.
 **Why.** The pages ship no animation runtime, which keeps the single hero effect rule (DESIGN §2) and the Lighthouse budget. The same source renders the 16:9 and 9:16 social cuts, and any frame can be re-rendered exactly.
 **Trade-off.** Video text is English only. Changing a video means re-rendering it (about a minute each).
 

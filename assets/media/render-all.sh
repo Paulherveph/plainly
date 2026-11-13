@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# Renders every video used by the site (public/videos/) and the social masters (media/out/).
+# Renders every video used by the site (apps/web/public/videos/) and the social masters (assets/media/out/).
 set -euo pipefail
-cd "$(dirname "$0")/.."
-r() { node media/render.mjs "$@"; echo; }
+cd "$(dirname "$0")/../.."
+r() { node assets/media/render.mjs "$@"; echo; }
 r showreel
 r steps
 r explainer

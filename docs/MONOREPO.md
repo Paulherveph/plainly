@@ -30,7 +30,7 @@ plainly/
 ## Steps
 1. Create a branch `chore/monorepo`. Use `git mv` for every move so history survives.
 2. Move into `apps/web/`: `src`, `messages`, `public`, `e2e`, `evals`, `samples`, `next.config.ts`, `tsconfig.json`, `vitest.config.mts`, `playwright.config.ts`, `components.json`, `vercel.json`, `.dependency-cruiser.cjs`, `.env.example`, `package.json`, and the app part of `pnpm-lock` stays at root (pnpm manages it). Move `.env.local` with plain `mv` (it is not tracked).
-3. Root `pnpm-workspace.yaml`: `packages: ["apps/*"]` (keep existing `onlyBuiltDependencies` or similar fields from the current file).
+3. Root `pnpm-workspace.yaml`: `packages: ["apps/*"]` (keep existing `ignoredBuiltDependencies` or similar fields from the current file).
 4. Root `package.json` (private, no dependencies except tooling shared by all):
    ```json
    {

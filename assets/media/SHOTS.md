@@ -20,11 +20,11 @@ WebP copies are committed; PNG masters go to `raw/` (gitignored) and feed the vi
 | 05 | landing-full | Whole landing page (scroll scenes) | V1/V6 scroll pass |
 | 06 | documents-empty | Upload card + samples | V1 scene 1, V2 chapter 1 |
 | 07 | analysis-streaming | Sections arriving | V1 scene 2, V2 chapter 2 |
-| 08 | analysis-ready | Summary + key facts + original | V1 scene 2, V3 scene 2, install device frame (`public/images/app-desktop.webp`) |
+| 08 | analysis-ready | Summary + key facts + original | V1 scene 2, V3 scene 2, install device frame (`apps/web/public/images/app-desktop.webp`) |
 | 09 | analysis-full | Every section, full height | V1 scroll, V2 chapter 2 |
 | 10 | citation-sheet | Quote found, "Show on page" | V1 scene 3, V3 proof scene |
 | 11 | chat | Grounded answer with a quote, then a refusal | V1 scene 5, V6 |
-| 12 | deadlines | Overdue + upcoming, .ics export | V1 scene 4, V2 chapter 3, install phone (`public/images/app-mobile.webp`) |
+| 12 | deadlines | Overdue + upcoming, .ics export | V1 scene 4, V2 chapter 3, install phone (`apps/web/public/images/app-mobile.webp`) |
 | 13 | documents-library | Library with the analysed lease | V6 |
 | 14 | privacy | Privacy page | V5 privacy loop poster |
 | 15 | sign-in / menu | Save-your-work dialog (desktop), menu (mobile) | README |

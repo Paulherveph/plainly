@@ -9,19 +9,19 @@
     "ignoreUnknown": true,
     "includes": [
       "**",
-      "!node_modules",
-      "!.next",
-      "!dist",
-      "!build",
-      "!mockup",
+      "!**/node_modules",
+      "!**/.next",
+      "!**/dist",
+      "!**/build",
+      "!assets/mockup",
       "!supabase/.temp",
       "!supabase/.branches",
-      "!src/shared/lib/db-types.ts",
-      "!playwright-report",
-      "!test-results",
+      "!apps/web/src/shared/lib/db-types.ts",
+      "!**/playwright-report",
+      "!**/test-results",
       "!docs",
-      "!samples",
-      "!src/shared/ui/crystalized-ball.tsx"
+      "!apps/web/samples",
+      "!apps/web/src/shared/ui/crystalized-ball.tsx"
     ]
   },
   "formatter": {
@@ -54,7 +54,7 @@
   },
   "overrides": [
     {
-      "includes": ["src/modules/analysis/ui/**"],
+      "includes": ["apps/web/src/modules/analysis/ui/**"],
       "linter": {
         "rules": {
           "suspicious": {

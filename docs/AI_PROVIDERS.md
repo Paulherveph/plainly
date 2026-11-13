@@ -43,14 +43,14 @@ Table `feature_flags(key, value jsonb, updated_at)` read by the server with a 30
 Create two CLI scripts in `apps/web/scripts/` (run with `tsx`):
 
 ```
-pnpm ai:try   --profile analysis --model xai:<model> --file samples/lease.pdf [--locale fr]
+pnpm ai:try   --profile analysis --model xai:<model> --file apps/web/samples/lease.pdf [--locale fr]
 ```
 Runs one analysis, prints: schema valid, quote verification pass rate, tokens, cost, latency, and the result.
 
 ```
 pnpm ai:eval  --profile analysis --model openai:<model>
 ```
-Runs the eval set (`evals/`, 10 documents with expected facts and deadlines) plus 10 unanswerable chat questions. Writes `evals/results/<date>-<provider>-<model>.json`.
+Runs the eval set (`evals/`, 10 documents with expected facts and deadlines) plus 10 unanswerable chat questions. Writes `apps/web/evals/results/<date>-<provider>-<model>.json`.
 
 **Promotion thresholds** for a model to enter a production profile:
 

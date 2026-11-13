@@ -20,52 +20,59 @@ Enforced in CI by `dependency-cruiser` (`pnpm arch`). A violation fails the buil
 
 ## 2. Folder tree
 
+The app lives in `apps/web/`. Paths below `apps/web/` are relative to it. Shared infra stays at the repo root.
+
 ```
-src/
-├─ app/                          # Routing only. Thin. No business logic
-│  ├─ [locale]/
-│  │  ├─ (marketing)/page.tsx
-│  │  └─ (app)/
-│  │     ├─ documents/page.tsx
-│  │     ├─ documents/[id]/page.tsx
-│  │     └─ deadlines/page.tsx
-│  └─ api/chat/route.ts          # Streaming endpoint
-├─ proxy.ts                      # Next.js 16 request interception (auth refresh, locale)
-├─ modules/
-│  ├─ documents/
-│  │  ├─ domain/                 # Document, DocumentStatus, limits
-│  │  ├─ application/            # uploadDocument, deleteDocument, ports.ts
-│  │  ├─ infrastructure/         # SupabaseDocumentRepository, SupabaseFileStore
-│  │  └─ ui/                     # DropZone, DocumentList
-│  ├─ analysis/
-│  │  ├─ domain/                 # Analysis schema, verifyCitations()
-│  │  ├─ application/            # analyzeDocument, ports.ts (DocumentAnalyzer)
-│  │  ├─ infrastructure/         # AnthropicAnalyzer, FakeAnalyzer
-│  │  └─ ui/                     # AnalysisView, CitationChip
-│  ├─ chat/                      # same four folders
-│  ├─ deadlines/                 # same four folders (+ toIcs())
-│  └─ quota/                     # same four folders
-├─ shared/
-│  ├─ ui/                        # shadcn components, design tokens
-│  ├─ lib/                       # result.ts, errors.ts, id.ts, dates.ts
-│  ├─ config/env.ts              # Zod-validated env, the only place that reads process.env
-│  └─ i18n/                      # next-intl setup
-├─ server/
-│  └─ container.ts               # Composition root: wires adapters to ports
-└─ messages/{en,fr,zh}.json
+apps/web/
+├─ src/
+│  ├─ app/                          # Routing only. Thin. No business logic
+│  │  ├─ [locale]/
+│  │  │  ├─ (marketing)/page.tsx
+│  │  │  └─ (app)/
+│  │  │     ├─ documents/page.tsx
+│  │  │     ├─ documents/[id]/page.tsx
+│  │  │     └─ deadlines/page.tsx
+│  │  └─ api/chat/route.ts          # Streaming endpoint
+│  ├─ proxy.ts                      # Next.js 16 request interception (auth refresh, locale)
+│  ├─ modules/
+│  │  ├─ documents/
+│  │  │  ├─ domain/                 # Document, DocumentStatus, limits
+│  │  │  ├─ application/            # uploadDocument, deleteDocument, ports.ts
+│  │  │  ├─ infrastructure/         # SupabaseDocumentRepository, SupabaseFileStore
+│  │  │  └─ ui/                     # DropZone, DocumentList
+│  │  ├─ analysis/
+│  │  │  ├─ domain/                 # Analysis schema, verifyCitations()
+│  │  │  ├─ application/            # analyzeDocument, ports.ts (DocumentAnalyzer)
+│  │  │  ├─ infrastructure/         # AnthropicAnalyzer, FakeAnalyzer
+│  │  │  └─ ui/                     # AnalysisView, CitationChip
+│  │  ├─ chat/                      # same four folders
+│  │  ├─ deadlines/                 # same four folders (+ toIcs())
+│  │  └─ quota/                     # same four folders
+│  ├─ shared/
+│  │  ├─ ui/                        # shadcn components, design tokens
+│  │  ├─ lib/                       # result.ts, errors.ts, id.ts, dates.ts
+│  │  ├─ config/env.ts              # Zod-validated env, the only place that reads process.env
+│  │  └─ i18n/                      # next-intl setup
+│  ├─ server/
+│  │  └─ container.ts               # Composition root: wires adapters to ports
+├─ messages/{en,fr,zh}.json
+├─ e2e/                          # Playwright
+├─ evals/                        # sample documents + scoring
+├─ samples/                      # built-in sample PDFs
+└─ public/
+   ├─ videos/                    # Rendered MP4 + WebM + poster per video
+   ├─ images/                    # Device-frame screenshots for the install section
+   └─ icons/                     # PWA icons (manifest: src/app/manifest.ts)
 supabase/migrations/             # SQL, applied with the Supabase CLI
-evals/                           # sample documents + scoring
-e2e/                             # Playwright
-media/                           # Marketing assets, built from the real app (not shipped code)
-│  ├─ capture.ts                 # Screenshots of every screen (desktop/mobile, dark/light)
-│  ├─ screenshots/               # WebP shots committed; PNG masters in raw/ (gitignored)
-│  ├─ videos/                    # One HTML file per video, driven by seek(t) (lib/engine.js)
-│  ├─ render.mjs                 # Frame-by-frame render → public/videos/ (site) or out/ (social)
-│  └─ icons.mjs                  # Favicon / PWA icons from src/app/icon.svg
-public/
-│  ├─ videos/                    # Rendered MP4 + WebM + poster per video
-│  ├─ images/                    # Device-frame screenshots for the install section
-│  └─ icons/                     # PWA icons (manifest: src/app/manifest.ts)
+assets/                          # Design sources, not shipped code
+├─ mockup/                       # Clickable HTML mockup made before implementation
+├─ images-mockup/                # Reference images
+└─ media/                        # Marketing assets, built from the real app
+   ├─ capture.ts                 # Screenshots of every screen (desktop/mobile, dark/light)
+   ├─ screenshots/               # WebP shots committed; PNG masters in raw/ (gitignored)
+   ├─ videos/                    # One HTML file per video, driven by seek(t) (lib/engine.js)
+   ├─ render.mjs                 # Frame-by-frame render → apps/web/public/videos/ (site) or out/ (social)
+   └─ icons.mjs                  # Favicon / PWA icons from apps/web/src/app/icon.svg
 docs/
 ```
 
@@ -154,9 +161,9 @@ export const container = () => ({
 ```
 dev        next dev
 build      next build
-check      biome check . && tsc --noEmit && vitest run && pnpm arch
+check      biome check . (root) + typecheck, vitest, arch (apps/web)
 arch       depcruise src --config .dependency-cruiser.cjs
 eval       vitest run evals
 e2e        playwright test
-db:types   supabase gen types typescript --local > src/shared/lib/db-types.ts
+db:types   supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts
 ```

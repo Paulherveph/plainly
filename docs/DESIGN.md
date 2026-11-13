@@ -36,7 +36,7 @@ Light theme: invert surfaces, keep the same accent, check contrast (AA). Theme t
   The header gains its hairline once the page scrolls.
 - **Lists**: `.stagger` with `--i` on each row, 40 ms apart, max 8.
 - **Theme switch**: the new theme grows as a circle from the bordered toggle (View Transitions API).
-- **Videos** (`media/videos/`) are content, not effects. They are muted, load lazily, play only in view,
+- **Videos** (`assets/media/videos/`) are content, not effects. They are muted, load lazily, play only in view,
   show the poster only with reduced motion, and have a pause button when longer than 5 s.
 - **One** hero effect on the whole site. No parallax stacks, no cursor gimmicks elsewhere.
 

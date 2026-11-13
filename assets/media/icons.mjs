@@ -1,15 +1,15 @@
 // Renders the brand icon to the PNG sizes the browser and the PWA manifest need.
-// Usage: node media/icons.mjs
+// Usage: node assets/media/icons.mjs
 import { readFileSync } from "node:fs";
 import { chromium } from "@playwright/test";
 
-const svg = readFileSync(new URL("../src/app/icon.svg", import.meta.url), "utf8");
+const svg = readFileSync(new URL("../../apps/web/src/app/icon.svg", import.meta.url), "utf8");
 const jobs = [
-  { out: "src/app/apple-icon.png", size: 180, pad: 0.1, bg: "#0b0b0f" },
-  { out: "public/icons/icon-192.png", size: 192, pad: 0, bg: "transparent" },
-  { out: "public/icons/icon-512.png", size: 512, pad: 0, bg: "transparent" },
+  { out: "apps/web/src/app/apple-icon.png", size: 180, pad: 0.1, bg: "#0b0b0f" },
+  { out: "apps/web/public/icons/icon-192.png", size: 192, pad: 0, bg: "transparent" },
+  { out: "apps/web/public/icons/icon-512.png", size: 512, pad: 0, bg: "transparent" },
   // Maskable: the platform crops to a circle, so keep the mark inside the 80% safe zone.
-  { out: "public/icons/maskable-512.png", size: 512, pad: 0.2, bg: "#0b0b0f" },
+  { out: "apps/web/public/icons/maskable-512.png", size: 512, pad: 0.2, bg: "#0b0b0f" },
 ];
 
 const browser = await chromium.launch();

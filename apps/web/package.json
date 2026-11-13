@@ -1,21 +1,17 @@
 {
-  "name": "plainly",
+  "name": "@plainly/web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "biome check .",
-    "format": "biome check --write .",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run src",
     "arch": "depcruise src --config .dependency-cruiser.cjs",
-    "check": "biome check . && pnpm typecheck && pnpm test && pnpm arch",
+    "check": "pnpm typecheck && pnpm test && pnpm arch",
     "eval": "vitest run evals",
-    "e2e": "playwright test",
-    "db:test": "supabase test db",
-    "db:types": "supabase gen types typescript --local > src/shared/lib/db-types.ts"
+    "e2e": "playwright test"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.99",
@@ -42,7 +38,6 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.4.2",
     "@playwright/test": "^1.65.0",
     "@tailwindcss/turbopack": "4.3.3",
     "@types/node": "^20",
@@ -53,7 +48,6 @@
     "typescript": "^5",
     "vitest": "^5.1.0"
   },
-  "packageManager": "pnpm@10.15.0",
   "engines": {
     "node": ">=20.19"
   }

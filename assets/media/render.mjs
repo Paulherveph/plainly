@@ -1,13 +1,13 @@
 /**
- * Renders a video from media/videos/<name>.html, frame by frame, through its seek(t) clock.
+ * Renders a video from assets/media/videos/<name>.html, frame by frame, through its seek(t) clock.
  *
- *   node media/render.mjs <name> [--fps 30] [--stills] [--theme light] [--social] [--vertical]
+ *   node assets/media/render.mjs <name> [--fps 30] [--stills] [--theme light] [--social] [--vertical]
  *                             [--audio track.mp3] [--query scene=x] [--as output-name]
- *   node media/render.mjs --serve            # preview every video at http://localhost:4600
+ *   node assets/media/render.mjs --serve            # preview every video at http://localhost:4600
  *
- * Site renders (default): 1280 px wide MP4 (H.264) + WebM (VP9) + WebP poster in public/videos/.
- * --social: full-size 1080p master in media/out/ (with --audio muxed in, if given).
- * --stills: one PNG per beat in media/out/stills/<name>/ to check pacing before a full render.
+ * Site renders (default): 1280 px wide MP4 (H.264) + WebM (VP9) + WebP poster in apps/web/public/videos/.
+ * --social: full-size 1080p master in assets/media/out/ (with --audio muxed in, if given).
+ * --stills: one PNG per beat in assets/media/out/stills/<name>/ to check pacing before a full render.
  */
 import { spawn } from "node:child_process";
 import { createReadStream, existsSync, mkdirSync, statSync } from "node:fs";
@@ -15,7 +15,7 @@ import { createServer } from "node:http";
 import { extname, join, normalize } from "node:path";
 import { chromium } from "@playwright/test";
 
-const ROOT = new URL(".", import.meta.url).pathname; // media/
+const ROOT = new URL(".", import.meta.url).pathname; // assets/media/
 const TYPES = {
   ".html": "text/html",
   ".js": "text/javascript",
@@ -54,7 +54,9 @@ if (flag("serve")) {
   const valued = new Set(["--fps", "--theme", "--audio", "--query", "--as"]);
   const name = args.find((a, i) => !a.startsWith("--") && !valued.has(args[i - 1]));
   if (!name)
-    throw new Error("usage: node media/render.mjs <name> [--fps 30] [--stills] [--theme light] [--social]");
+    throw new Error(
+      "usage: node assets/media/render.mjs <name> [--fps 30] [--stills] [--theme light] [--social]",
+    );
   await render(name);
 }
 
@@ -105,7 +107,7 @@ async function render(name) {
     }
     console.log(`stills → ${dir}`);
   } else {
-    const outDir = social ? join(ROOT, "out") : join(ROOT, "../public/videos");
+    const outDir = social ? join(ROOT, "out") : join(ROOT, "../../apps/web/public/videos");
     mkdirSync(outDir, { recursive: true });
     const base = join(outDir, outName + suffix + vertical);
     // Site renders cap the long side at 1280 px (never upscale small loops).
