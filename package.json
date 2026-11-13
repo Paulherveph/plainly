@@ -17,8 +17,8 @@
     "check": "biome check . && pnpm --filter @plainly/web check",
     "eval": "pnpm --filter @plainly/web eval",
     "e2e": "pnpm --filter @plainly/web e2e",
-    "db:test": "supabase test db",
-    "test:db": "supabase test db",
+    "db:test": "DO_NOT_TRACK=1 supabase test db",
+    "test:db": "DO_NOT_TRACK=1 supabase test db",
     "db:types": "supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts"
   },
   "devDependencies": {

@@ -49,3 +49,10 @@ Short ADRs for choices a reviewer might question. Newest last.
 **Why.** The pages ship no animation runtime, which keeps the single hero effect rule (DESIGN §2) and the Lighthouse budget. The same source renders the 16:9 and 9:16 social cuts, and any frame can be re-rendered exactly.
 **Trade-off.** Video text is English only. Changing a video means re-rendering it (about a minute each).
 
+
+## ADR 8 — Turn off Supabase CLI telemetry with `DO_NOT_TRACK`
+
+**Context.** In the S0 gate, `supabase test db` exited 1 after the SQL tests passed, which the report put down to the CLI failing to flush PostHog telemetry. In the S1 session the same command exits 0 with and without the opt-out, so the failure could not be reproduced and the fix could not be proven.
+**Decision.** Use the CLI's own opt-out: the `DO_NOT_TRACK=1` environment variable (read by the CLI binary; `supabase telemetry disable` is the persistent per-user alternative). `db:test` and `test:db` in the root `package.json` set it. No wrapper script that parses the test summary.
+**Why.** A supported switch needs no code of ours, keeps the CLI's real exit code, and does not touch the user's global CLI settings.
+**Trade-off.** Unproven against the original failure. If the exit code is wrong again, capture `--debug` output and reopen this ADR. The CI job keeps calling `supabase test db` directly because it has network access.
