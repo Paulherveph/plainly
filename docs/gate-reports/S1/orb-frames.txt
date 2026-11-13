@@ -1,0 +1,30 @@
+width 1440, CPU x1
+1s tier=high median=16.7ms
+4s tier=high median=16.7ms
+7s tier=high median=16.7ms
+11s tier=high median=16.7ms
+14s tier=high median=16.7ms
+17s tier=high median=16.7ms
+21s tier=high median=16.7ms
+24s tier=high median=16.7ms
+27s tier=high median=16.7ms
+width 1440, CPU x4
+1s tier=high median=16.7ms
+4s tier=high median=16.7ms
+7s tier=high median=16.7ms
+11s tier=high median=16.7ms
+14s tier=high median=16.7ms
+17s tier=high median=16.7ms
+21s tier=high median=16.7ms
+24s tier=high median=16.7ms
+27s tier=high median=16.7ms
+width 390, CPU x4
+1s tier=low median=16.7ms
+4s tier=low median=16.7ms
+7s tier=low median=16.7ms
+11s tier=low median=16.7ms
+14s tier=low median=16.7ms
+17s tier=low median=16.7ms
+21s tier=low median=16.7ms
+24s tier=low median=16.7ms
+27s tier=low median=16.7ms

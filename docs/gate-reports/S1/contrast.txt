@@ -1,0 +1,10 @@
+eyebrow: text rgb(154,154,168) on brightest bg gray 26 -> 6.24:1
+sub copy: text rgb(154,154,168) on brightest bg gray 28 -> 6.11:1
+trust list: text rgb(154,154,168) on brightest bg gray 24 -> 6.37:1
+explainer link: text rgb(154,154,168) on brightest bg gray 28 -> 6.11:1
+width 1440: worst ratio 6.11:1 (pass at 4.5:1)
+eyebrow: text rgb(154,154,168) on brightest bg gray 27 -> 6.17:1
+sub copy: text rgb(154,154,168) on brightest bg gray 37 -> 5.51:1
+trust list: text rgb(154,154,168) on brightest bg gray 21 -> 6.60:1
+explainer link: text rgb(154,154,168) on brightest bg gray 32 -> 5.88:1
+width 390: worst ratio 5.51:1 (pass at 4.5:1)
