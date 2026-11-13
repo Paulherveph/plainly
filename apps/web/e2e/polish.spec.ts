@@ -33,9 +33,9 @@ test("the install section explains how to install on mobile", async ({ page, isM
 
 test("the landing videos are lazy and the steps follow the video", async ({ page }) => {
   await page.goto("/en");
-  const reel = page.locator('video[poster="/videos/showreel.webp"]');
-  await expect(reel).toHaveAttribute("preload", /none|auto/);
-  await expect(reel).toHaveJSProperty("muted", true);
+  const clip = page.locator('video[poster="/videos/steps.webp"]');
+  await expect(clip).toHaveAttribute("preload", /none|auto/);
+  await expect(clip).toHaveJSProperty("muted", true);
   const act = page.getByRole("button", { name: /03\s*Act/ });
   await act.scrollIntoViewIfNeeded();
   await act.click();

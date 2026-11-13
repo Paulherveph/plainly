@@ -141,18 +141,18 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 
 ## H. Platform and UX
 
-| ID | Scenario | Expected result | Lvl | Stage |
-|----|----------|-----------------|-----|-------|
-| H01 | Offline | Friendly offline state, previously opened results readable (PWA cache of results only, never originals) | E | S6 |
-| H02 | Slow network (3G throttle) | Skeletons, no layout jumps, upload progress | E | S6 |
-| H03 | Keyboard-only full flow | Everything reachable, visible focus | E | S6 |
-| H04 | Screen reader pass on analysis page | Landmarks, labels, live region for streaming | M | S6 |
-| H05 | Reduced motion | No animation, static hero | E | S1 |
-| H06 | 4K monitor | Layout scales as in `HERO.md` | E | S1 |
-| H07 | Print the analysis | Clean print stylesheet | E | S6 |
-| H08 | Locale parity | en, fr, zh keys identical, no raw keys visible | U | S0 |
-| H09 | Health endpoint | Reports DB and provider status, no secrets | I | S6 |
-| H10 | Install as app | Manifest, icons, share target accepts a file | E | S6 |
+| ID | Scenario | Expected result | Lvl | Stage | Test |
+|----|----------|-----------------|-----|-------|------|
+| H01 | Offline | Friendly offline state, previously opened results readable (PWA cache of results only, never originals) | E | S6 ||
+| H02 | Slow network (3G throttle) | Skeletons, no layout jumps, upload progress | E | S6 ||
+| H03 | Keyboard-only full flow | Everything reachable, visible focus | E | S6 ||
+| H04 | Screen reader pass on analysis page | Landmarks, labels, live region for streaming | M | S6 ||
+| H05 | Reduced motion | No animation, static hero | E | S1 | `e2e/hero.spec.ts` (reduced motion; no WebGL) |
+| H06 | 4K monitor | Layout scales as in `HERO.md` | E | S1 | `e2e/hero.spec.ts` (1440, 1920, 2560) |
+| H07 | Print the analysis | Clean print stylesheet | E | S6 ||
+| H08 | Locale parity | en, fr, zh keys identical, no raw keys visible | U | S0 ||
+| H09 | Health endpoint | Reports DB and provider status, no secrets | I | S6 ||
+| H10 | Install as app | Manifest, icons, share target accepts a file | E | S6 ||
 
 ## I. Abuse and edge security
 
