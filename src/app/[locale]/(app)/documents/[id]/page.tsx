@@ -58,6 +58,7 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
         kind: doc.value.kind,
         pageCount: doc.value.pageCount,
         sourceLang: doc.value.sourceLang,
+        mediaType: doc.value.mediaType,
       }}
       pages={doc.value.pages}
       locale={outputLocale}

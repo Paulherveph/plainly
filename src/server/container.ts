@@ -17,8 +17,8 @@ import { SupabaseDeadlineRepository } from "@/modules/deadlines/infrastructure/s
 import { makeDeleteEverything } from "@/modules/documents/application/delete-everything";
 import {
   makeGetDocument,
-  makeGetOriginalUrl,
   makeListDocuments,
+  makeReadOriginal,
 } from "@/modules/documents/application/queries";
 import { makeUploadDocument } from "@/modules/documents/application/upload-document";
 import { FsSampleLibrary } from "@/modules/documents/infrastructure/fs-sample-library";
@@ -78,7 +78,7 @@ export async function container() {
     quota,
     listDocuments: makeListDocuments({ documents }),
     getDocument: makeGetDocument({ documents }),
-    getOriginalUrl: makeGetOriginalUrl({ documents, files }),
+    readOriginal: makeReadOriginal({ documents, files }),
     uploadDocument: makeUploadDocument({
       documents,
       files,

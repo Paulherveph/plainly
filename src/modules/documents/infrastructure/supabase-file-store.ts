@@ -26,11 +26,6 @@ export class SupabaseFileStore implements FileStore {
     return ok({ bytes: new Uint8Array(await data.arrayBuffer()), mediaType });
   }
 
-  async signedUrl(path: string, expiresInSeconds: number): Promise<Result<string, AppError>> {
-    const { data, error } = await this.db.storage.from(BUCKET).createSignedUrl(path, expiresInSeconds);
-    return error || !data ? err({ kind: "storage_failed" }) : ok(data.signedUrl);
-  }
-
   async remove(paths: readonly string[]): Promise<Result<null, AppError>> {
     if (paths.length === 0) return ok(null);
     const { error } = await this.db.storage.from(BUCKET).remove([...paths]);

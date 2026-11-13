@@ -38,7 +38,6 @@ export interface ExpiredDocuments {
 export interface FileStore {
   put(path: string, file: StoredFile): Promise<Result<null, AppError>>;
   read(path: string): Promise<Result<StoredFile, AppError>>;
-  signedUrl(path: string, expiresInSeconds: number): Promise<Result<string, AppError>>;
   removeUserFolder(userId: string): Promise<Result<null, AppError>>;
   remove(paths: readonly string[]): Promise<Result<null, AppError>>;
 }

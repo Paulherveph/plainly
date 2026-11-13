@@ -17,6 +17,7 @@ import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
 import { ChatPanel } from "@/modules/chat/ui/chat-panel";
+import type { MediaType } from "@/modules/documents/domain/document";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "@/shared/ui/button";
 import { QuotaDialog } from "@/shared/ui/quota-dialog";
@@ -40,7 +41,14 @@ const OUTPUT_LOCALES: { code: OutputLocale; label: string }[] = [
 ];
 
 export type AnalysisScreenProps = {
-  document: { id: string; title: string; kind: string | null; pageCount: number; sourceLang: string | null };
+  document: {
+    id: string;
+    title: string;
+    kind: string | null;
+    pageCount: number;
+    sourceLang: string | null;
+    mediaType: MediaType;
+  };
   pages: string[] | null;
   locale: OutputLocale;
   initial: { analysis: Analysis; dropped: number } | null;
@@ -191,9 +199,10 @@ export function AnalysisScreen({
         <aside aria-label={t("preview")} className="hidden min-w-0 lg:block">
           <DocumentPreview
             documentId={doc.id}
+            mediaType={doc.mediaType}
             pages={pages}
             highlight={highlight}
-            className="sticky top-21 max-h-[calc(100dvh-104px)]"
+            className="sticky top-21 h-[calc(100dvh-104px)]"
           />
         </aside>
       </div>
@@ -226,16 +235,20 @@ export function AnalysisScreen({
       </Sheet>
 
       <Sheet open={previewOpen} onOpenChange={setPreviewOpen}>
-        <SheetContent side="bottom" className="h-[85dvh] gap-0 rounded-t-2xl p-0 lg:hidden">
+        <SheetContent
+          side="bottom"
+          className="gap-0 rounded-t-2xl p-0 data-[side=bottom]:h-[85dvh] lg:hidden"
+        >
           <SheetHeader className="sr-only">
             <SheetTitle>{t("preview")}</SheetTitle>
             <SheetDescription>{doc.title}</SheetDescription>
           </SheetHeader>
           <DocumentPreview
             documentId={doc.id}
+            mediaType={doc.mediaType}
             pages={pages}
             highlight={highlight}
-            className="h-full rounded-none border-0"
+            className="h-full rounded-none border-0 [&_[data-slot=preview-header]]:pr-13"
           />
         </SheetContent>
       </Sheet>

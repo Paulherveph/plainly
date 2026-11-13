@@ -1,21 +1,25 @@
 "use client";
 
 import { cn } from "cn";
-import { ExternalLinkIcon, FileTextIcon } from "lucide-react";
+import { FileIcon, TextIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { getOriginalUrlAction } from "@/server/actions/analysis";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { MediaType } from "@/modules/documents/domain/document";
 import { Button } from "@/shared/ui/button";
 import type { Cite } from "../domain/analysis";
 import { findQuoteRange, reflowPage } from "../domain/quote-range";
 
+type View = "original" | "text";
+
 export function DocumentPreview({
   documentId,
+  mediaType,
   pages,
   highlight,
   className,
 }: {
   documentId: string;
+  mediaType: MediaType;
   pages: string[] | null;
   highlight: Cite | null;
   className?: string;
@@ -24,7 +28,11 @@ export function DocumentPreview({
   const display = useMemo(() => pages?.map(reflowPage) ?? null, [pages]);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [current, setCurrent] = useState(1);
-  const [pending, startTransition] = useTransition();
+  // Pasted text has no separate original: the text view is the document.
+  const hasOriginal = mediaType !== "text/plain";
+  const [view, setView] = useState<View>(hasOriginal && !highlight ? "original" : "text");
+  const showingText = view === "text";
+  const toggleLabel = showingText ? t("showOriginal") : t("showText");
 
   function goTo(page: number) {
     setCurrent(page);
@@ -40,26 +48,31 @@ export function DocumentPreview({
     });
   }
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll whenever the highlighted quote changes
+  // A cited quote can only be highlighted in the extracted text, so a new citation switches to it.
   useEffect(() => {
-    if (highlight?.page) requestAnimationFrame(() => goTo(highlight.page ?? 1));
+    if (highlight) setView("text");
   }, [highlight]);
 
-  function openOriginal() {
-    startTransition(async () => {
-      const res = await getOriginalUrlAction(documentId);
-      if (res.ok) window.open(res.value, "_blank", "noopener,noreferrer");
-    });
-  }
+  // biome-ignore lint/correctness/useExhaustiveDependencies: scroll once the text view shows the highlighted quote
+  useEffect(() => {
+    if (showingText && highlight?.page) requestAnimationFrame(() => goTo(highlight.page ?? 1));
+  }, [highlight, showingText]);
 
   return (
     <div className={cn("flex min-h-0 flex-col overflow-hidden rounded-xl border bg-surface", className)}>
-      <div className="flex items-center justify-between gap-2.5 border-b px-3.5 py-3">
+      <div
+        data-slot="preview-header"
+        className="flex items-center justify-between gap-2.5 border-b px-3.5 py-3"
+      >
         <span className="flex items-center gap-2 font-medium text-[13px]">
-          <FileTextIcon className="size-4" aria-hidden="true" />
-          {t("original")}
+          {showingText ? (
+            <TextIcon className="size-4" aria-hidden="true" />
+          ) : (
+            <FileIcon className="size-4" aria-hidden="true" />
+          )}
+          {showingText && hasOriginal ? t("extractedText") : t("original")}
         </span>
-        {pages && pages.length > 1 ? (
+        {showingText && pages && pages.length > 1 ? (
           <nav aria-label={t("preview")} className="flex gap-1">
             {pages.map((_, i) => (
               <button
@@ -75,18 +88,36 @@ export function DocumentPreview({
             ))}
           </nav>
         ) : null}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          onClick={openOriginal}
-          disabled={pending}
-          aria-label={t("openOriginal")}
-        >
-          <ExternalLinkIcon />
-        </Button>
+        {hasOriginal ? (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => setView(showingText ? "original" : "text")}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+          >
+            {showingText ? (
+              <FileIcon key="file" className="motion-safe:animate-icon-in" />
+            ) : (
+              <TextIcon key="text" className="motion-safe:animate-icon-in" />
+            )}
+          </Button>
+        ) : null}
       </div>
+
+      {hasOriginal ? (
+        <OriginalFile
+          src={`/api/documents/${documentId}/original`}
+          mediaType={mediaType}
+          title={t("original")}
+          errorText={t("originalError")}
+          hidden={showingText}
+        />
+      ) : null}
+
       <div
         ref={scrollRef}
+        hidden={!showingText}
         className="relative grid min-h-0 flex-1 content-start gap-4.5 overflow-auto bg-bg-deep p-4.5"
       >
         {display ? (
@@ -107,6 +138,62 @@ export function DocumentPreview({
           <p className="py-10 text-center text-muted-foreground text-sm">{t("noText")}</p>
         )}
       </div>
+    </div>
+  );
+}
+
+/** The uploaded file as the user gave it. Stays mounted while hidden so it never reloads on toggle. */
+function OriginalFile({
+  src,
+  mediaType,
+  title,
+  errorText,
+  hidden,
+}: {
+  src: string;
+  mediaType: MediaType;
+  title: string;
+  errorText: string;
+  hidden: boolean;
+}) {
+  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+
+  return (
+    <div hidden={hidden} className="relative min-h-0 flex-1 bg-bg-deep">
+      {state === "loading" ? (
+        <div aria-hidden="true" className="absolute inset-0 p-4.5">
+          <div className="skeleton-line size-full rounded" />
+        </div>
+      ) : null}
+      {state === "error" ? (
+        <p role="alert" className="py-10 text-center text-muted-foreground text-sm">
+          {errorText}
+        </p>
+      ) : mediaType === "application/pdf" ? (
+        <iframe
+          src={`${src}#view=FitH`}
+          title={title}
+          onLoad={() => setState("ready")}
+          className={cn(
+            "size-full transition-opacity duration-200",
+            state === "ready" ? "opacity-100" : "opacity-0",
+          )}
+        />
+      ) : (
+        <div className="size-full overflow-auto p-4.5">
+          {/* biome-ignore lint/performance/noImgElement: private, auth-checked file; next/image would proxy and cache it */}
+          <img
+            src={src}
+            alt={title}
+            onLoad={() => setState("ready")}
+            onError={() => setState("error")}
+            className={cn(
+              "mx-auto h-auto max-w-full rounded shadow-[0_10px_30px_-12px_rgb(0_0_0/0.5)] transition-opacity duration-200",
+              state === "ready" ? "opacity-100" : "opacity-0",
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }

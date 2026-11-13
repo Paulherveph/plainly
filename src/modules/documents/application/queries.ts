@@ -1,9 +1,7 @@
 import type { AppError } from "@/shared/lib/errors";
-import { ok, type Result } from "@/shared/lib/result";
+import type { Result } from "@/shared/lib/result";
 import type { Document, DocumentSummary } from "../domain/document";
-import type { DocumentRepository, FileStore } from "./ports";
-
-export const SIGNED_URL_SECONDS = 60;
+import type { DocumentRepository, FileStore, StoredFile } from "./ports";
 
 export function makeListDocuments(deps: { documents: DocumentRepository }) {
   return (userId: string): Promise<Result<DocumentSummary[], AppError>> => deps.documents.listOwned(userId);
@@ -14,12 +12,10 @@ export function makeGetDocument(deps: { documents: DocumentRepository }) {
     deps.documents.getOwned(userId, id);
 }
 
-/** Short-lived link to the original file (PRD: signed URLs expire in 60 s). */
-export function makeGetOriginalUrl(deps: { documents: DocumentRepository; files: FileStore }) {
-  return async (userId: string, id: string): Promise<Result<string, AppError>> => {
+/** The uploaded file itself, for the owner only (served same-origin for the inline preview). */
+export function makeReadOriginal(deps: { documents: DocumentRepository; files: FileStore }) {
+  return async (userId: string, id: string): Promise<Result<StoredFile, AppError>> => {
     const doc = await deps.documents.getOwned(userId, id);
-    if (!doc.ok) return doc;
-    const url = await deps.files.signedUrl(doc.value.storagePath, SIGNED_URL_SECONDS);
-    return url.ok ? ok(url.value) : url;
+    return doc.ok ? deps.files.read(doc.value.storagePath) : doc;
   };
 }

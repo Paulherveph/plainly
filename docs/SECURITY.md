@@ -18,7 +18,7 @@ Legend: ✅ verified · ⚠️ accepted trade-off (documented) · ⏳ to do befo
 | 7 | `security definer` functions pin `search_path = ''` | ✅ | `pg_proc.proconfig` for `consume_quota`, `refund_quota`, `owns_document` |
 | 8 | Storage bucket is private, 10 MB, PDF/PNG/JPG/text only | ✅ | `storage.buckets` → `public = f`, `file_size_limit = 10485760` |
 | 9 | Storage paths are scoped to `{user_id}/…` | ✅ | storage policies on `storage.objects`; pgTAP "cannot upload into another user's folder" |
-| 10 | Original files are only reachable through 60-second signed URLs | ✅ | `SIGNED_URL_SECONDS = 60` in `documents/application/queries.ts`; only the owner can request one |
+| 10 | Original files are only served to their owner, same-origin, never cached | ✅ | `GET /api/documents/:id/original` checks the session and ownership (`readOriginal`, RLS); `cache-control: private, no-store`; framable only by our own pages |
 | 11 | Every server read goes through the session-bound client, so RLS applies | ✅ | `server/container.ts` builds all adapters from `createSupabase()`; the service client exists only in `server/retention.ts` |
 | 12 | The service (secret) key is used only by the retention job and never reaches the browser | ✅ | `grep -r sb_secret_ .next/static` → nothing; `supabase-admin.ts` imports `server-only` |
 

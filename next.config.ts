@@ -30,9 +30,25 @@ const securityHeaders = [
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
 ];
 
+/**
+ * The original-file route is shown inside our own preview panel, so it may be framed by
+ * same-origin pages only. Later rules override earlier ones for the same header key.
+ */
+const originalFileHeaders = [
+  {
+    key: "Content-Security-Policy",
+    value:
+      "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; object-src 'self'; frame-ancestors 'self'",
+  },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+];
+
 const nextConfig: NextConfig = {
   async headers() {
-    return [{ source: "/:path*", headers: securityHeaders }];
+    return [
+      { source: "/:path*", headers: securityHeaders },
+      { source: "/api/documents/:id/original", headers: originalFileHeaders },
+    ];
   },
   cacheComponents: true,
   partialPrefetching: true,
