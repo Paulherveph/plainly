@@ -10,6 +10,8 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # Plainly — project rules
 
+App code lives in `apps/web`. Paths such as `src/`, `messages/`, `evals/` and `samples/` in this file are relative to `apps/web`.
+
 Plainly turns confusing documents (visas, leases, contracts, offer letters) into plain-language
 summaries, action items and deadlines, with a chat that answers from the document.
 Read `PRD.md` for scope and `docs/ARCHITECTURE.md` for structure before coding.
