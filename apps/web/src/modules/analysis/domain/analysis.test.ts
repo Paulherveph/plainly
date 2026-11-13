@@ -33,3 +33,33 @@ describe("toAnalysis", () => {
     expect(a.watchOuts.map((w) => w.severity)).toEqual(["critical", "caution", "info"]);
   });
 });
+
+describe("deadline rules and caps", () => {
+  const base: AnalysisDraft = { ...draft, actions: [], watchOuts: [] };
+
+  it("B03: keeps a relative deadline as a rule without inventing a date", () => {
+    const a = toAnalysis({
+      ...base,
+      actions: [
+        { title: "Reply", detail: "d", dueOn: null, dueRule: "within 30 days of receipt", cite: { page: 1, quote: "q" } },
+      ],
+    });
+    expect(a.actions[0]).toMatchObject({ dueOn: null, dueRule: "within 30 days of receipt", dateAmbiguous: false });
+  });
+
+  it("B04: an ambiguous date is flagged and never stored as a date", () => {
+    const a = toAnalysis({
+      ...base,
+      actions: [
+        { title: "Pay", detail: "d", dueOn: "2026-04-03", dateAmbiguous: true, dueRule: "03/04/2026", cite: { page: 1, quote: "q" } },
+      ],
+    });
+    expect(a.actions[0]).toMatchObject({ dueOn: null, dateAmbiguous: true, dueRule: "03/04/2026" });
+  });
+
+  it("caps the lists (output is the expensive side)", () => {
+    const fact = { label: "l", value: "v", cite: { page: 1, quote: "q" } };
+    const a = toAnalysis({ ...base, keyFacts: Array.from({ length: 12 }, () => fact) });
+    expect(a.keyFacts).toHaveLength(8);
+  });
+});

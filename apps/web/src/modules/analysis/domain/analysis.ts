@@ -20,6 +20,10 @@ export const Analysis = z.object({
       title: z.string(),
       detail: z.string(),
       dueOn: z.iso.date().nullable(),
+      /** A relative or unclear deadline as written ("within 30 days of receipt"). */
+      dueRule: z.string().max(200).nullable().default(null),
+      /** The date could be read two ways (03/04/2026). Never guessed: dueOn stays null. */
+      dateAmbiguous: z.boolean().default(false),
       cite: Cite,
     }),
   ),
@@ -34,6 +38,9 @@ export const Analysis = z.object({
   glossary: z.array(z.object({ term: z.string(), plain: z.string() })),
 });
 export type Analysis = z.infer<typeof Analysis>;
+
+/** Output caps (TOKEN_ECONOMY section 3, technique 8). */
+export const CAPS = { keyFacts: 8, actions: 8, watchOuts: 6, glossary: 6 } as const;
 export type Severity = Analysis["watchOuts"][number]["severity"];
 
 /**
@@ -44,30 +51,45 @@ export const AnalysisDraft = z.object({
   documentType: z.string().describe("Short document type in the output language, e.g. 'Lease'"),
   language: z.enum(["en", "fr", "zh", "other"]).describe("Language the document itself is written in"),
   summary: z.string().describe("3 to 4 plain sentences, under 600 characters"),
-  keyFacts: z.array(
-    z.object({
-      label: z.string(),
-      value: z.string(),
-      cite: z.object({ page: z.number().nullable(), quote: z.string() }),
-    }),
-  ),
-  actions: z.array(
-    z.object({
-      title: z.string(),
-      detail: z.string(),
-      dueOn: z.string().nullable().describe("YYYY-MM-DD only if the document states the date, else null"),
-      cite: z.object({ page: z.number().nullable(), quote: z.string() }),
-    }),
-  ),
-  watchOuts: z.array(
-    z.object({
-      severity: z.enum(["info", "caution", "critical"]),
-      title: z.string(),
-      explanation: z.string(),
-      cite: z.object({ page: z.number().nullable(), quote: z.string() }),
-    }),
-  ),
-  glossary: z.array(z.object({ term: z.string(), plain: z.string() })),
+  keyFacts: z
+    .array(
+      z.object({
+        label: z.string(),
+        value: z.string(),
+        cite: z.object({ page: z.number().nullable(), quote: z.string() }),
+      }),
+    )
+    .describe(`At most ${CAPS.keyFacts}`),
+  actions: z
+    .array(
+      z.object({
+        title: z.string(),
+        detail: z.string(),
+        dueOn: z.string().nullable().describe("YYYY-MM-DD only if the document states the date, else null"),
+        dueRule: z
+          .string()
+          .nullable()
+          .optional()
+          .describe("A relative or unclear deadline exactly as the document states it, else null"),
+        dateAmbiguous: z
+          .boolean()
+          .optional()
+          .describe("true if the written date could be read two ways, e.g. 03/04/2026"),
+        cite: z.object({ page: z.number().nullable(), quote: z.string() }),
+      }),
+    )
+    .describe(`At most ${CAPS.actions}`),
+  watchOuts: z
+    .array(
+      z.object({
+        severity: z.enum(["info", "caution", "critical"]),
+        title: z.string(),
+        explanation: z.string(),
+        cite: z.object({ page: z.number().nullable(), quote: z.string() }),
+      }),
+    )
+    .describe(`At most ${CAPS.watchOuts}`),
+  glossary: z.array(z.object({ term: z.string(), plain: z.string() })).describe(`At most ${CAPS.glossary}`),
 });
 export type AnalysisDraft = z.infer<typeof AnalysisDraft>;
 
@@ -104,20 +126,30 @@ export function toAnalysis(draft: AnalysisDraft): Analysis {
     documentType: clamp(draft.documentType, 60),
     language: draft.language,
     summary: clamp(draft.summary, 600),
-    keyFacts: draft.keyFacts.map((f) => ({
+    keyFacts: draft.keyFacts.slice(0, CAPS.keyFacts).map((f) => ({
       label: f.label.trim(),
       value: f.value.trim(),
       cite: cite(f.cite),
     })),
-    actions: draft.actions.map((a) => ({
-      title: a.title.trim(),
-      detail: a.detail.trim(),
-      dueOn: isoDateOrNull(a.dueOn),
-      cite: cite(a.cite),
-    })),
+    actions: draft.actions.slice(0, CAPS.actions).map((a) => {
+      const ambiguous = a.dateAmbiguous === true;
+      const rule = a.dueRule?.trim() || null;
+      return {
+        title: a.title.trim(),
+        detail: a.detail.trim(),
+        // B04: an ambiguous date is never guessed. B03: a relative rule is kept as written.
+        dueOn: ambiguous ? null : isoDateOrNull(a.dueOn),
+        dueRule: rule ? clamp(rule, 200) : ambiguous && a.dueOn ? clamp(a.dueOn, 200) : null,
+        dateAmbiguous: ambiguous,
+        cite: cite(a.cite),
+      };
+    }),
     watchOuts: [...draft.watchOuts]
       .sort((a, b) => SEVERITY_ORDER[a.severity] - SEVERITY_ORDER[b.severity])
+      .slice(0, CAPS.watchOuts)
       .map((w) => ({ ...w, title: w.title.trim(), explanation: w.explanation.trim(), cite: cite(w.cite) })),
-    glossary: draft.glossary.map((g) => ({ term: g.term.trim(), plain: g.plain.trim() })),
+    glossary: draft.glossary
+      .slice(0, CAPS.glossary)
+      .map((g) => ({ term: g.term.trim(), plain: g.plain.trim() })),
   });
 }

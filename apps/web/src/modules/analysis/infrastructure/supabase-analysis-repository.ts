@@ -4,7 +4,7 @@ import type { Database, Json } from "@/shared/lib/db-types";
 import type { AppError } from "@/shared/lib/errors";
 import { err, ok, type Result } from "@/shared/lib/result";
 import type { AnalysisRepository, StoredAnalysis } from "../application/ports";
-import { Analysis, type OutputLocale } from "../domain/analysis";
+import { Analysis, LOCALES, type OutputLocale } from "../domain/analysis";
 
 export class SupabaseAnalysisRepository implements AnalysisRepository {
   constructor(private readonly db: SupabaseClient<Database>) {}
@@ -27,6 +27,22 @@ export class SupabaseAnalysisRepository implements AnalysisRepository {
       dropped: data.dropped_claims,
       model: data.model,
     });
+  }
+
+  async findAny(documentId: string): Promise<Result<StoredAnalysis | null, AppError>> {
+    const { data, error } = await this.db
+      .from("analyses")
+      .select("locale, result, model, dropped_claims")
+      .eq("document_id", documentId)
+      .order("created_at", { ascending: true })
+      .limit(1)
+      .maybeSingle();
+    if (error) return err({ kind: "db_failed" });
+    if (!data) return ok(null);
+    const analysis = Analysis.safeParse(data.result);
+    const locale = LOCALES.find((l) => l === data.locale);
+    if (!analysis.success || !locale) return ok(null);
+    return ok({ documentId, locale, analysis: analysis.data, dropped: data.dropped_claims, model: data.model });
   }
 
   async save(userId: string, a: StoredAnalysis): Promise<Result<null, AppError>> {

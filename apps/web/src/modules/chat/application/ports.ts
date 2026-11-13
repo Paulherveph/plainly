@@ -1,5 +1,7 @@
+import type { AiUsage } from "@/modules/ai/application/ports";
+import type { AiContext } from "@/modules/analysis/application/ports";
 import type { Cite, OutputLocale } from "@/modules/analysis/domain/analysis";
-import type { StoredFile } from "@/modules/documents/application/ports";
+import type { PageHit } from "@/modules/documents/application/ports";
 import type { AppError } from "@/shared/lib/errors";
 import type { Result } from "@/shared/lib/result";
 import type { ChatDraft } from "../domain/grounding";
@@ -18,18 +20,27 @@ export type StoredMessage = {
 export type AnswerRun = {
   /** Partial, unverified answer text as it streams. */
   partials: AsyncIterable<{ answer?: string; found?: boolean }>;
-  final: Promise<Result<ChatDraft, AppError>>;
+  final: Promise<Result<{ draft: ChatDraft; usage: AiUsage }, AppError>>;
 };
 
-/** No tools, no network: it only reads the document it is given. */
+/** Small documents go whole (cached prefix); long ones as summary plus the best pages. */
+export type ChatContext =
+  | { kind: "whole"; pages: readonly string[] }
+  | { kind: "retrieved"; summary: string; hits: readonly PageHit[] };
+
+/** No tools, no network: it only reads the document context it is given. */
 export interface DocumentAnswerer {
   answer(input: {
-    file: StoredFile;
-    pages: readonly string[];
+    context: ChatContext;
     history: readonly ChatTurn[];
+    historySummary: string | null;
     question: string;
     locale: OutputLocale;
+    deep: boolean;
+    ctx: AiContext;
   }): AnswerRun;
+  /** Rolling summary of older turns with the fast profile. */
+  summarize(input: { turns: readonly ChatTurn[]; previous: string | null; ctx: AiContext }): Promise<Result<string, AppError>>;
 }
 
 export interface MessageRepository {
@@ -37,6 +48,8 @@ export interface MessageRepository {
   append(
     userId: string,
     documentId: string,
-    message: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean },
+    message: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean; questionHash?: string },
   ): Promise<Result<null, AppError>>;
+  /** The stored assistant answer to the same normalized question, if any. */
+  findAnswer(documentId: string, questionHash: string): Promise<StoredMessage | null>;
 }

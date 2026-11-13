@@ -1,5 +1,3 @@
-import { ok } from "@/shared/lib/result";
-import type { AnswerRun, DocumentAnswerer } from "../application/ports";
 import type { ChatDraft } from "../domain/grounding";
 
 const STOP_WORDS = new Set(
@@ -7,8 +5,6 @@ const STOP_WORDS = new Set(
     " ",
   ),
 );
-
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function terms(text: string): string[] {
   return (text.toLowerCase().match(/[\p{L}\p{N}]+/gu) ?? []).filter(
@@ -39,44 +35,21 @@ export function findBestSentence(
   return found && found.score >= 1 ? { page: found.page, sentence: found.sentence } : null;
 }
 
-/** Deterministic, free answerer for tests and E2E (USE_FAKE_AI=true). */
-export class FakeAnswerer implements DocumentAnswerer {
-  constructor(private readonly stepMs = 30) {}
-
-  answer(input: { pages: readonly string[]; question: string }): AnswerRun {
-    const hit = findBestSentence(input.pages, input.question);
-    const draft: ChatDraft = hit
-      ? {
-          found: true,
-          answer: `The document says: “${hit.sentence}”`,
-          citations: [{ page: hit.page, quote: hit.sentence.slice(0, 200) }],
-        }
-      : { found: false, answer: "", citations: [] };
-    const stepMs = this.stepMs;
-    let resolve!: (value: ReturnType<typeof ok<ChatDraft>>) => void;
-    const final = new Promise<ReturnType<typeof ok<ChatDraft>>>((r) => {
-      resolve = r;
-    });
-    async function* partials() {
-      const words = draft.answer.split(/(?<=\s)/);
-      for (let i = 1; i <= words.length; i += 2) {
-        yield { found: draft.found, answer: words.slice(0, i + 1).join("") };
-        await sleep(stepMs);
+/** Deterministic answer for the fake AI gateway: the best matching sentence, quoted. */
+export function fakeChatDraft(pages: readonly string[], question: string): ChatDraft {
+  const hit = findBestSentence(pages, question);
+  return hit
+    ? {
+        found: true,
+        answer: `The document says: “${hit.sentence}”`,
+        citations: [{ page: hit.page, quote: hit.sentence.slice(0, 200) }],
       }
-      resolve(ok(draft));
-    }
-    const gen = partials();
-    return {
-      partials: {
-        async *[Symbol.asyncIterator]() {
-          try {
-            yield* gen;
-          } finally {
-            resolve(ok(draft));
-          }
-        },
-      },
-      final,
-    };
-  }
+    : { found: false, answer: "", citations: [] };
+}
+
+export function fakeChatPartials(draft: ChatDraft): { found: boolean; answer: string }[] {
+  const words = draft.answer.split(/(?<=\s)/);
+  const out: { found: boolean; answer: string }[] = [];
+  for (let i = 1; i <= words.length; i += 2) out.push({ found: draft.found, answer: words.slice(0, i + 1).join("") });
+  return out;
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { groundAnswer } from "../domain/grounding";
-import { FakeAnswerer, findBestSentence } from "./fake-answerer";
+import { fakeChatDraft, findBestSentence } from "./fake-answerer";
 
 const PAGES = [
   "§2 Rent. The monthly rent is €850, payable on or before the 5th day of each month.",
@@ -8,15 +8,10 @@ const PAGES = [
 ];
 
 async function ask(question: string) {
-  const run = new FakeAnswerer(0).answer({ pages: PAGES, question });
-  for await (const _ of run.partials) {
-    // drain
-  }
-  const draft = await run.final;
-  return draft.ok ? groundAnswer(draft.value, PAGES) : null;
+  return groundAnswer(fakeChatDraft(PAGES, question), PAGES);
 }
 
-describe("FakeAnswerer + grounding", () => {
+describe("fake chat answer + grounding", () => {
   it("answers from the document with a verified quote", async () => {
     const res = await ask("Can I keep animals?");
     expect(res?.kind).toBe("answer");

@@ -39,7 +39,7 @@ const PasteInput = z.object({ text: z.string().max(70_000), title: z.string().ma
 
 export async function uploadTextAction(input: { text: string; title: string }): Promise<Created> {
   const parsed = PasteInput.safeParse(input);
-  if (!parsed.success) return err({ kind: "invalid_input", reason: "too_large" });
+  if (!parsed.success) return err({ kind: "invalid_input", reason: "too_long" });
   const title = parsed.data.title.trim() || "Pasted text";
   return withUser((c, userId) => c.uploadDocument({ userId, source: "text", title, text: parsed.data.text }));
 }
@@ -60,5 +60,18 @@ export async function deleteEverythingAction(): Promise<Result<null, AppError>> 
   const result = await c.deleteEverything(user.id);
   log("privacy.delete_everything", { ok: result.ok, error: result.ok ? null : result.error.kind });
   if (result.ok) revalidatePath("/[locale]", "layout");
+  return result;
+}
+
+/** G02: one document and everything derived from it (pages, analyses, chat, deadlines, file). */
+export async function deleteDocumentAction(documentId: string): Promise<Result<null, AppError>> {
+  const id = z.uuid().safeParse(documentId);
+  if (!id.success) return err({ kind: "not_found" });
+  const c = await container();
+  const user = await c.currentUser();
+  if (!user) return err({ kind: "unauthenticated" });
+  const result = await c.deleteDocument(user.id, id.data);
+  log("document.delete", { ok: result.ok, error: result.ok ? null : result.error.kind });
+  if (result.ok) revalidatePath("/[locale]/documents", "page");
   return result;
 }

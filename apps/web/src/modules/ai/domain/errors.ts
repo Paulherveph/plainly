@@ -1,3 +1,5 @@
+import type { AppError } from "@/shared/lib/errors";
+
 /** Why an AI call ended without a usable value. Never carries prompts or document text. */
 export type AiError =
   | { kind: "refused" }
@@ -53,5 +55,23 @@ export function terminalError(action: FailureAction): AiError {
       return { kind: "invalid_output" };
     default:
       return { kind: "unavailable" };
+  }
+}
+
+/** How a use case reports an AI failure to the user. Nothing is charged for any of these. */
+export function toAppError(e: AiError): AppError {
+  switch (e.kind) {
+    case "refused":
+      return { kind: "ai_refused" };
+    case "aborted":
+      return { kind: "aborted" };
+    case "capacity":
+      return { kind: "capacity" };
+    case "context_too_long":
+      return { kind: "invalid_input", reason: "too_long" };
+    case "invalid_output":
+      return { kind: "ai_failed" };
+    case "unavailable":
+      return { kind: "ai_unavailable" };
   }
 }

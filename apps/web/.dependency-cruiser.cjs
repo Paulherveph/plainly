@@ -46,6 +46,21 @@ module.exports = {
       to: { path: ["/ui/", "^src/app/"] },
     },
     {
+      name: "provider-sdk-only-in-ai-gateway",
+      comment:
+        "Every AI call goes through AiGateway (docs/TOKEN_ECONOMY.md section 8). The `ai` package is allowed elsewhere only for UI message streams.",
+      severity: "error",
+      from: { pathNot: "^src/modules/ai/infrastructure/" },
+      to: { path: "node_modules/@ai-sdk/(anthropic|openai|google|xai|openai-compatible)/" },
+    },
+    {
+      name: "no-cross-module-infrastructure",
+      comment: "A module never imports another module's adapters (docs/SCALING.md section 2).",
+      severity: "error",
+      from: { path: "^src/modules/([^/]+)/" },
+      to: { path: "^src/modules/([^/]+)/infrastructure/", pathNot: "^src/modules/$1/infrastructure/" },
+    },
+    {
       name: "no-circular",
       severity: "error",
       from: {},

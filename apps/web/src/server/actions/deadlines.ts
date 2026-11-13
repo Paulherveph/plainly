@@ -18,3 +18,22 @@ export async function setDeadlineDoneAction(id: string, done: boolean): Promise<
   if (res.ok) revalidatePath("/[locale]/deadlines", "page");
   return res;
 }
+
+const AddInput = z.object({
+  documentId: z.uuid(),
+  locale: z.enum(["en", "fr", "zh"]),
+  index: z.number().int().min(0).max(20),
+  dueOn: z.iso.date(),
+});
+
+/** Turns a relative or ambiguous deadline into a dated one with the date the user picked. */
+export async function addDeadlineFromActionAction(input: z.input<typeof AddInput>): Promise<Result<null, AppError>> {
+  const parsed = AddInput.safeParse(input);
+  if (!parsed.success) return err({ kind: "invalid_input", reason: "empty" });
+  const c = await container();
+  const user = await c.currentUser();
+  if (!user) return err({ kind: "unauthenticated" });
+  const res = await c.addDeadlineFromAction({ userId: user.id, ...parsed.data });
+  if (res.ok) revalidatePath("/[locale]/deadlines", "page");
+  return res;
+}

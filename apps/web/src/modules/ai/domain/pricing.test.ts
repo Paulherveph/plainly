@@ -27,3 +27,11 @@ describe("pricing", () => {
     expect(priceFor({ provider: "anthropic", model: "unknown" })).toBeNull();
   });
 });
+
+describe("privacy provider list (G07)", () => {
+  it("names exactly the enabled providers", async () => {
+    const { providerList } = await import("./pricing");
+    expect(providerList(["anthropic"])).toBe("Anthropic (Claude)");
+    expect(providerList([])).toBe("");
+  });
+});

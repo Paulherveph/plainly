@@ -12,8 +12,9 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { useFormatter, useTranslations } from "next-intl";
-import type { Analysis, Cite, PartialAnalysis, Severity } from "../domain/analysis";
+import type { Analysis, Cite, OutputLocale, PartialAnalysis, Severity } from "../domain/analysis";
 import { CitationChip } from "./citation-chip";
+import { RuleDate } from "./rule-date";
 
 /** During streaming items are partial and unverified: show text, hide citations. */
 type View = { data: PartialAnalysis | Analysis; verified: boolean; onCite: (cite: Cite) => void };
@@ -164,7 +165,8 @@ export function ActionsSection({
   onCite,
   today,
   documentId,
-}: View & { today: string; documentId?: string }) {
+  locale,
+}: View & { today: string; documentId?: string; locale?: OutputLocale }) {
   const t = useTranslations("Analysis");
   const actions = (data.actions ?? []).filter((a) => a?.title);
   return (
@@ -210,6 +212,15 @@ export function ActionsSection({
                         </a>
                       ) : null}
                     </div>
+                  ) : null}
+                  {verified && documentId && locale && !a?.dueOn && (a?.dueRule || a?.dateAmbiguous) ? (
+                    <RuleDate
+                      documentId={documentId}
+                      locale={locale}
+                      index={i}
+                      rule={a.dueRule ?? null}
+                      ambiguous={a.dateAmbiguous === true}
+                    />
                   ) : null}
                 </div>
               </li>

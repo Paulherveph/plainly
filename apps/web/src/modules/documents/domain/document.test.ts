@@ -12,7 +12,7 @@ import {
 } from "./document";
 
 describe("validateUpload", () => {
-  it("accepts PDF, PNG and JPG under 10 MB", () => {
+  it("accepts PDF, PNG and JPG up to the hard cap", () => {
     expect(validateUpload({ mediaType: "application/pdf", size: 1000 })).toEqual({
       ok: true,
       value: "application/pdf",
@@ -40,13 +40,14 @@ describe("validateUpload", () => {
 
 describe("validatePastedText / validatePageCount", () => {
   it("needs enough text to explain", () => {
-    expect(validatePastedText("  hi  ")).toEqual({ ok: false, error: "empty" });
+    expect(validatePastedText("   ")).toEqual({ ok: false, error: "empty" });
+    expect(validatePastedText("  hi  ")).toEqual({ ok: false, error: "too_short" });
     expect(validatePastedText("x".repeat(60_001)).ok).toBe(false);
-    expect(validatePastedText(`  ${"word ".repeat(20)} `).ok).toBe(true);
+    expect(validatePastedText(`  ${"word ".repeat(60)} `).ok).toBe(true);
   });
-  it("caps pages at 20", () => {
-    expect(validatePageCount(20).ok).toBe(true);
-    expect(validatePageCount(21)).toEqual({ ok: false, error: "too_many_pages" });
+  it("caps pages at the hard limit (plans set lower limits)", () => {
+    expect(validatePageCount(100).ok).toBe(true);
+    expect(validatePageCount(101)).toEqual({ ok: false, error: "too_many_pages" });
     expect(validatePageCount(0)).toEqual({ ok: false, error: "unreadable" });
   });
 });

@@ -58,7 +58,7 @@ export class SupabaseMessageRepository implements MessageRepository {
   async append(
     userId: string,
     documentId: string,
-    m: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean },
+    m: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean; questionHash?: string },
   ): Promise<Result<null, AppError>> {
     const parts =
       m.role === "user"
@@ -69,7 +69,38 @@ export class SupabaseMessageRepository implements MessageRepository {
           ];
     const { error } = await this.db
       .from("messages")
-      .insert({ user_id: userId, document_id: documentId, role: m.role, parts: parts as unknown as Json });
+      .insert({
+        user_id: userId,
+        document_id: documentId,
+        role: m.role,
+        parts: parts as unknown as Json,
+        question_hash: m.questionHash ?? null,
+      });
     return error ? err({ kind: "db_failed" }) : ok(null);
+  }
+
+  async findAnswer(documentId: string, questionHash: string): Promise<StoredMessage | null> {
+    const { data } = await this.db
+      .from("messages")
+      .select("id, role, parts, created_at")
+      .eq("document_id", documentId)
+      .eq("question_hash", questionHash)
+      .eq("role", "assistant")
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    const row = Row.safeParse(data);
+    const parts = row.success ? Parts.safeParse(row.data.parts) : null;
+    if (!row.success || !parts?.success) return null;
+    const text = parts.data.find((p) => p.type === "text");
+    const meta = parts.data.find((p) => p.type === "data-citations");
+    return {
+      id: row.data.id,
+      role: "assistant",
+      text: text?.type === "text" ? text.text : "",
+      citations: meta?.type === "data-citations" ? meta.data.citations : [],
+      refused: meta?.type === "data-citations" ? meta.data.refused : false,
+      createdAt: row.data.created_at,
+    };
   }
 }

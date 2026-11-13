@@ -4,18 +4,20 @@ import { z } from "zod";
 import type { Database } from "@/shared/lib/db-types";
 import type { AppError } from "@/shared/lib/errors";
 import { err, ok, type Result } from "@/shared/lib/result";
-import type { DocumentPatch, DocumentRepository, NewDocument } from "../application/ports";
+import type { DocumentPatch, DocumentRepository, NewDocument, PageHit } from "../application/ports";
 import {
   DOCUMENT_STATUSES,
   type Document,
   type DocumentSummary,
   joinPages,
+  detectVisionPages,
   MEDIA_TYPES,
+  SAMPLE_IDS,
   splitPages,
 } from "../domain/document";
 
 const SUMMARY_COLUMNS = "id, title, kind, status, page_count, created_at, expires_at";
-const FULL_COLUMNS = `${SUMMARY_COLUMNS}, user_id, media_type, storage_path, source_lang, extracted_text`;
+const FULL_COLUMNS = `${SUMMARY_COLUMNS}, user_id, media_type, storage_path, source_lang, extracted_text, vision_pages, content_hash, sample_id, chat_summary`;
 
 const SummaryRow = z.object({
   id: z.uuid(),
@@ -32,6 +34,10 @@ const FullRow = SummaryRow.extend({
   storage_path: z.string(),
   source_lang: z.string().nullable(),
   extracted_text: z.string().nullable(),
+  vision_pages: z.array(z.number().int()).nullable(),
+  content_hash: z.string().nullable(),
+  sample_id: z.enum(SAMPLE_IDS).nullable(),
+  chat_summary: z.string().nullable(),
 });
 
 function toSummary(row: z.infer<typeof SummaryRow>): DocumentSummary {
@@ -54,6 +60,10 @@ function toDocument(row: z.infer<typeof FullRow>): Document {
     storagePath: row.storage_path,
     sourceLang: row.source_lang,
     pages: splitPages(row.extracted_text),
+    visionPages: row.vision_pages ?? [],
+    contentHash: row.content_hash,
+    sampleId: row.sample_id,
+    chatSummary: row.chat_summary,
   };
 }
 
@@ -71,12 +81,61 @@ export class SupabaseDocumentRepository implements DocumentRepository {
         storage_path: doc.storagePath,
         page_count: doc.pageCount,
         extracted_text: doc.pages ? joinPages(doc.pages) : null,
+        vision_pages: doc.visionPages,
+        content_hash: doc.contentHash,
+        sample_id: doc.sampleId,
+        expires_at: new Date(Date.now() + doc.retentionDays * 86_400_000).toISOString(),
       })
       .select(FULL_COLUMNS)
       .single();
     if (error) return err({ kind: "db_failed" });
     const row = FullRow.safeParse(data);
-    return row.success ? ok(toDocument(row.data)) : err({ kind: "db_failed" });
+    if (!row.success) return err({ kind: "db_failed" });
+    if (doc.pages) {
+      const pages = await this.writePages(doc.id, doc.userId, doc.pages);
+      if (!pages.ok) return pages;
+    }
+    return ok(toDocument(row.data));
+  }
+
+  /** Replaces the page rows used by chat retrieval. */
+  private async writePages(documentId: string, userId: string, pages: readonly string[]): Promise<Result<null, AppError>> {
+    const vision = new Set(detectVisionPages(pages));
+    const { error } = await this.db.from("document_pages").upsert(
+      pages.map((text, i) => ({
+        document_id: documentId,
+        user_id: userId,
+        page: i + 1,
+        text,
+        needs_vision: vision.has(i + 1),
+      })),
+      { onConflict: "document_id,page" },
+    );
+    return error ? err({ kind: "db_failed" }) : ok(null);
+  }
+
+  async searchPages(documentId: string, query: string, limit: number): Promise<Result<PageHit[], AppError>> {
+    const { data, error } = await this.db.rpc("search_document_pages", {
+      p_document_id: documentId,
+      p_query: query,
+      p_limit: limit,
+    });
+    if (error) return err({ kind: "db_failed" });
+    const rows = z.array(z.object({ page: z.number().int(), text: z.string() })).safeParse(data);
+    return rows.success ? ok(rows.data) : err({ kind: "db_failed" });
+  }
+
+  async deleteOwned(userId: string, id: string): Promise<Result<{ storagePath: string }, AppError>> {
+    if (!z.uuid().safeParse(id).success) return err({ kind: "not_found" });
+    const { data, error } = await this.db
+      .from("documents")
+      .delete()
+      .eq("id", id)
+      .eq("user_id", userId)
+      .select("storage_path")
+      .maybeSingle();
+    if (error) return err({ kind: "db_failed" });
+    return data ? ok({ storagePath: data.storage_path }) : err({ kind: "not_found" });
   }
 
   async getOwned(userId: string, id: string): Promise<Result<Document, AppError>> {
@@ -106,16 +165,22 @@ export class SupabaseDocumentRepository implements DocumentRepository {
   }
 
   async update(id: string, patch: DocumentPatch): Promise<Result<null, AppError>> {
-    const { error } = await this.db
+    const { data, error } = await this.db
       .from("documents")
       .update({
         ...(patch.status && { status: patch.status }),
         ...(patch.kind && { kind: patch.kind.slice(0, 60) }),
         ...(patch.sourceLang && { source_lang: patch.sourceLang }),
-        ...(patch.pages && { extracted_text: joinPages(patch.pages) }),
+        ...(patch.pages && { extracted_text: joinPages(patch.pages), vision_pages: [] }),
+        ...(patch.contentHash && { content_hash: patch.contentHash }),
+        ...(patch.chatSummary !== undefined && { chat_summary: patch.chatSummary.slice(0, 4000) }),
       })
-      .eq("id", id);
-    return error ? err({ kind: "db_failed" }) : ok(null);
+      .eq("id", id)
+      .select("user_id")
+      .maybeSingle();
+    if (error) return err({ kind: "db_failed" });
+    if (patch.pages && data) return this.writePages(id, data.user_id, patch.pages);
+    return ok(null);
   }
 
   async deleteAllOwned(userId: string): Promise<Result<null, AppError>> {

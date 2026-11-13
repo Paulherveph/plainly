@@ -1,6 +1,8 @@
 import { ShieldIcon } from "lucide-react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { providerList } from "@/modules/ai/domain/pricing";
+import { serverEnv } from "@/shared/config/env";
 import { alternatesFor } from "@/shared/i18n/alternates";
 import { DeleteEverything } from "@/shared/ui/delete-everything";
 import { LoopVideo } from "@/shared/ui/loop-video";
@@ -45,7 +47,9 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
           </div>
         </Section>
         <Section title={t("whoTitle")}>
-          <p className="mt-3 text-muted-foreground">{t("who")}</p>
+          <p className="mt-3 text-muted-foreground">
+            {t("who", { providers: providerList(serverEnv().AI_PROVIDERS_ALLOWED) })}
+          </p>
         </Section>
         <Section title={t("legalTitle")}>
           <p className="mt-3 text-muted-foreground">{t("legal")}</p>

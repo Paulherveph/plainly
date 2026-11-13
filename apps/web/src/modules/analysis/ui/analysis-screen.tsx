@@ -68,14 +68,15 @@ export function AnalysisScreen({
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
   const tc = useTranslations("Common");
-  const { state, retry } = useAnalysisStream(doc.id, locale, initial);
+  const { state, retry, continueAsGeneral } = useAnalysisStream(doc.id, locale, initial);
   const [sheetCite, setSheetCite] = useState<Cite | null>(null);
   const [highlight, setHighlight] = useState<Cite | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [quotaOpen, setQuotaOpen] = useState(false);
 
   useEffect(() => {
-    if (state.status === "error" && state.error === "quota_exceeded") setQuotaOpen(true);
+    if (state.status === "error" && (state.error === "quota_exceeded" || state.error === "insufficient_credits"))
+      setQuotaOpen(true);
   }, [state]);
 
   const showOnPage = (cite: Cite) => {
@@ -106,7 +107,7 @@ export function AnalysisScreen({
               {languageLabel(doc.sourceLang ?? data?.language)}
               {doc.pageCount} p
             </Chip>
-            <StatusLine status={state.status} />
+            <StatusLine state={state} />
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -137,8 +138,11 @@ export function AnalysisScreen({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-7">
         <div className="flex min-w-0 flex-col gap-4">
           {state.status === "error" ? (
-            <FailedCard onRetry={retry} />
-          ) : (
+            <FailedCard error={state.error} incomplete={state.partial !== null} onRetry={retry} />
+          ) : null}
+          {state.status === "not_official" ? (
+            <NotOfficialCard onContinue={continueAsGeneral} />
+          ) : state.status === "error" && state.partial === null ? null : (
             <>
               {data?.summary ? (
                 <SummarySection data={data} streaming={!verified} />
@@ -157,6 +161,7 @@ export function AnalysisScreen({
                   onCite={setSheetCite}
                   today={today}
                   documentId={doc.id}
+                  locale={locale}
                 />
               ) : (
                 <SectionSkeleton id="actions" title={t("actions")} icon={<CalendarIcon />} />
@@ -269,6 +274,8 @@ function visibleData(state: AnalysisState): PartialAnalysis | Analysis | null {
     case "streaming":
       return state.partial;
     case "error":
+      return state.partial;
+    case "not_official":
       return null;
   }
 }
@@ -283,9 +290,16 @@ function Chip({ children, mono }: { children: React.ReactNode; mono?: boolean })
   );
 }
 
-function StatusLine({ status }: { status: "streaming" | "ready" | "error" }) {
+function StatusLine({ state }: { state: AnalysisState }) {
   const t = useTranslations("Analysis");
-  if (status === "error") return null;
+  const status = state.status;
+  if (status === "error" || status === "not_official") return null;
+  const note =
+    state.status === "ready" && state.reason
+      ? t(`reason_${state.reason}`)
+      : state.status === "streaming" && state.credits
+        ? t("usesCredits", { count: state.credits })
+        : null;
   return (
     <span
       className="inline-flex items-center gap-2 text-muted-foreground text-[13px]"
@@ -301,19 +315,50 @@ function StatusLine({ status }: { status: "streaming" | "ready" | "error" }) {
         />
       )}
       {status === "ready" ? t("ready") : t("reading")}
+      {note ? <span className="text-faint">· {note}</span> : null}
     </span>
   );
 }
 
-function FailedCard({ onRetry }: { onRetry: () => void }) {
+/** Typed errors with a next action. Nothing is charged for a failed run. */
+const ERROR_KEYS: Record<string, string> = {
+  capacity: "errorCapacity",
+  ai_unavailable: "errorUnavailable",
+  ai_refused: "errorRefused",
+  rate_limited: "errorRateLimited",
+  concurrency: "errorConcurrency",
+  insufficient_credits: "errorCredits",
+  quota_exceeded: "errorCredits",
+};
+
+function FailedCard({ error, incomplete, onRetry }: { error: string; incomplete: boolean; onRetry: () => void }) {
   const t = useTranslations();
+  const key = ERROR_KEYS[error];
   return (
     <section role="alert" className="rounded-xl border border-critical/30 bg-critical-soft p-6">
-      <h2 className="font-semibold">{t("Analysis.failedTitle")}</h2>
-      <p className="mt-1.5 text-muted-foreground text-sm">{t("Analysis.failedBody")}</p>
-      <Button variant="outline" className="mt-4" onClick={onRetry}>
-        <RefreshCwIcon />
-        {t("Common.retry")}
+      <h2 className="font-semibold">{t(incomplete ? "Analysis.incompleteTitle" : "Analysis.failedTitle")}</h2>
+      <p className="mt-1.5 text-muted-foreground text-sm">
+        {key ? t(`Analysis.${key}`) : t("Analysis.failedBody")} {t("Analysis.notCharged")}
+      </p>
+      {error !== "ai_refused" ? (
+        <Button variant="outline" className="mt-4" onClick={onRetry}>
+          <RefreshCwIcon />
+          {incomplete ? t("Analysis.resume") : t("Common.retry")}
+        </Button>
+      ) : null}
+    </section>
+  );
+}
+
+/** A12: the text does not look like an official document. Ask before spending more. */
+function NotOfficialCard({ onContinue }: { onContinue: () => void }) {
+  const t = useTranslations("Analysis");
+  return (
+    <section className="rounded-xl border bg-surface p-6">
+      <h2 className="font-semibold">{t("notOfficialTitle")}</h2>
+      <p className="mt-1.5 text-muted-foreground text-sm">{t("notOfficialBody")}</p>
+      <Button className="mt-4" onClick={onContinue}>
+        {t("continueAnyway")}
       </Button>
     </section>
   );

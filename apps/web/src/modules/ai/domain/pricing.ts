@@ -74,3 +74,12 @@ export function costMicros(usage: TokenUsage, price: Price): number {
 
 /** Rough token estimate for budgeting before a call (about 4 characters per token). */
 export const estimateTokens = (chars: number): number => Math.ceil(chars / 4);
+
+/** Public names for the privacy page. It lists exactly the enabled providers (G07). */
+export const PROVIDER_LABELS: Record<ProviderName, string> = {
+  anthropic: "Anthropic (Claude)",
+};
+
+export function providerList(allowed: readonly ProviderName[]): string {
+  return allowed.map((p) => PROVIDER_LABELS[p]).join(", ");
+}
