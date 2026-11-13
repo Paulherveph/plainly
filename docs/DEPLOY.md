@@ -44,3 +44,36 @@ Vercel: promote the previous deployment (Instant Rollback). Database: write a ne
 ## Troubleshooting
 - Server Actions read `samples/*.pdf` through `process.cwd()`. Check on the first preview deploy that the PDFs are traced into the function.
 - Next warns about several lockfiles: remove stray lockfiles in parent folders, or set `turbopack.root`.
+
+## Supabase Auth settings for production (S3)
+
+Apply these in the Supabase dashboard of the **production** project (and the preview project). Claude Code does not change them.
+
+| Where | Setting | Value |
+|---|---|---|
+| Authentication → Sign In / Providers → Anonymous | Allow anonymous sign-ins | On |
+| Authentication → Sign In / Providers → Email | Enable email provider | On |
+| | Confirm email | On (email verification gates monthly credits) |
+| | Email OTP length | 6 |
+| | Email OTP expiration | 3600 seconds |
+| | Secure email change | Off (a guest has no previous address to confirm) |
+| Authentication → Sign In / Providers → Google | Enabled | On, with the Google OAuth client id and secret |
+| | Skip nonce check | Off in production |
+| Authentication → Sign In / Providers → (top) | Allow manual linking | On (`linkIdentity` for guests) |
+| Authentication → Attack Protection → Captcha | Provider | Turnstile, secret = the Turnstile secret key |
+| Authentication → Rate Limits | Emails sent per hour | 30 (with custom SMTP) |
+| | Sign-ups and sign-ins per 5 min per IP | 30 |
+| | Token verifications per 5 min per IP | 30 |
+| | Anonymous sign-ins per hour per IP | 30 |
+| Authentication → URL Configuration | Site URL | `https://<your domain>` |
+| | Redirect URLs | `https://<your domain>/auth/callback`, `https://*-<team>.vercel.app/auth/callback`, `http://localhost:3000/auth/callback` |
+| Authentication → Emails → SMTP | Custom SMTP | Resend: host `smtp.resend.com`, port 465, user `resend`, password = Resend API key, sender `Plainly <hello@your-domain>` |
+| Authentication → Emails → Templates | Magic link, Confirm signup, Change email | Paste `supabase/templates/code.html` into each, subject "Your Plainly code" |
+
+Resend domain: add the SPF, DKIM and DMARC records Resend shows for the sending domain, and wait for "Verified" before switching SMTP.
+
+Google Cloud console: OAuth client of type Web, authorized redirect URI `https://<project-ref>.supabase.co/auth/v1/callback`, consent screen with the app name, logo, privacy and terms URLs.
+
+Cloudflare Turnstile: one widget for the production hostname (and one for previews). `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` go to Vercel; the same secret goes into the Supabase captcha setting.
+
+Admin access: add your user id to `public.admins` once, with the SQL editor: `insert into public.admins (user_id) values ('<your user id>');`

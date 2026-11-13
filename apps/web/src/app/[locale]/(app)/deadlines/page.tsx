@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { DeadlineList } from "@/modules/deadlines/ui/deadline-list";
 import { DeadlinesSkeleton } from "@/modules/deadlines/ui/deadlines-skeleton";
 import { container } from "@/server/container";
+import { ok } from "@/shared/lib/result";
 import { RevealSuspense } from "@/shared/ui/reveal-suspense";
 import { SkeletonRegion } from "@/shared/ui/skeleton";
 
@@ -40,7 +41,8 @@ async function Deadlines() {
   const t = await getTranslations("Deadlines");
   const c = await container();
   const user = await c.currentUser();
-  const list = user ? await c.listDeadlines(user.id) : null;
+  // No user yet (nothing stored before the first action): an empty list, not an error.
+  const list = user ? await c.listDeadlines(user.id) : ok([]);
   if (!list?.ok) {
     return (
       <p

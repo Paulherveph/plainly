@@ -13,3 +13,11 @@ export function retentionDeps() {
     now: () => new Date(),
   };
 }
+
+/** G04 + docs/SECURITY.md 35: anonymous users with no documents left, older than 30 days. */
+export async function deleteStaleGuests(days = 30): Promise<number | null> {
+  const admin = createSupabaseAdmin();
+  if (!admin) return null;
+  const { data, error } = await admin.rpc("delete_stale_guests", { p_days: days });
+  return error ? null : Number(data ?? 0);
+}

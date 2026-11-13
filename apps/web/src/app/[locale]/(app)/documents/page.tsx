@@ -6,6 +6,7 @@ import { LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { SamplePicker } from "@/modules/documents/ui/sample-picker";
 import { QuotaSkeleton } from "@/modules/quota/ui/quota-skeleton";
 import { container } from "@/server/container";
+import { ok } from "@/shared/lib/result";
 import { RevealSuspense } from "@/shared/ui/reveal-suspense";
 import { SkeletonRegion } from "@/shared/ui/skeleton";
 
@@ -66,7 +67,9 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 async function QuotaMeter() {
   const t = await getTranslations("Documents");
-  const status = await (await container()).quota.status("analysis");
+  const c = await container();
+  if (!(await c.currentUser())) return null;
+  const status = await c.quota.status("analysis");
   if (!status.ok) return null;
   const { remaining, limit } = status.value;
   return (
@@ -83,7 +86,8 @@ async function Library() {
   const t = await getTranslations("Documents");
   const c = await container();
   const user = await c.currentUser();
-  const docs = user ? await c.listDocuments(user.id) : null;
+  // No user yet (nothing stored before the first action): an empty library, not an error.
+  const docs = user ? await c.listDocuments(user.id) : ok([]);
   if (!docs?.ok) {
     return (
       <p

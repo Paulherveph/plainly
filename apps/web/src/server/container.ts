@@ -1,4 +1,9 @@
 import "server-only";
+import { makeDeleteAccount, makeExportData, makeUpdateProfile } from "@/modules/accounts/application/use-cases";
+import { fflateZipper } from "@/modules/accounts/infrastructure/fflate-zipper";
+import { SupabaseAccountAdmin } from "@/modules/accounts/infrastructure/supabase-account-admin";
+import { SupabaseAccountData } from "@/modules/accounts/infrastructure/supabase-account-data";
+import { SupabaseProfileRepository } from "@/modules/accounts/infrastructure/supabase-profile-repository";
 import type { TierReader } from "@/modules/ai/application/admission";
 import { makeAnalyzeDocument } from "@/modules/analysis/application/analyze-document";
 import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analyzer";
@@ -28,7 +33,10 @@ import { QuotaCreditPort } from "@/modules/quota/infrastructure/quota-credit-por
 import { SupabaseQuotaService } from "@/modules/quota/infrastructure/supabase-quota-service";
 import { sha256Hex, webHasher } from "@/shared/lib/hash";
 import { ok } from "@/shared/lib/result";
+import { serverEnv } from "@/shared/config/env";
 import { admission, aiGateway, profileVersion } from "./ai";
+import { ResendMailer } from "./resend-mailer";
+import { createSupabaseAdmin } from "./supabase-admin";
 import { createSupabase, getSessionUser } from "./supabase";
 
 const CREDITS = { chat: 1, chatDeep: 3, translate: 1 } as const;
@@ -57,6 +65,11 @@ export async function container() {
     },
   };
   const gate = admission(supabase, tiers);
+  const profiles = new SupabaseProfileRepository(supabase);
+  const env = serverEnv();
+  const mailer = env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null;
+  const adminClient = createSupabaseAdmin();
+  const accountAdmin = adminClient ? new SupabaseAccountAdmin(adminClient, new SupabaseFileStore(adminClient)) : null;
 
   return {
     currentUser,
@@ -106,6 +119,22 @@ export async function container() {
     setDeadlineDone: makeSetDeadlineDone({ deadlines }),
     addDeadlineFromAction: makeAddDeadlineFromAction({ deadlines, findAnalysis: analyses.find.bind(analyses) }),
     exportDeadlines: makeExportDeadlines({ deadlines, now: () => new Date() }),
+    getProfile: profiles.get.bind(profiles),
+    /** Linked sign-in methods for the Security tab (no tokens, provider names only). */
+    identities: async (): Promise<string[]> => {
+      const { data } = await supabase.auth.getUserIdentities();
+      return (data?.identities ?? []).map((i) => i.provider).filter((p) => p !== "anonymous");
+    },
+    updateProfile: makeUpdateProfile({ profiles }),
+    exportData: makeExportData({ data: new SupabaseAccountData(supabase, files), zipper: fflateZipper }),
+    /** Null when the service key is missing: account deletion needs it. */
+    deleteAccount: accountAdmin
+      ? makeDeleteAccount({
+          admin: accountAdmin,
+          subscriptions: { cancelForDeletion: async () => ok(null) },
+          mailer,
+        })
+      : null,
   };
 }
 

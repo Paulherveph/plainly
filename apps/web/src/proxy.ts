@@ -6,14 +6,12 @@ import { routing } from "@/shared/i18n/routing";
 
 const handleI18nRouting = createMiddleware(routing);
 
-/** App pages need a user; marketing pages must not create one (crawlers, rate limits). */
-const APP_PATH = /^\/(en|fr|zh)\/(documents|deadlines)(\/|$)/;
-
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApi = pathname.startsWith("/api/") || pathname.startsWith("/auth/");
   const response = isApi ? NextResponse.next({ request }) : handleI18nRouting(request);
-  return updateSession(request, response, { ensureUser: APP_PATH.test(pathname) });
+  // Refreshes the session only. Guests are created on their first action, after Turnstile (E01).
+  return updateSession(request, response);
 }
 
 export const config = {

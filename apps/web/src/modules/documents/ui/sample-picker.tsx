@@ -2,10 +2,11 @@
 
 import { Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createSampleAction } from "@/server/actions/documents";
 import { useRouter } from "@/shared/i18n/navigation";
+import { useGuestGate } from "@/shared/ui/guest-gate";
 import { useHydrated } from "@/shared/ui/use-hydrated";
 import type { SampleId } from "../application/ports";
 
@@ -25,9 +26,25 @@ export function SamplePicker() {
   // Server HTML shows the buttons before onClick exists; a click then would be lost.
   const hydrated = useHydrated();
 
+  const { ensure } = useGuestGate();
+  const autoStarted = useRef(false);
+
+  // "Try a sample" from the landing page arrives as ?sample=lease: start it once, after the gate.
+  // Read from location (not useSearchParams) so the page shell stays static.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: runs once when the page hydrates
+  useEffect(() => {
+    if (!hydrated || autoStarted.current) return;
+    const wanted = new URLSearchParams(window.location.search).get("sample");
+    const sample = SAMPLES.find((s) => s.id === wanted);
+    if (!sample) return;
+    autoStarted.current = true;
+    open(sample.id);
+  }, [hydrated]);
+
   function open(id: SampleId) {
     setPicked(id);
     startTransition(async () => {
+      if (!(await ensure())) return;
       const res = await createSampleAction(id);
       if (res.ok) router.push(`/documents/${res.value.id}`);
       else {

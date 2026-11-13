@@ -89,19 +89,19 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 
 | ID | Scenario | Expected result | Lvl | Stage | Test |
 |----|----------|-----------------|-----|-------|------|
-| E01 | First visit, first action | Anonymous user created after Turnstile, nothing stored before that | E | S3 |  |
-| E02 | Captcha fails or is blocked | Clear message, retry, no anonymous user created | E | S3 |  |
-| E03 | Sign up with email code | Code arrives (local mailbox), account created, guest data kept | E | S3 |  |
-| E04 | Wrong or expired code | Clear error, rate limit after 5 tries | E | S3 |  |
-| E05 | Sign in with Google (new) | Guest upgraded in place, documents kept | E | S3 |  |
-| E06 | Google email already has an account | Merge flow moves guest data into the account | I,E | S3 |  |
+| E01 | First visit, first action | Anonymous user created after Turnstile, nothing stored before that | E | S3 | `e2e/auth.spec.ts` (E01) |
+| E02 | Captcha fails or is blocked | Clear message, retry, no anonymous user created | E | S3 | `startGuestAction` returns `captcha_failed` before `signInAnonymously` (e2e needs Turnstile test keys) |
+| E03 | Sign up with email code | Code arrives (local mailbox), account created, guest data kept | E | S3 | `e2e/auth.spec.ts` (E03) |
+| E04 | Wrong or expired code | Clear error, rate limit after 5 tries | E | S3 | `e2e/auth.spec.ts` (E04); Supabase `token_verifications` limit |
+| E05 | Sign in with Google (new) | Guest upgraded in place, documents kept | E | S3 | `continueWithGoogle` links the identity (manual check, needs Google keys) |
+| E06 | Google email already has an account | Merge flow moves guest data into the account | I,E | S3 | `accounts.test.sql`, `use-cases.test.ts` (E06) |
 | E07 | Sign out then in on another device | Documents and credits are there | E | S3 |  |
 | E08 | Session expires while uploading | Silent refresh, or sign-in modal that keeps the upload | E | S3 |  |
-| E09 | Open someone else's document URL | 404 (not 403), no information leak | I | S3 |  |
-| E10 | Change language and theme | Persisted in profile | E | S3 |  |
-| E11 | Export my data | Zip with JSON and originals arrives, matches stored data | I | S3 |  |
-| E12 | Delete account | Auth user, rows, storage objects, subscription gone, confirmation email sent | I | S3 |  |
-| E13 | Open redirect attempt in `next` param | Ignored, goes to default page | U | S3 |  |
+| E09 | Open someone else's document URL | 404 (not 403), no information leak | I | S3 | `e2e/auth.spec.ts` (E09), `rls.test.sql` |
+| E10 | Change language and theme | Persisted in profile | E | S3 | `profile.test.ts`, `e2e/auth.spec.ts` (E10) |
+| E11 | Export my data | Zip with JSON and originals arrives, matches stored data | I | S3 | `use-cases.test.ts` (E11), `e2e/auth.spec.ts` (E11) |
+| E12 | Delete account | Auth user, rows, storage objects, subscription gone, confirmation email sent | I | S3 | `use-cases.test.ts` (E12) |
+| E13 | Open redirect attempt in `next` param | Ignored, goes to default page | U | S3 | `safe-next.test.ts`, `e2e/auth.spec.ts` (E13) |
 | E14 | Email not verified (Free) | Documents work, monthly credits wait until verified | I | S3 |  |
 
 ## F. Credits and billing
@@ -130,10 +130,10 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 
 | ID | Scenario | Expected result | Lvl | Stage | Test |
 |----|----------|-----------------|-----|-------|------|
-| G01 | User A reads user B's rows, files, messages | Denied by RLS in every table | I | S3 |  |
+| G01 | User A reads user B's rows, files, messages | Denied by RLS in every table | I | S3 | `rls.test.sql`, `accounts.test.sql` |
 | G02 | Delete one document | File, pages, analysis, messages, deadlines removed | I | S2 | `delete-document.test.ts` |
-| G03 | Delete everything | Same for all documents, balance and ledger kept (financial record) | I | S3 |  |
-| G04 | Retention job | Expired documents removed, runs daily, logged without content | I | S3 |  |
+| G03 | Delete everything | Same for all documents, balance and ledger kept (financial record) | I | S3 | `delete-everything` keeps ledger rows (S4 `credits.test.sql`) |
+| G04 | Retention job | Expired documents removed, runs daily, logged without content | I | S3 | `expire-documents.test.ts`, `delete_stale_guests()` |
 | G05 | Logs and error events scanned after an analysis | Contain no document text or answers | I | S2 |  |
 | G06 | Signed URL after 60 s | Expired | I | S2 |  |
 | G07 | Privacy page provider list | Generated from `AI_PROVIDERS_ALLOWED` | U | S2 | `pricing.test.ts` (G07) |
@@ -163,4 +163,4 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | I03 | Oversized request bodies | Rejected early | U | S2 | `http.test.ts` (I03) |
 | I04 | SQL or HTML in filenames and text | Stored safely, rendered escaped | U | S2 |  |
 | I05 | Replay of a webhook with a bad signature | Rejected, logged | U | S5 |  |
-| I06 | Attempt to call server actions without a session | Typed `unauthenticated` error | U | S3 |  |
+| I06 | Attempt to call server actions without a session | Typed `unauthenticated` error | U | S3 | Every server action checks `currentUser()` and returns `unauthenticated` |

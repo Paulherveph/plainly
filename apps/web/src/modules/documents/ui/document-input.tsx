@@ -4,6 +4,7 @@ import { cn } from "cn";
 import { ClipboardIcon, OctagonAlertIcon, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
+import { useGuestGate } from "@/shared/ui/guest-gate";
 import { uploadFileAction, uploadTextAction } from "@/server/actions/documents";
 import { useRouter } from "@/shared/i18n/navigation";
 import type { AppError } from "@/shared/lib/errors";
@@ -42,6 +43,7 @@ export function DocumentInput() {
 function DropZone() {
   const t = useTranslations("Documents");
   const router = useRouter();
+  const { ensure } = useGuestGate();
   const toMessage = useErrorMessage();
   const inputId = useId();
   const zoneRef = useRef<HTMLDivElement>(null);
@@ -64,6 +66,7 @@ function DropZone() {
     const data = new FormData();
     data.set("file", file);
     startTransition(async () => {
+      if (!(await ensure())) return;
       const res = await uploadFileAction(data);
       if (res.ok) router.push(`/documents/${res.value.id}`);
       else {
@@ -145,6 +148,7 @@ function DropZone() {
 function PasteForm() {
   const t = useTranslations("Documents");
   const router = useRouter();
+  const { ensure } = useGuestGate();
   const toMessage = useErrorMessage();
   const [text, setText] = useState("");
   const [title, setTitle] = useState("");
@@ -156,6 +160,7 @@ function PasteForm() {
     e.preventDefault();
     setError(null);
     startTransition(async () => {
+      if (!(await ensure())) return;
       const res = await uploadTextAction({ text, title });
       if (res.ok) router.push(`/documents/${res.value.id}`);
       else setError(toMessage(res.error as AppError));

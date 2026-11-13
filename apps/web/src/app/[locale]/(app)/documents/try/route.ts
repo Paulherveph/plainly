@@ -15,7 +15,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const c = await container();
   const user = await c.currentUser();
   const fallback = new URL(`/${locale}/documents`, request.nextUrl.origin);
-  if (!user) return NextResponse.redirect(fallback);
+  // No user yet: the documents page starts the sample after the guest check (E01).
+  if (!user) {
+    fallback.searchParams.set("sample", sample);
+    return NextResponse.redirect(fallback, 303);
+  }
   const created = await c.uploadDocument({ userId: user.id, source: "sample", sampleId: sample });
   if (!created.ok) return NextResponse.redirect(fallback);
   return NextResponse.redirect(
