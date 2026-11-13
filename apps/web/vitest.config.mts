@@ -5,6 +5,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
+      "@messages": fileURLToPath(new URL("./messages", import.meta.url)),
       "server-only": fileURLToPath(new URL("./evals/server-only-stub.ts", import.meta.url)),
     },
   },
