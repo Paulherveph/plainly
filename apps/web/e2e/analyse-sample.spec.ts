@@ -79,9 +79,9 @@ test("the output language switch re-explains in French", async ({ page }) => {
 
 test("unsupported files are rejected with a clear message", async ({ page }) => {
   await page.goto("/en/documents");
-  await page
-    .locator('input[type="file"]')
-    .setInputFiles({ name: "notes.docx", mimeType: "application/msword", buffer: Buffer.from("x") });
+  const input = page.locator('input[type="file"]');
+  await expect(input).toBeEnabled(); // enabled only once React has attached its handler
+  await input.setInputFiles({ name: "notes.docx", mimeType: "application/msword", buffer: Buffer.from("x") });
   await expect(page.getByRole("tabpanel", { name: "Upload" }).getByRole("alert")).toContainText(
     "isn't supported",
   );

@@ -3,9 +3,9 @@
 import { MoonIcon, SunIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTheme } from "next-themes";
-import { useSyncExternalStore } from "react";
 import { flushSync } from "react-dom";
 import { Button } from "./button";
+import { useHydrated } from "./use-hydrated";
 
 /**
  * Bordered so it reads as a button. The new theme grows as a circle from the toggle
@@ -13,15 +13,10 @@ import { Button } from "./button";
  * Both icons render and CSS picks one, so there is no hydration flash. The label depends on the
  * stored theme, which the server can't know: it uses the server's (dark) label until hydrated.
  */
-const noop = () => () => {};
 export function ThemeToggle() {
   const t = useTranslations("Nav");
   const { resolvedTheme, setTheme } = useTheme();
-  const hydrated = useSyncExternalStore(
-    noop,
-    () => true,
-    () => false,
-  );
+  const hydrated = useHydrated();
   const isDark = !hydrated || resolvedTheme !== "light";
 
   function toggle(event: React.MouseEvent<HTMLButtonElement>) {

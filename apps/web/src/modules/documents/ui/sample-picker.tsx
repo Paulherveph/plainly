@@ -6,6 +6,7 @@ import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { createSampleAction } from "@/server/actions/documents";
 import { useRouter } from "@/shared/i18n/navigation";
+import { useHydrated } from "@/shared/ui/use-hydrated";
 import type { SampleId } from "../application/ports";
 
 const SAMPLES: { id: SampleId; title: "sampleLease" | "sampleVisa" | "sampleOffer"; pages: number }[] = [
@@ -21,6 +22,8 @@ export function SamplePicker() {
   const [picked, setPicked] = useState<SampleId | null>(null);
   const [pending, startTransition] = useTransition();
   const busy = pending ? picked : null;
+  // Server HTML shows the buttons before onClick exists; a click then would be lost.
+  const hydrated = useHydrated();
 
   function open(id: SampleId) {
     setPicked(id);
@@ -40,7 +43,7 @@ export function SamplePicker() {
           key={s.id}
           type="button"
           onClick={() => open(s.id)}
-          disabled={busy !== null}
+          disabled={busy !== null || !hydrated}
           data-testid={`sample-${s.id}`}
           className="group flex items-start gap-3.5 rounded-xl border bg-surface p-4.5 text-left transition-[border-color,background-color,transform] duration-150 hover:-translate-y-px hover:border-brand/40 hover:bg-surface-2 disabled:opacity-60"
         >

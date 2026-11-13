@@ -11,6 +11,7 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
+import { useHydrated } from "@/shared/ui/use-hydrated";
 import { MAX_FILE_BYTES, MAX_PASTE_CHARS, MIN_PASTE_CHARS, UPLOAD_MEDIA_TYPES } from "../domain/document";
 import { useErrorMessage } from "./use-error-message";
 
@@ -48,6 +49,8 @@ function DropZone() {
   const [error, setError] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  // The input is in the server HTML. Until React attaches onChange, a chosen file would be lost.
+  const hydrated = useHydrated();
   const uploading = pending ? fileName : null;
 
   function submit(file: File) {
@@ -123,6 +126,7 @@ function DropZone() {
             id={inputId}
             type="file"
             className="sr-only"
+            disabled={!hydrated}
             accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
             onChange={(e) => {
               const file = e.target.files?.[0];

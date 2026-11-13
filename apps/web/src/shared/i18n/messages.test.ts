@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
 import en from "@messages/en.json";
 import fr from "@messages/fr.json";
 import zh from "@messages/zh.json";
+import { describe, expect, it } from "vitest";
 
 function keys(obj: object, prefix = ""): string[] {
   return Object.entries(obj).flatMap(([k, v]) =>
