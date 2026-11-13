@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
-import { analysisCredits } from "@/modules/analysis/domain/credits";
+import { ANALYSIS_VERSION, analysisCredits } from "@/modules/analysis/domain/credits";
 import { AnalysisScreen } from "@/modules/analysis/ui/analysis-screen";
 import { CONFIRM_ABOVE } from "@/modules/billing/domain/credits.config";
 import { AnalysisSkeleton } from "@/modules/analysis/ui/analysis-skeleton";
@@ -70,6 +70,7 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
       locale={outputLocale}
       initial={initial}
       confirmCost={confirmCost}
+      outdated={Boolean(cached.ok && cached.value && cached.value.version !== ANALYSIS_VERSION)}
       today={new Date().toISOString().slice(0, 10)}
       chatHistory={history.ok ? history.value.map(toUIMessage) : []}
     />

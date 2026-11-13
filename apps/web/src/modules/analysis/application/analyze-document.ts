@@ -47,6 +47,8 @@ export type AnalyzeCommand = {
   requestId: string;
   /** "general": the user chose to continue with a text that is not an official document. */
   mode?: "auto" | "general";
+  /** B20: re-run explicitly after a prompt upgrade. Skips stored, cached and translated results. */
+  force?: boolean;
 };
 
 export type CachedReason = "stored" | "sample" | "duplicate" | "translated";
@@ -73,7 +75,7 @@ export function makeAnalyzeDocument(deps: Deps) {
   return async function analyzeDocument(cmd: AnalyzeCommand): Promise<Result<AnalyzeOutcome, AppError>> {
     const stored = await deps.analyses.find(cmd.documentId, cmd.locale);
     if (!stored.ok) return stored;
-    if (stored.value) return ok({ kind: "cached", result: stored.value, reason: "stored" });
+    if (stored.value && !cmd.force) return ok({ kind: "cached", result: stored.value, reason: "stored" });
 
     const docResult = await deps.documents.getOwned(cmd.userId, cmd.documentId);
     if (!docResult.ok) return docResult;
@@ -91,7 +93,7 @@ export function makeAnalyzeDocument(deps: Deps) {
     };
 
     // B19: samples are served from precomputed JSON, 0 tokens.
-    if (doc.sampleId) {
+    if (doc.sampleId && !cmd.force) {
       const sample = await deps.samples.analysis(doc.sampleId, cmd.locale);
       if (sample) return reuse(sample, 0, "sample", "sample");
     }
@@ -100,14 +102,14 @@ export function makeAnalyzeDocument(deps: Deps) {
     const cacheKey = doc.contentHash
       ? `${doc.contentHash}:${cmd.locale}:${ANALYSIS_VERSION}:${deps.profileVersion}`
       : null;
-    if (cacheKey) {
+    if (cacheKey && !cmd.force) {
       const hit = await deps.cache.get(cacheKey);
       if (hit) return reuse(hit.analysis, hit.dropped, hit.model, "duplicate");
     }
 
     // B16: another locale exists, translate it instead of re-analyzing (quotes unchanged).
-    const other = await deps.analyses.findAny(doc.id);
-    if (other.ok && other.value) return translate(other.value);
+    const other = cmd.force ? null : await deps.analyses.findAny(doc.id);
+    if (other?.ok && other.value) return translate(other.value);
 
     const admitted = await deps.admission.admit({ userId: cmd.userId, action: "analysis" });
     if (!admitted.ok) return admitted;
@@ -181,7 +183,14 @@ export function makeAnalyzeDocument(deps: Deps) {
         if (startAt === 0) return verify(1);
         return err({ kind: "ai_failed" });
       }
-      return ok({ documentId: doc.id, locale: cmd.locale, analysis, dropped, model: draft.value.usage.model });
+      return ok({
+        documentId: doc.id,
+        locale: cmd.locale,
+        analysis,
+        dropped,
+        model: draft.value.usage.model,
+        version: ANALYSIS_VERSION,
+      });
     };
 
     const done = verify(0).then(async (verified): Promise<Result<StoredAnalysis, AppError>> => {

@@ -40,6 +40,9 @@ const PublicEnv = z.object({
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(1).optional()),
+  NEXT_PUBLIC_SENTRY_DSN: z.preprocess((v) => (v === "" ? undefined : v), z.url().optional()),
+  /** Shown in the footer and the Terms: who operates Plainly (company or sole proprietor). */
+  NEXT_PUBLIC_OPERATOR: z.preprocess((v) => (v === "" ? undefined : v), z.string().max(200).optional()),
 });
 
 const ServerEnv = PublicEnv.extend({
@@ -122,6 +125,8 @@ export function publicEnv(): PublicEnv {
     NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL,
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_OPERATOR: process.env.NEXT_PUBLIC_OPERATOR,
   });
   if (!parsed.success) throw new Error(`Invalid public env: ${format(parsed.error)}`);
   cachedPublic = parsed.data;

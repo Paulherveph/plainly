@@ -4,6 +4,7 @@ import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
+import { clearOfflineCache } from "./service-worker";
 import { deleteEverythingAction } from "@/server/actions/documents";
 import {
   AlertDialog,
@@ -29,7 +30,10 @@ export function DeleteEverything() {
     startTransition(async () => {
       const res = await deleteEverythingAction();
       setOpen(false);
-      if (res.ok) toast.success(t("deleted"));
+      if (res.ok) {
+        clearOfflineCache();
+        toast.success(t("deleted"));
+      }
       else toast.error(t("deleteFailed"));
     });
   }

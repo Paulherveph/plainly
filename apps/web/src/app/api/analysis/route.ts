@@ -10,6 +10,7 @@ const Body = z.object({
   documentId: z.uuid(),
   locale: z.enum(["en", "fr", "zh"]),
   mode: z.enum(["auto", "general"]).optional(),
+  force: z.boolean().optional(),
 });
 
 /**

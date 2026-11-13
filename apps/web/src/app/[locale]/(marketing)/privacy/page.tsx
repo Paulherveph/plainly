@@ -51,6 +51,21 @@ export default async function PrivacyPage({ params }: PageProps<"/[locale]/priva
             {t("who", { providers: providerList(serverEnv().AI_PROVIDERS_ALLOWED) })}
           </p>
         </Section>
+        <Section title={t("processorsTitle")}>
+          <p className="mt-3 text-muted-foreground">{t("processorsLead")}</p>
+          <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
+            <li>{t("processorSupabase")}</li>
+            <li>{t("processorVercel")}</li>
+            <li>{t("processorAi", { providers: providerList(serverEnv().AI_PROVIDERS_ALLOWED) })}</li>
+            <li>{t("processorCloudflare")}</li>
+            <li>{t("processorResend")}</li>
+            {serverEnv().SENTRY_DSN ? <li>{t("processorSentry")}</li> : null}
+            <li>{t("processorBilling")}</li>
+          </ul>
+        </Section>
+        <Section title={t("rightsTitle")}>
+          <p className="mt-3 text-muted-foreground">{t("rights")}</p>
+        </Section>
         <Section title={t("legalTitle")}>
           <p className="mt-3 text-muted-foreground">{t("legal")}</p>
         </Section>

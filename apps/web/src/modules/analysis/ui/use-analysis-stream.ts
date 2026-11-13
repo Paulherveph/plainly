@@ -45,13 +45,13 @@ export function useAnalysisStream(
   const lastPartial = useRef<PartialAnalysis | null>(null);
 
   const run = useCallback(
-    async (mode: "auto" | "general" = "auto") => {
+    async (mode: "auto" | "general" = "auto", force = false) => {
       setState({ status: "streaming", partial: lastPartial.current, credits: null });
       try {
         const res = await fetch("/api/analysis", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ documentId, locale, mode }),
+          body: JSON.stringify({ documentId, locale, mode, force }),
         });
         if (!res.body) throw new Error("no body");
         const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
@@ -81,7 +81,7 @@ export function useAnalysisStream(
               settled = true;
               if (line.notice === "not_official") setState({ status: "not_official" });
               // Already running (another tab, or we came back): check again shortly.
-              else setTimeout(() => alive.current && void run(mode), POLL_MS);
+              else setTimeout(() => alive.current && void run(mode, false), POLL_MS);
             } else {
               settled = true;
               setState({ status: "error", error: line.error, detail: line.detail, partial: lastPartial.current });
@@ -108,5 +108,11 @@ export function useAnalysisStream(
     };
   }, [run, enabled]);
 
-  return { state, retry: () => run("auto"), continueAsGeneral: () => run("general") };
+  return {
+    state,
+    retry: () => run("auto"),
+    continueAsGeneral: () => run("general"),
+    /** B20: explicit re-run with the latest prompt version (charged normally). */
+    rerun: () => run("auto", true),
+  };
 }

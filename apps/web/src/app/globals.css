@@ -394,3 +394,46 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* H07: a clean printout of an explanation. App chrome, chat, preview and actions are hidden;
+   colors go to plain ink on paper; quotes stay next to their claims. */
+@media print {
+  @page {
+    margin: 16mm;
+  }
+  :root {
+    color-scheme: light;
+  }
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+  header.vt-header,
+  footer.vt-footer,
+  nav,
+  aside,
+  button,
+  [data-testid="chat"],
+  [data-slot="sheet-content"],
+  .print\:hidden {
+    display: none !important;
+  }
+  main,
+  section,
+  article {
+    box-shadow: none !important;
+    background: transparent !important;
+    border-color: #ccc !important;
+    break-inside: avoid-page;
+  }
+  .grid {
+    display: block !important;
+  }
+  a[href]::after {
+    content: "";
+  }
+  blockquote,
+  [data-slot="citation"] {
+    color: #333 !important;
+  }
+}

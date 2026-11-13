@@ -41,7 +41,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | B07 | Claim with a quote that is not in the text | Claim dropped, `dropped_claims` incremented, user sees "n items removed because they could not be verified" | U | S2 | `verify-citations.test.ts` |
 | B08 | All claims dropped | Analysis marked failed, one automatic retry on next model, else typed error, credits released | U | S2 | `analyze-document.test.ts` (B08) |
 | B09 | Invalid JSON from model | Repair retry once, then fallback model, user sees normal result | U | S2 |  |
-| B10 | Primary model times out | Fallback model answers, user sees only a small delay | I | S2 | `analyze-document.test.ts` (B10) |
+| B10 | Primary model times out | Fallback model answers, user sees only a small delay | I | S2 | `analyze-document.test.ts` (B10), `drills.int.test.ts` (outage drill) |
 | B11 | All providers unavailable | "Temporarily unavailable, you were not charged", credits released | I | S2 | `analyze-document.test.ts` (B11) |
 | B12 | Model refuses the content | Neutral message, no charge, no retry loop | U | S2 | `analyze-document.test.ts` (B12) |
 | B13 | Stream cut halfway | Partial results kept and marked, "Resume" runs the remaining part, charge only for what was produced | E | S2 |  |
@@ -51,7 +51,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | B17 | Very long document within the plan limit | Chunked analysis path with merged result, page numbers correct | V | S2 | Single text call up to 420k characters (100 pages); no chunking needed |
 | B18 | Legal-sounding content | Explains what it says, never "this is legal or illegal", footer visible | V | S2 | `pnpm ai:eval` |
 | B19 | Sample document | Served from stored result, 0 tokens, instant | E | S2 | `analyze-document.test.ts` (B19) |
-| B20 | Re-run analysis after prompt version upgrade | Old results stay readable, new run is explicit and charged normally | I | S6 |  |
+| B20 | Re-run analysis after prompt version upgrade | Old results stay readable, new run is explicit and charged normally | I | S6 | `analyze-document.ts` `force` + `analysis_version` banner (re-run explicit, charged normally) |
 
 ## C. Chat
 
@@ -123,7 +123,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | F13 | Downgrade with more documents than the plan allows | Reading stays, new uploads limited, retention applies only to new documents | I | S4 | Downgrade only changes entitlements; documents keep their own `expires_at` |
 | F14 | Refund or chargeback | Unused credits reversed, event logged | I | S5 | `reverse_credits()`, `billing.ts` flags used credits for review |
 | F15 | Buy a credit pack | Pack credits added, used after plan credits, never expire | I | S5 | `credits.test.sql`, `billing.test.ts` (F15) |
-| F16 | Daily budget at 80% and 100% | Free and Guest degrade then pause, paid continue, alert sent | I | S2 | `admission.test.ts`, `budget.test.ts` |
+| F16 | Daily budget at 80% and 100% | Free and Guest degrade then pause, paid continue, alert sent | I | S2 | `admission.test.ts`, `budget.test.ts`, `drills.int.test.ts` (budget drill) |
 | F17 | Localized price and currency on pricing page | Matches provider checkout | M | S5 |  |
 
 ## G. Privacy and safety
@@ -134,25 +134,25 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | G02 | Delete one document | File, pages, analysis, messages, deadlines removed | I | S2 | `delete-document.test.ts` |
 | G03 | Delete everything | Same for all documents, balance and ledger kept (financial record) | I | S3 | `delete-everything` keeps ledger rows (S4 `credits.test.sql`) |
 | G04 | Retention job | Expired documents removed, runs daily, logged without content | I | S3 | `expire-documents.test.ts`, `delete_stale_guests()` |
-| G05 | Logs and error events scanned after an analysis | Contain no document text or answers | I | S2 |  |
+| G05 | Logs and error events scanned after an analysis | Contain no document text or answers | I | S2 | `scrub.test.ts` (error events); `log.ts` takes ids and kinds only |
 | G06 | Signed URL after 60 s | Expired | I | S2 |  |
 | G07 | Privacy page provider list | Generated from `AI_PROVIDERS_ALLOWED` | U | S2 | `pricing.test.ts` (G07) |
-| G08 | Terms and privacy versions | Acceptance recorded with version at sign-up | I | S6 |  |
+| G08 | Terms and privacy versions | Acceptance recorded with version at sign-up | I | S6 | `hardening.test.sql` (G08) |
 
 ## H. Platform and UX
 
 | ID | Scenario | Expected result | Lvl | Stage | Test |
 |----|----------|-----------------|-----|-------|------|
-| H01 | Offline | Friendly offline state, previously opened results readable (PWA cache of results only, never originals) | E | S6 ||
+| H01 | Offline | Friendly offline state, previously opened results readable (PWA cache of results only, never originals) | E | S6 | `public/sw.js` (result pages cached, originals and API never) |
 | H02 | Slow network (3G throttle) | Skeletons, no layout jumps, upload progress | E | S6 ||
 | H03 | Keyboard-only full flow | Everything reachable, visible focus | E | S6 ||
 | H04 | Screen reader pass on analysis page | Landmarks, labels, live region for streaming | M | S6 ||
 | H05 | Reduced motion | No animation, static hero | E | S1 | `e2e/hero.spec.ts` (reduced motion; no WebGL) |
 | H06 | 4K monitor | Layout scales as in `HERO.md` | E | S1 | `e2e/hero.spec.ts` (1440, 1920, 2560) |
-| H07 | Print the analysis | Clean print stylesheet | E | S6 ||
-| H08 | Locale parity | en, fr, zh keys identical, no raw keys visible | U | S0 ||
-| H09 | Health endpoint | Reports DB and provider status, no secrets | I | S6 ||
-| H10 | Install as app | Manifest, icons, share target accepts a file | E | S6 ||
+| H07 | Print the analysis | Clean print stylesheet | E | S6 | `globals.css` print styles |
+| H08 | Locale parity | en, fr, zh keys identical, no raw keys visible | U | S0 | `messages.test.ts` |
+| H09 | Health endpoint | Reports DB and provider status, no secrets | I | S6 | `/api/health` |
+| H10 | Install as app | Manifest, icons, share target accepts a file | E | S6 | `manifest.ts` share_target + `/api/share` |
 
 ## I. Abuse and edge security
 

@@ -2,6 +2,7 @@ import type { EmailOtpType } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { mergeRememberedGuest, rememberGuest } from "@/server/guest-merge";
 import { createSupabase, getSessionUser, type Supabase } from "@/server/supabase";
+import { LEGAL_VERSIONS } from "@/shared/lib/legal";
 import { log } from "@/shared/lib/log";
 import { safeNext } from "@/shared/lib/safe-next";
 
@@ -45,6 +46,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(target);
   }
   const user = await getSessionUser(supabase);
+  if (user && !user.isAnonymous) {
+    await supabase.rpc("accept_legal", { p_terms: LEGAL_VERSIONS.terms, p_privacy: LEGAL_VERSIONS.privacy });
+  }
   const merged = user && !user.isAnonymous ? await mergeRememberedGuest(user.id) : 0;
   log("auth.callback", { ok: true, merged });
   if (merged > 0) target.searchParams.set("merged", String(merged));

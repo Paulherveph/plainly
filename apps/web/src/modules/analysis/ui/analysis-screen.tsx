@@ -54,6 +54,8 @@ export type AnalysisScreenProps = {
   initial: { analysis: Analysis; dropped: number } | null;
   /** Credits this analysis will use, when it is above the confirm threshold (else null). */
   confirmCost?: number | null;
+  /** The stored analysis was made with an older prompt version (B20). */
+  outdated?: boolean;
   /** YYYY-MM-DD, computed on the server at request time (overdue state). */
   today: string;
   /** Stored chat for this document, shown once the analysis is ready. */
@@ -66,13 +68,14 @@ export function AnalysisScreen({
   locale,
   initial,
   confirmCost = null,
+  outdated = false,
   today,
   chatHistory,
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
   const tc = useTranslations("Common");
   const [confirmed, setConfirmed] = useState(confirmCost === null);
-  const { state, retry, continueAsGeneral } = useAnalysisStream(doc.id, locale, initial, confirmed);
+  const { state, retry, continueAsGeneral, rerun } = useAnalysisStream(doc.id, locale, initial, confirmed);
   const [sheetCite, setSheetCite] = useState<Cite | null>(null);
   const [highlight, setHighlight] = useState<Cite | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -143,6 +146,15 @@ export function AnalysisScreen({
         <div className="flex min-w-0 flex-col gap-4">
           {state.status === "error" ? (
             <FailedCard error={state.error} incomplete={state.partial !== null} onRetry={retry} />
+          ) : null}
+          {outdated && state.status === "ready" ? (
+            <p className="flex flex-wrap items-center gap-3 rounded-[10px] border border-dashed px-3.5 py-2.5 text-muted-foreground text-[13px] print:hidden">
+              {t("outdated")}
+              <Button variant="outline" size="sm" onClick={rerun}>
+                <RefreshCwIcon />
+                {t("rerun")}
+              </Button>
+            </p>
           ) : null}
           {!confirmed ? (
             <section className="rounded-xl border bg-surface p-6" data-testid="confirm-cost">

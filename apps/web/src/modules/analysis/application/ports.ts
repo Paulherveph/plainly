@@ -39,7 +39,15 @@ export interface DocumentAnalyzer {
   translate(input: { analysis: Analysis; to: OutputLocale; ctx: AiContext }): Promise<Result<Analysis, AppError>>;
 }
 
-export type StoredAnalysis = { documentId: string; locale: OutputLocale; analysis: Analysis; dropped: number; model: string };
+export type StoredAnalysis = {
+  documentId: string;
+  locale: OutputLocale;
+  analysis: Analysis;
+  dropped: number;
+  model: string;
+  /** Prompt and schema version that produced it (B20). Missing on rows saved before versions. */
+  version?: string;
+};
 
 export interface AnalysisRepository {
   find(documentId: string, locale: OutputLocale): Promise<Result<StoredAnalysis | null, AppError>>;

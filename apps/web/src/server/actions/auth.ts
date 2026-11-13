@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createSupabase, getSessionUser } from "@/server/supabase";
 import { publicEnv } from "@/shared/config/env";
 import { routing } from "@/shared/i18n/routing";
+import { LEGAL_VERSIONS } from "@/shared/lib/legal";
 import { log } from "@/shared/lib/log";
 import { err, ok, type Result } from "@/shared/lib/result";
 import { safeNext } from "@/shared/lib/safe-next";
@@ -123,6 +124,8 @@ export async function verifyCodeAction(input: {
     if (error?.status === 429) return err({ kind: "rate_limited" });
     return err({ kind: "invalid_code" });
   }
+  // G08: signing up or in accepts the current Terms and Privacy versions (shown under the form).
+  await supabase.rpc("accept_legal", { p_terms: LEGAL_VERSIONS.terms, p_privacy: LEGAL_VERSIONS.privacy });
   const merged = await mergeRememberedGuest(data.user.id);
   return ok({ merged });
 }

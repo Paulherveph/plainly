@@ -26,11 +26,13 @@
     "themeDark": "Switch to dark theme",
     "install": "Install app",
     "account": "Account",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "terms": "Terms"
   },
   "Footer": {
     "note": "Not legal advice. Files are deleted after 30 days.",
-    "source": "Source code"
+    "source": "Source code",
+    "operator": "Operated by {operator}."
   },
   "Landing": {
     "eyebrow": "Leases, visa letters, job offers, contracts",
@@ -206,7 +208,9 @@
     "ruleDateFailed": "The date couldn't be saved. Try again.",
     "confirmTitle": "Ready when you are",
     "confirmBody": "{count, plural, one {This analysis will use # credit.} other {This analysis will use # credits.}} You're only charged if it finishes.",
-    "confirmStart": "Start the analysis"
+    "confirmStart": "Start the analysis",
+    "outdated": "This explanation was made with an earlier version of Plainly.",
+    "rerun": "Explain it again"
   },
   "Chat": {
     "title": "Ask this document",
@@ -246,7 +250,7 @@
     "loadError": "Your deadlines couldn't be loaded."
   },
   "Privacy": {
-    "eyebrow": "Last updated 11 November 2026",
+    "eyebrow": "Last updated 14 November 2026",
     "title": "Privacy, in plain language",
     "lead": "You trust Plainly with documents that matter. Here is exactly what happens to them.",
     "storeTitle": "What we store",
@@ -254,7 +258,7 @@
     "store2": "The analysis and your chat messages about that document.",
     "store3": "A daily count of analyses, to apply the free limit.",
     "howLongTitle": "How long",
-    "howLong": "30 days. After that, the file, its analysis and its chat are deleted automatically. You can delete everything sooner with the button below.",
+    "howLong": "Documents are deleted automatically after your plan's retention period: 7 days as a guest, 30 days on Free, 180 days on Pro. You can delete everything sooner with one click.",
     "whoTitle": "Who sees it",
     "who": "Only you. To write the explanation, the document text is sent to the AI provider we use: {providers}. Its API does not train on your data. Document text is never written to logs or analytics.",
     "legalTitle": "Not legal advice",
@@ -266,7 +270,18 @@
     "confirmBody": "All documents, analyses, chats and deadlines will be removed for good.",
     "confirmButton": "Yes, delete everything",
     "deleted": "Everything was deleted.",
-    "deleteFailed": "Deletion didn't complete. Please try again."
+    "deleteFailed": "Deletion didn't complete. Please try again.",
+    "processorsTitle": "Services we use",
+    "processorsLead": "These companies process data for us, only to run Plainly:",
+    "processorSupabase": "Supabase: database, file storage and sign-in.",
+    "processorVercel": "Vercel: hosting.",
+    "processorAi": "{providers}: reads the document text to write the explanation and answers.",
+    "processorCloudflare": "Cloudflare Turnstile: checks that a visitor is a person before anything is stored.",
+    "processorResend": "Resend: sends sign-in codes and account emails.",
+    "processorSentry": "Sentry: error reports, without document text or personal details.",
+    "processorBilling": "Our payment provider, when you buy a plan or a pack. Plainly never sees your card details.",
+    "rightsTitle": "Your rights",
+    "rights": "You can export all your data or delete your account from the Account page at any time. For any other request, write to us from the email of your account and we answer within 30 days."
   },
   "Auth": {
     "title": "Save your work",
@@ -497,5 +512,39 @@
     "faq_cancel_a": "Yes. Pro stays active until the end of the period you paid for, then you move to Free. Nothing is deleted.",
     "faq_reading_q": "What if I run out of credits?",
     "faq_reading_a": "Your documents, explanations, deadlines and chats stay readable. Only new analyses and questions wait for credits."
+  },
+  "Terms": {
+    "eyebrow": "Version {version}",
+    "title": "Terms of Service",
+    "lead": "The rules for using Plainly, in plain words.",
+    "operator": "Plainly is operated by {operator}.",
+    "serviceTitle": "What Plainly does",
+    "service": "Plainly explains documents you upload: a summary, key facts, things to do with their dates, and points to watch, each with a quote from the document. You can ask questions about the document.",
+    "accountTitle": "Your account",
+    "account": "You must be 16 or older. Keep your sign-in email safe; you are responsible for what is done with your account. You can delete it at any time.",
+    "creditsTitle": "Credits and payments",
+    "credits": "AI work uses credits. Plans grant credits each month; unused plan credits do not carry over. Pack credits never expire. Prices are shown before you pay, and our payment provider handles taxes and invoices.",
+    "refundsTitle": "Refunds",
+    "refunds": "You can ask for a refund within 14 days of a purchase for credits you haven't used. A cancelled plan stays active until the end of the paid period.",
+    "useTitle": "Fair use",
+    "use": "Upload only documents you have the right to share. Don't use Plainly to break the law, to overload the service, or to get around limits with many accounts.",
+    "adviceTitle": "Not legal advice",
+    "advice": "Plainly explains what a document says. It does not tell you whether something is legal or whether to sign. For decisions that matter, ask a qualified professional.",
+    "aiTitle": "AI can be wrong",
+    "ai": "Every claim comes with a quote you can check, and claims we can't verify are removed. Still, check important dates and amounts against the original.",
+    "contentTitle": "Your documents",
+    "content": "Your documents stay yours. We use them only to provide the service, never to train AI models, and delete them as described in the Privacy policy.",
+    "liabilityTitle": "Liability",
+    "liability": "We work hard to keep Plainly accurate and available, but we provide it as is. As far as the law allows, our liability is limited to what you paid us in the last 12 months.",
+    "endingTitle": "Ending your use",
+    "ending": "You can stop at any time by deleting your account. We may suspend accounts that break these terms, and we tell you why.",
+    "changesTitle": "Changes",
+    "changes": "If these terms change, we show the new version and its date here and ask you to accept it the next time you sign in.",
+    "contactTitle": "Contact",
+    "contact": "Questions about these terms? Write to us from the email of your account."
+  },
+  "Offline": {
+    "title": "You're offline",
+    "body": "Explanations you opened before are still here. New uploads and questions wait for a connection."
   }
 }

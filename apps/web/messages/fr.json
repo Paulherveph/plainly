@@ -26,11 +26,13 @@
     "themeDark": "Passer au thème sombre",
     "install": "Installer l'app",
     "account": "Compte",
-    "pricing": "Tarifs"
+    "pricing": "Tarifs",
+    "terms": "Conditions"
   },
   "Footer": {
     "note": "Pas un conseil juridique. Fichiers supprimés après 30 jours.",
-    "source": "Code source"
+    "source": "Code source",
+    "operator": "Exploité par {operator}."
   },
   "Landing": {
     "eyebrow": "Baux, courriers de visa, offres d'emploi, contrats",
@@ -206,7 +208,9 @@
     "ruleDateFailed": "La date n'a pas pu être enregistrée. Réessayez.",
     "confirmTitle": "Prêt quand vous l'êtes",
     "confirmBody": "{count, plural, one {Cette analyse utilisera # crédit.} other {Cette analyse utilisera # crédits.}} Vous n'êtes facturé que si elle aboutit.",
-    "confirmStart": "Lancer l'analyse"
+    "confirmStart": "Lancer l'analyse",
+    "outdated": "Cette explication a été faite avec une version antérieure de Plainly.",
+    "rerun": "Réexpliquer"
   },
   "Chat": {
     "title": "Interroger ce document",
@@ -246,7 +250,7 @@
     "loadError": "Impossible de charger vos échéances."
   },
   "Privacy": {
-    "eyebrow": "Mis à jour le 11 novembre 2026",
+    "eyebrow": "Mis à jour le 14 novembre 2026",
     "title": "La confidentialité, en clair",
     "lead": "Vous confiez à Plainly des documents importants. Voici exactement ce qu'il en fait.",
     "storeTitle": "Ce que nous gardons",
@@ -254,7 +258,7 @@
     "store2": "L'analyse et vos messages sur ce document.",
     "store3": "Un compteur d'analyses par jour, pour la limite gratuite.",
     "howLongTitle": "Combien de temps",
-    "howLong": "30 jours. Ensuite, le fichier, son analyse et la discussion sont supprimés automatiquement. Vous pouvez tout supprimer avant avec le bouton ci-dessous.",
+    "howLong": "Les documents sont supprimés automatiquement après la durée de conservation de votre offre : 7 jours en invité, 30 jours en Gratuit, 180 jours en Pro. Vous pouvez tout supprimer plus tôt en un clic.",
     "whoTitle": "Qui le voit",
     "who": "Vous seul. Pour rédiger l'explication, le texte du document est envoyé au fournisseur d'IA que nous utilisons : {providers}. Son API n'entraîne pas de modèles avec vos données. Le texte n'est jamais écrit dans les journaux ni les statistiques.",
     "legalTitle": "Pas un conseil juridique",
@@ -266,7 +270,18 @@
     "confirmBody": "Documents, analyses, discussions et échéances seront supprimés définitivement.",
     "confirmButton": "Oui, tout supprimer",
     "deleted": "Tout a été supprimé.",
-    "deleteFailed": "La suppression n'a pas abouti. Réessayez."
+    "deleteFailed": "La suppression n'a pas abouti. Réessayez.",
+    "processorsTitle": "Services que nous utilisons",
+    "processorsLead": "Ces entreprises traitent des données pour nous, uniquement pour faire fonctionner Plainly :",
+    "processorSupabase": "Supabase : base de données, stockage des fichiers et connexion.",
+    "processorVercel": "Vercel : hébergement.",
+    "processorAi": "{providers} : lit le texte du document pour rédiger l'explication et les réponses.",
+    "processorCloudflare": "Cloudflare Turnstile : vérifie qu'un visiteur est une personne avant tout enregistrement.",
+    "processorResend": "Resend : envoie les codes de connexion et les e-mails du compte.",
+    "processorSentry": "Sentry : rapports d'erreurs, sans texte de document ni données personnelles.",
+    "processorBilling": "Notre prestataire de paiement, quand vous achetez une offre ou un pack. Plainly ne voit jamais vos données de carte.",
+    "rightsTitle": "Vos droits",
+    "rights": "Vous pouvez exporter toutes vos données ou supprimer votre compte depuis la page Compte à tout moment. Pour toute autre demande, écrivez-nous depuis l'adresse de votre compte : nous répondons sous 30 jours."
   },
   "Auth": {
     "title": "Gardez votre travail",
@@ -497,5 +512,39 @@
     "faq_cancel_a": "Oui. Pro reste actif jusqu'à la fin de la période payée, puis vous passez à Gratuit. Rien n'est supprimé.",
     "faq_reading_q": "Et si je n'ai plus de crédits ?",
     "faq_reading_a": "Vos documents, explications, échéances et discussions restent lisibles. Seules les nouvelles analyses et questions attendent des crédits."
+  },
+  "Terms": {
+    "eyebrow": "Version {version}",
+    "title": "Conditions d'utilisation",
+    "lead": "Les règles d'utilisation de Plainly, en mots simples.",
+    "operator": "Plainly est exploité par {operator}.",
+    "serviceTitle": "Ce que fait Plainly",
+    "service": "Plainly explique les documents que vous importez : un résumé, les faits clés, les actions à faire avec leurs dates et les points d'attention, chacun avec une citation du document. Vous pouvez poser des questions sur le document.",
+    "accountTitle": "Votre compte",
+    "account": "Vous devez avoir 16 ans ou plus. Protégez l'accès à votre e-mail de connexion ; vous êtes responsable de l'usage de votre compte. Vous pouvez le supprimer à tout moment.",
+    "creditsTitle": "Crédits et paiements",
+    "credits": "Le travail de l'IA utilise des crédits. Les offres donnent des crédits chaque mois ; les crédits d'offre non utilisés ne sont pas reportés. Les crédits de pack n'expirent jamais. Les prix sont affichés avant paiement, et notre prestataire de paiement gère les taxes et les factures.",
+    "refundsTitle": "Remboursements",
+    "refunds": "Vous pouvez demander un remboursement dans les 14 jours suivant un achat pour les crédits non utilisés. Une offre résiliée reste active jusqu'à la fin de la période payée.",
+    "useTitle": "Usage loyal",
+    "use": "N'importez que des documents que vous avez le droit de partager. N'utilisez pas Plainly pour enfreindre la loi, surcharger le service ou contourner les limites avec plusieurs comptes.",
+    "adviceTitle": "Pas un conseil juridique",
+    "advice": "Plainly explique ce que dit un document. Il ne vous dit pas si quelque chose est légal ni s'il faut signer. Pour les décisions importantes, consultez un professionnel qualifié.",
+    "aiTitle": "L'IA peut se tromper",
+    "ai": "Chaque affirmation est accompagnée d'une citation vérifiable, et celles que nous ne pouvons pas vérifier sont retirées. Vérifiez tout de même les dates et montants importants dans l'original.",
+    "contentTitle": "Vos documents",
+    "content": "Vos documents restent à vous. Nous les utilisons uniquement pour fournir le service, jamais pour entraîner des modèles d'IA, et les supprimons comme décrit dans la Politique de confidentialité.",
+    "liabilityTitle": "Responsabilité",
+    "liability": "Nous faisons tout pour que Plainly soit exact et disponible, mais il est fourni tel quel. Dans la limite permise par la loi, notre responsabilité est limitée à ce que vous nous avez payé au cours des 12 derniers mois.",
+    "endingTitle": "Fin d'utilisation",
+    "ending": "Vous pouvez arrêter à tout moment en supprimant votre compte. Nous pouvons suspendre un compte qui enfreint ces conditions, en vous expliquant pourquoi.",
+    "changesTitle": "Modifications",
+    "changes": "Si ces conditions changent, nous affichons ici la nouvelle version et sa date, et vous demandons de l'accepter à votre prochaine connexion.",
+    "contactTitle": "Contact",
+    "contact": "Une question sur ces conditions ? Écrivez-nous depuis l'adresse de votre compte."
+  },
+  "Offline": {
+    "title": "Vous êtes hors ligne",
+    "body": "Les explications déjà ouvertes restent disponibles. Les nouveaux imports et questions attendent une connexion."
   }
 }

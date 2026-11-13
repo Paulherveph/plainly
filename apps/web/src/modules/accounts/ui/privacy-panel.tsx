@@ -16,6 +16,7 @@ import {
   DialogTrigger,
 } from "@/shared/ui/dialog";
 import { Input } from "@/shared/ui/input";
+import { clearOfflineCache } from "@/shared/ui/service-worker";
 
 /** E11 export and E12 delete account (type-to-confirm). */
 export function PrivacyPanel() {
@@ -30,6 +31,7 @@ export function PrivacyPanel() {
     start(async () => {
       const res = await deleteAccountAction({ typed, locale });
       if (!res.ok) return void toast.error(t("deleteFailed"));
+      clearOfflineCache();
       window.location.assign(`/${locale}`);
     });
   }

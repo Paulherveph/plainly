@@ -10,6 +10,13 @@ export default function manifest(): MetadataRoute.Manifest {
     start_url: "/en/documents",
     scope: "/",
     display: "standalone",
+    // H10: share a PDF or photo to Plainly from the phone's share sheet.
+    share_target: {
+      action: "/api/share",
+      method: "POST",
+      enctype: "multipart/form-data",
+      params: { title: "title", files: [{ name: "file", accept: ["application/pdf", "image/png", "image/jpeg"] }] },
+    },
     background_color: "#0b0b0f",
     theme_color: "#0b0b0f",
     icons: [

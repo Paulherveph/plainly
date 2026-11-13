@@ -26,11 +26,13 @@
     "themeDark": "切换到深色主题",
     "install": "安装应用",
     "account": "账户",
-    "pricing": "价格"
+    "pricing": "价格",
+    "terms": "服务条款"
   },
   "Footer": {
     "note": "不构成法律意见。文件 30 天后删除。",
-    "source": "源代码"
+    "source": "源代码",
+    "operator": "运营方：{operator}。"
   },
   "Landing": {
     "eyebrow": "租约、签证信、录用通知、合同",
@@ -206,7 +208,9 @@
     "ruleDateFailed": "日期保存失败，请重试。",
     "confirmTitle": "准备就绪",
     "confirmBody": "此次分析将使用 {count} 个额度。只有分析完成才会扣除。",
-    "confirmStart": "开始分析"
+    "confirmStart": "开始分析",
+    "outdated": "此解读由早期版本的 Plainly 生成。",
+    "rerun": "重新解读"
   },
   "Chat": {
     "title": "向这份文件提问",
@@ -246,7 +250,7 @@
     "loadError": "无法加载你的截止日期。"
   },
   "Privacy": {
-    "eyebrow": "更新于 2026 年 11 月 11 日",
+    "eyebrow": "最后更新：2026 年 11 月 14 日",
     "title": "隐私说明，简单直白",
     "lead": "你把重要文件交给 Plainly，下面说明它们会怎样被处理。",
     "storeTitle": "我们保存什么",
@@ -254,7 +258,7 @@
     "store2": "该文件的分析结果和你的提问记录。",
     "store3": "每日分析次数，用于免费额度。",
     "howLongTitle": "保存多久",
-    "howLong": "30 天。之后文件、分析和对话会自动删除。你也可以用下面的按钮提前全部删除。",
+    "howLong": "文档会在方案保存期限后自动删除：访客 7 天，免费方案 30 天，Pro 方案 180 天。您也可以一键提前删除全部内容。",
     "whoTitle": "谁能看到",
     "who": "只有您自己。为了生成解读，文档文字会发送给我们使用的 AI 服务商：{providers}。其 API 不会用您的数据训练模型。文档文字绝不会写入日志或统计。",
     "legalTitle": "不是法律意见",
@@ -266,7 +270,18 @@
     "confirmBody": "所有文件、分析、对话和截止日期将被永久删除。",
     "confirmButton": "确定删除",
     "deleted": "已全部删除。",
-    "deleteFailed": "删除没有完成，请重试。"
+    "deleteFailed": "删除没有完成，请重试。",
+    "processorsTitle": "我们使用的服务",
+    "processorsLead": "以下公司仅为运行 Plainly 而代我们处理数据：",
+    "processorSupabase": "Supabase：数据库、文件存储和登录。",
+    "processorVercel": "Vercel：网站托管。",
+    "processorAi": "{providers}：读取文档文字以生成解读和回答。",
+    "processorCloudflare": "Cloudflare Turnstile：在保存任何内容前确认访客是真人。",
+    "processorResend": "Resend：发送登录验证码和账户邮件。",
+    "processorSentry": "Sentry：错误报告，不含文档文字或个人信息。",
+    "processorBilling": "购买方案或额度包时使用的支付服务商。Plainly 不会看到您的银行卡信息。",
+    "rightsTitle": "您的权利",
+    "rights": "您可随时在账户页面导出全部数据或删除账户。其他请求请用账户邮箱联系我们，我们会在 30 天内回复。"
   },
   "Auth": {
     "title": "保存您的内容",
@@ -497,5 +512,39 @@
     "faq_cancel_a": "可以。Pro 会保持到已付周期结束，之后转为免费方案，内容不会被删除。",
     "faq_reading_q": "额度用完了怎么办？",
     "faq_reading_a": "文档、解读、截止日期和对话依然可读，只有新的分析和提问需要额度。"
+  },
+  "Terms": {
+    "eyebrow": "版本 {version}",
+    "title": "服务条款",
+    "lead": "用简单的话说明 Plainly 的使用规则。",
+    "operator": "Plainly 由 {operator} 运营。",
+    "serviceTitle": "Plainly 提供什么",
+    "service": "Plainly 解读您上传的文档：摘要、关键事实、待办事项及日期、注意事项，并附上文档原文引用。您还可以就文档提问。",
+    "accountTitle": "您的账户",
+    "account": "您须年满 16 岁。请妥善保管登录邮箱，您对账户中的操作负责。您可随时删除账户。",
+    "creditsTitle": "额度与付款",
+    "credits": "AI 处理会消耗额度。方案每月发放额度，未用完的方案额度不结转。额度包永不过期。付款前会显示价格，税费和发票由支付服务商处理。",
+    "refundsTitle": "退款",
+    "refunds": "购买后 14 天内，可就未使用的额度申请退款。取消的方案在已付周期结束前仍然有效。",
+    "useTitle": "合理使用",
+    "use": "只上传您有权分享的文档。不得利用 Plainly 违法、使服务过载或通过多个账户规避限制。",
+    "adviceTitle": "非法律意见",
+    "advice": "Plainly 只说明文档内容，不判断是否合法或是否应签署。重要决定请咨询专业人士。",
+    "aiTitle": "AI 可能出错",
+    "ai": "每条结论都附有可核对的引用，无法核实的内容会被删除。重要的日期和金额仍请对照原文确认。",
+    "contentTitle": "您的文档",
+    "content": "您的文档归您所有。我们仅用其提供服务，绝不用于训练 AI 模型，并按隐私政策删除。",
+    "liabilityTitle": "责任",
+    "liability": "我们尽力保证 Plainly 准确可用，但服务按现状提供。在法律允许范围内，我们的责任以您过去 12 个月支付的金额为限。",
+    "endingTitle": "终止使用",
+    "ending": "您可随时删除账户停止使用。违反本条款的账户可能被暂停，我们会告知原因。",
+    "changesTitle": "条款变更",
+    "changes": "条款如有变更，我们会在此显示新版本及日期，并在您下次登录时请您确认。",
+    "contactTitle": "联系我们",
+    "contact": "对本条款有疑问？请用账户邮箱联系我们。"
+  },
+  "Offline": {
+    "title": "您已离线",
+    "body": "之前打开过的解读仍可查看。新的上传和提问需要联网。"
   }
 }

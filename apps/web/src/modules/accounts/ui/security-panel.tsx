@@ -6,6 +6,7 @@ import { useTransition } from "react";
 import { toast } from "sonner";
 import { continueWithGoogle, signOutAction } from "@/server/actions/auth";
 import { Button } from "@/shared/ui/button";
+import { clearOfflineCache } from "@/shared/ui/service-worker";
 import { GoogleMark } from "@/shared/ui/sign-in-form";
 
 /** Connected sign-in methods, sign out here, sign out of other devices. */
@@ -55,7 +56,10 @@ export function SecurityPanel({ identities, email }: { identities: string[]; ema
           onClick={() =>
             start(async () => {
               const res = await signOutAction("local");
-              if (res.ok) window.location.assign(`/${locale}`);
+              if (res.ok) {
+                clearOfflineCache();
+                window.location.assign(`/${locale}`);
+              }
               else toast.error(t("failed"));
             })
           }

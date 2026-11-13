@@ -5,6 +5,7 @@ import type { AppError } from "@/shared/lib/errors";
 import { err, ok, type Result } from "@/shared/lib/result";
 import type { AnalysisRepository, StoredAnalysis } from "../application/ports";
 import { Analysis, LOCALES, type OutputLocale } from "../domain/analysis";
+import { ANALYSIS_VERSION } from "../domain/credits";
 
 export class SupabaseAnalysisRepository implements AnalysisRepository {
   constructor(private readonly db: SupabaseClient<Database>) {}
@@ -12,7 +13,7 @@ export class SupabaseAnalysisRepository implements AnalysisRepository {
   async find(documentId: string, locale: OutputLocale): Promise<Result<StoredAnalysis | null, AppError>> {
     const { data, error } = await this.db
       .from("analyses")
-      .select("result, model, dropped_claims")
+      .select("result, model, dropped_claims, analysis_version")
       .eq("document_id", documentId)
       .eq("locale", locale)
       .maybeSingle();
@@ -26,6 +27,7 @@ export class SupabaseAnalysisRepository implements AnalysisRepository {
       analysis: analysis.data,
       dropped: data.dropped_claims,
       model: data.model,
+      version: data.analysis_version,
     });
   }
 
@@ -54,6 +56,7 @@ export class SupabaseAnalysisRepository implements AnalysisRepository {
         result: a.analysis as unknown as Json,
         model: a.model,
         dropped_claims: a.dropped,
+        analysis_version: a.version ?? ANALYSIS_VERSION,
       },
       { onConflict: "document_id,locale" },
     );

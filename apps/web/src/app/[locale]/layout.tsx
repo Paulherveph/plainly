@@ -8,6 +8,7 @@ import { publicEnv } from "@/shared/config/env";
 import { routing } from "@/shared/i18n/routing";
 import { SiteFooter } from "@/shared/ui/site-footer";
 import { SiteHeader } from "@/shared/ui/site-header";
+import { ServiceWorker } from "@/shared/ui/service-worker";
 import { Toaster } from "@/shared/ui/sonner";
 import { ThemeProvider } from "@/shared/ui/theme-provider";
 import "../globals.css";
@@ -63,6 +64,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
             </main>
             <SiteFooter />
             <Toaster position="bottom-center" />
+            <ServiceWorker />
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

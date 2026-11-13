@@ -10,13 +10,21 @@ const isDev = process.env.NODE_ENV !== "production";
  * every page to render dynamically (see docs/SECURITY.md).
  */
 const TURNSTILE = "https://challenges.cloudflare.com";
+/** Sentry ingest origin, only when a public DSN is configured. */
+const SENTRY = (() => {
+  try {
+    return process.env.NEXT_PUBLIC_SENTRY_DSN ? ` ${new URL(process.env.NEXT_PUBLIC_SENTRY_DSN).origin}` : "";
+  } catch {
+    return "";
+  }
+})();
 const csp = [
   "default-src 'self'",
   `script-src 'self' 'unsafe-inline' ${TURNSTILE}${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob:",
   "font-src 'self'",
-  `connect-src 'self' ${TURNSTILE}${isDev ? " ws:" : ""}`,
+  `connect-src 'self' ${TURNSTILE}${SENTRY}${isDev ? " ws:" : ""}`,
   `frame-src ${TURNSTILE}`,
   "frame-ancestors 'none'",
   "form-action 'self'",
