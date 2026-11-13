@@ -1,8 +1,16 @@
+import { CreditMeter } from "@/modules/billing/ui/credit-meter";
 import { AccountButton } from "@/shared/ui/account-button";
-import { createSupabase, getSessionUser } from "./supabase";
+import { container } from "./container";
 
-/** Streams in behind a Suspense boundary: it reads the session cookie. */
+/** Streams in behind a Suspense boundary: it reads the session cookie. Credits show once a user exists. */
 export async function Account() {
-  const user = await getSessionUser(await createSupabase());
-  return <AccountButton email={user && !user.isAnonymous ? user.email : null} />;
+  const c = await container();
+  const user = await c.currentUser();
+  const balance = user ? await c.entitlements.balance() : null;
+  return (
+    <span className="inline-flex items-center gap-2">
+      {balance?.ok ? <CreditMeter balance={balance.value} /> : null}
+      <AccountButton email={user && !user.isAnonymous ? user.email : null} />
+    </span>
+  );
 }

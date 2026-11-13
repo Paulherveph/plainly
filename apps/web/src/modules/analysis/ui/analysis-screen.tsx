@@ -20,7 +20,7 @@ import { ChatPanel } from "@/modules/chat/ui/chat-panel";
 import type { MediaType } from "@/modules/documents/domain/document";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "@/shared/ui/button";
-import { QuotaDialog } from "@/shared/ui/quota-dialog";
+import { PaywallDialog } from "@/modules/billing/ui/paywall-dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
 import type { Analysis, Cite, OutputLocale, PartialAnalysis } from "../domain/analysis";
 import { DocumentPreview } from "./document-preview";
@@ -52,6 +52,8 @@ export type AnalysisScreenProps = {
   pages: string[] | null;
   locale: OutputLocale;
   initial: { analysis: Analysis; dropped: number } | null;
+  /** Credits this analysis will use, when it is above the confirm threshold (else null). */
+  confirmCost?: number | null;
   /** YYYY-MM-DD, computed on the server at request time (overdue state). */
   today: string;
   /** Stored chat for this document, shown once the analysis is ready. */
@@ -63,12 +65,14 @@ export function AnalysisScreen({
   pages,
   locale,
   initial,
+  confirmCost = null,
   today,
   chatHistory,
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
   const tc = useTranslations("Common");
-  const { state, retry, continueAsGeneral } = useAnalysisStream(doc.id, locale, initial);
+  const [confirmed, setConfirmed] = useState(confirmCost === null);
+  const { state, retry, continueAsGeneral } = useAnalysisStream(doc.id, locale, initial, confirmed);
   const [sheetCite, setSheetCite] = useState<Cite | null>(null);
   const [highlight, setHighlight] = useState<Cite | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
@@ -140,7 +144,16 @@ export function AnalysisScreen({
           {state.status === "error" ? (
             <FailedCard error={state.error} incomplete={state.partial !== null} onRetry={retry} />
           ) : null}
-          {state.status === "not_official" ? (
+          {!confirmed ? (
+            <section className="rounded-xl border bg-surface p-6" data-testid="confirm-cost">
+              <h2 className="font-semibold">{t("confirmTitle")}</h2>
+              <p className="mt-1.5 text-muted-foreground text-sm">{t("confirmBody", { count: confirmCost ?? 0 })}</p>
+              <Button className="mt-4" onClick={() => setConfirmed(true)}>
+                {t("confirmStart")}
+              </Button>
+            </section>
+          ) : null}
+          {!confirmed ? null : state.status === "not_official" ? (
             <NotOfficialCard onContinue={continueAsGeneral} />
           ) : state.status === "error" && state.partial === null ? null : (
             <>
@@ -258,7 +271,14 @@ export function AnalysisScreen({
         </SheetContent>
       </Sheet>
 
-      <QuotaDialog open={quotaOpen} onOpenChange={setQuotaOpen} />
+      <PaywallDialog
+        open={quotaOpen}
+        onOpenChange={setQuotaOpen}
+        reason={{
+          kind: "insufficient_credits",
+          needed: state.status === "error" && typeof state.detail?.needed === "number" ? state.detail.needed : undefined,
+        }}
+      />
     </div>
   );
 }

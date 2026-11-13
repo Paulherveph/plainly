@@ -21,6 +21,10 @@ export default defineConfig({
     env: {
       USE_FAKE_AI: "true",
       NEXT_PUBLIC_SITE_URL: `http://localhost:${PORT}`,
+      // Fake billing: the simulator page is allowed under `next start` for E2E only.
+      BILLING_PROVIDER: "fake",
+      ALLOW_FAKE_BILLING: "true",
+      BILLING_WEBHOOK_SECRET: "e2e-fake-billing-secret-0123456789",
     },
   },
 });

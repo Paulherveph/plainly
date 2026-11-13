@@ -66,6 +66,8 @@ const ServerEnv = PublicEnv.extend({
   GUEST_MERGE_SECRET: optional(z.string().min(32)),
   BILLING_PROVIDER: z.enum(["fake"]).default("fake"),
   BILLING_WEBHOOK_SECRET: optional(z.string().min(16)),
+  /** Lets the fake-billing simulator run under `next start` (E2E only). Never set in production. */
+  ALLOW_FAKE_BILLING: bool,
   SENTRY_DSN: optional(z.url()),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 })

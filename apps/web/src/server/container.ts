@@ -29,17 +29,19 @@ import { FsSampleLibrary } from "@/modules/documents/infrastructure/fs-sample-li
 import { SupabaseDocumentRepository } from "@/modules/documents/infrastructure/supabase-document-repository";
 import { SupabaseFileStore } from "@/modules/documents/infrastructure/supabase-file-store";
 import { UnpdfTextExtractor } from "@/modules/documents/infrastructure/unpdf-text-extractor";
-import { QuotaCreditPort } from "@/modules/quota/infrastructure/quota-credit-port";
-import { SupabaseQuotaService } from "@/modules/quota/infrastructure/supabase-quota-service";
+import { makeCancelForDeletion, makeStartCheckout } from "@/modules/billing/application/billing";
+import { makeEntitlements } from "@/modules/billing/application/entitlement-service";
+import { CREDIT_COSTS } from "@/modules/billing/domain/credits.config";
+import { SupabaseCreditStore } from "@/modules/billing/infrastructure/supabase-credit-store";
+import { SupabasePlanRepository } from "@/modules/billing/infrastructure/supabase-plan-repository";
 import { sha256Hex, webHasher } from "@/shared/lib/hash";
 import { ok } from "@/shared/lib/result";
 import { serverEnv } from "@/shared/config/env";
 import { admission, aiGateway, profileVersion } from "./ai";
+import { billingProvider, billingStore } from "./billing";
 import { ResendMailer } from "./resend-mailer";
 import { createSupabaseAdmin } from "./supabase-admin";
 import { createSupabase, getSessionUser } from "./supabase";
-
-const CREDITS = { chat: 1, chatDeep: 3, translate: 1 } as const;
 
 /**
  * Composition root: wires adapters to ports for one request.
@@ -50,21 +52,19 @@ export async function container() {
   const documents = new SupabaseDocumentRepository(supabase);
   const files = new SupabaseFileStore(supabase);
   const analyses = new SupabaseAnalysisRepository(supabase);
-  const quota = new SupabaseQuotaService(supabase);
   const messages = new SupabaseMessageRepository(supabase);
   const deadlines = new SupabaseDeadlineRepository(supabase);
   const samples = new FsSampleLibrary();
   const ai = aiGateway(supabase);
-  const credits = new QuotaCreditPort(quota);
   const currentUser = () => getSessionUser(supabase);
-
-  const tiers: TierReader = {
-    tier: async () => {
-      const user = await currentUser();
-      return { tier: user?.isAnonymous === false ? "free" : "guest", maxConcurrentAnalyses: 1 };
-    },
-  };
+  const plans = new SupabasePlanRepository(supabase);
+  const creditStore = new SupabaseCreditStore(supabase);
+  const entitlements = makeEntitlements({ plans, credits: creditStore });
+  const credits = entitlements.credits;
+  const tiers: TierReader = entitlements.tiers;
   const gate = admission(supabase, tiers);
+  const provider = billingProvider();
+  const store = billingStore();
   const profiles = new SupabaseProfileRepository(supabase);
   const env = serverEnv();
   const mailer = env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null;
@@ -73,7 +73,12 @@ export async function container() {
 
   return {
     currentUser,
-    quota,
+    entitlements,
+    plans: plans.listPlans.bind(plans),
+    ledger: creditStore.ledger.bind(creditStore),
+    markLowNudged: creditStore.markLowNudged.bind(creditStore),
+    startCheckout: makeStartCheckout({ provider, plans }),
+    openPortal: provider.createPortalSession.bind(provider),
     listDocuments: makeListDocuments({ documents }),
     getDocument: makeGetDocument({ documents }),
     readOriginal: makeReadOriginal({ documents, files }),
@@ -84,6 +89,7 @@ export async function container() {
       samples,
       hasher: webHasher,
       newId: () => crypto.randomUUID(),
+      checkLimits: ({ pages, bytes }) => entitlements.uploadLimits({ pages, bytes }),
     }),
     analyzeDocument: makeAnalyzeDocument({
       documents,
@@ -96,7 +102,7 @@ export async function container() {
       credits,
       admission: gate,
       profileVersion: profileVersion(),
-      translateCredits: CREDITS.translate,
+      translateCredits: entitlements.translateCredits,
       hash: sha256Hex,
       onAnalyzed: makeCollectDeadlines({ deadlines }),
     }),
@@ -110,8 +116,8 @@ export async function container() {
       answerer: new GatewayAnswerer(ai),
       credits,
       admission: gate,
-      canUseDeepChat: async () => ok(null),
-      creditsFor: (deep) => (deep ? CREDITS.chatDeep : CREDITS.chat),
+      canUseDeepChat: entitlements.canUseDeepChat,
+      creditsFor: (deep) => (deep ? CREDIT_COSTS.chatDeep : CREDIT_COSTS.chat),
       hash: sha256Hex,
     }),
     listMessages: messages.list.bind(messages),
@@ -126,12 +132,17 @@ export async function container() {
       return (data?.identities ?? []).map((i) => i.provider).filter((p) => p !== "anonymous");
     },
     updateProfile: makeUpdateProfile({ profiles }),
-    exportData: makeExportData({ data: new SupabaseAccountData(supabase, files), zipper: fflateZipper }),
+    exportData: makeExportData({
+      data: new SupabaseAccountData(supabase, files, ["credit_ledger", "subscriptions"]),
+      zipper: fflateZipper,
+    }),
     /** Null when the service key is missing: account deletion needs it. */
     deleteAccount: accountAdmin
       ? makeDeleteAccount({
           admin: accountAdmin,
-          subscriptions: { cancelForDeletion: async () => ok(null) },
+          subscriptions: {
+            cancelForDeletion: store ? makeCancelForDeletion({ provider, store }) : async () => ok(null),
+          },
           mailer,
         })
       : null,

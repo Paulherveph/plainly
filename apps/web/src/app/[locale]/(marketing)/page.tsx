@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { DAILY_LIMITS } from "@/modules/quota/domain/quota";
+import { PUBLIC_PLANS } from "@/modules/billing/domain/public-plans";
 import { alternatesFor } from "@/shared/i18n/alternates";
 import {
   Faq,
@@ -25,7 +25,7 @@ export default function LandingPage() {
       <PrivacyBand />
       <InstallSection />
       <SocialProof />
-      <PricingTeaser guestLimit={DAILY_LIMITS.analysis.guest} memberLimit={DAILY_LIMITS.analysis.member} />
+      <PricingTeaser guestLimit={PUBLIC_PLANS.guest.credits} memberLimit={PUBLIC_PLANS.free.credits} />
       <Faq />
       <FinalCta />
     </>

@@ -34,6 +34,8 @@ export function useAnalysisStream(
   documentId: string,
   locale: OutputLocale,
   initial: { analysis: Analysis; dropped: number } | null,
+  /** False while the reader has not confirmed the cost; the stream starts once it turns true. */
+  enabled = true,
 ) {
   const [state, setState] = useState<AnalysisState>(
     initial ? { status: "ready", ...initial } : { status: "streaming", partial: null, credits: null },
@@ -97,14 +99,14 @@ export function useAnalysisStream(
 
   useEffect(() => {
     alive.current = true;
-    if (!started.current) {
+    if (enabled && !started.current) {
       started.current = true;
       void run();
     }
     return () => {
       alive.current = false;
     };
-  }, [run]);
+  }, [run, enabled]);
 
   return { state, retry: () => run("auto"), continueAsGeneral: () => run("general") };
 }

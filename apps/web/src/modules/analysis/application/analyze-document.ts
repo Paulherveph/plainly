@@ -35,8 +35,8 @@ type Deps = AnalysisSink & {
   admission: AiAdmission;
   /** Changes when the analysis profile's models change, so the cache does not mix models. */
   profileVersion: string;
-  /** Credits for an extra locale (TOKEN_ECONOMY section 5). */
-  translateCredits: number;
+  /** Credits for an extra locale on the user's plan (1, or 0 when the plan includes all locales). */
+  translateCredits: () => Promise<number>;
   hash: (input: string) => Promise<string>;
 };
 
@@ -217,7 +217,8 @@ export function makeAnalyzeDocument(deps: Deps) {
       if (!jobT.ok) return jobT;
       if (jobT.value === null) return ok({ kind: "running" });
       const tJob = jobT.value.id;
-      const holdT = await deps.credits.reserve({ userId: cmd.userId, amount: deps.translateCredits, key: `translation:${tJob}` });
+      const cost = await deps.translateCredits();
+      const holdT = await deps.credits.reserve({ userId: cmd.userId, amount: cost, key: `translation:${tJob}` });
       if (!holdT.ok) {
         await deps.jobs.finish(tJob, "failed", holdT.error.kind);
         return holdT;
@@ -238,7 +239,7 @@ export function makeAnalyzeDocument(deps: Deps) {
         await deps.jobs.finish(tJob, "failed", reused.error.kind);
         return reused;
       }
-      await deps.credits.settle(holdT.value.holdId, deps.translateCredits);
+      await deps.credits.settle(holdT.value.holdId, cost);
       await deps.jobs.finish(tJob, "done");
       return reused;
     }

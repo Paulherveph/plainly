@@ -87,3 +87,12 @@ Short ADRs for choices a reviewer might question. Newest last.
 ## ADR 13: Per-user analysis cache (2026-11-14, S2)
 **Decision.** `analysis_cache` is keyed by `(user_id, sha256(normalized text) : locale : ANALYSIS_VERSION : analysis models)` under RLS. Users never share cache rows, so an upload cannot reveal whether another user holds the same document.
 **Consequences.** Two different users with the same file each pay once. Re-uploads by the same user are free (A16). Bumping `ANALYSIS_VERSION` invalidates the cache when prompts change (B20).
+
+## ADR 14: Credits in Postgres, holds before every paid call (2026-11-14, S4)
+**Context.** Paid actions must never overspend or charge twice, including under concurrency and retries.
+**Decision.** Balances live in `credit_balances` and change only through security-definer SQL functions (`reserve_credits`, `settle_credits`, `release_credits`, `grant_period_credits`, `grant_pack_credits`, `reverse_credits`). Each one locks the balance row and writes `credit_ledger` rows with a unique idempotency key, so the ledger always sums to the balance. Plan credits are granted lazily on the first request of a period: no cron, idempotent per period, and Free waits for a verified email. `EntitlementService` is the only application entry point: every use case reserves through it. The UI only displays.
+**Consequences.** One extra RPC per paid action. Reading is never blocked. Guest credits are not merged into a member account: a member starts with their own monthly grant, and the guest's ledger rows stay as a record with `user_id` null.
+
+## ADR 15: Fake billing until the owner picks a provider (2026-11-14, S4)
+**Decision.** `BillingProvider` has one adapter for now, `FakeBillingProvider`. Its checkout and portal open a dev-only simulator, which posts HMAC-signed events to the real webhook route. Signature check, idempotent event storage, the state machine (with out-of-order protection) and credit grants all run exactly as they will in production. S5 adds one real adapter behind the same port.
+**Consequences.** The simulator returns 404 unless `BILLING_PROVIDER=fake`, and in production builds it also needs `ALLOW_FAKE_BILLING=true`, which only E2E sets.

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { z } from "zod";
+import { analysisCredits } from "@/modules/analysis/domain/credits";
 import { AnalysisScreen } from "@/modules/analysis/ui/analysis-screen";
+import { CONFIRM_ABOVE } from "@/modules/billing/domain/credits.config";
 import { AnalysisSkeleton } from "@/modules/analysis/ui/analysis-skeleton";
 import type { StoredMessage } from "@/modules/chat/application/ports";
 import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
@@ -48,6 +50,10 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
   ]);
   const initial =
     cached.ok && cached.value ? { analysis: cached.value.analysis, dropped: cached.value.dropped } : null;
+  // Never surprise: a first analysis above the threshold shows its cost and waits for a click.
+  const d = doc.value;
+  const cost = analysisCredits(d.pageCount, d.pages === null ? d.pageCount : d.visionPages.length);
+  const confirmCost = !initial && !d.sampleId && d.status !== "ready" && cost > CONFIRM_ABOVE ? cost : null;
 
   return (
     <AnalysisScreen
@@ -63,6 +69,7 @@ async function DocumentView({ params, searchParams }: PageProps<"/[locale]/docum
       pages={doc.value.pages}
       locale={outputLocale}
       initial={initial}
+      confirmCost={confirmCost}
       today={new Date().toISOString().slice(0, 10)}
       chatHistory={history.ok ? history.value.map(toUIMessage) : []}
     />

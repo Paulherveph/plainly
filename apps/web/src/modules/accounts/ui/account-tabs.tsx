@@ -9,6 +9,8 @@ import { SecurityPanel } from "./security-panel";
 
 /** Profile, Plan and usage, Privacy, Security (docs/AUTH.md section 4). */
 export function AccountTabs(props: {
+  /** Tab to open first (?tab=plan from the credit meter). */
+  initialTab?: string;
   email: string | null;
   profile: Profile;
   identities: string[];
@@ -17,7 +19,7 @@ export function AccountTabs(props: {
 }) {
   const t = useTranslations("Account");
   return (
-    <Tabs defaultValue="profile" className="mt-8">
+    <Tabs defaultValue={props.initialTab ?? "profile"} className="mt-8">
       <TabsList className="flex-wrap">
         <TabsTrigger value="profile">{t("tabProfile")}</TabsTrigger>
         {props.plan ? <TabsTrigger value="plan">{t("tabPlan")}</TabsTrigger> : null}

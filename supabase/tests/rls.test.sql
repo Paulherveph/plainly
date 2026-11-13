@@ -58,8 +58,9 @@ select throws_ok(
     values ('aaaaaaaa-0000-0000-0000-000000000001', 'fr', '{}'::jsonb, 'x')$$,
   '42501', null, 'cannot attach an analysis to someone else''s document');
 select throws_ok(
-  $$insert into public.usage (user_id, day) values ('22222222-2222-2222-2222-222222222222', current_date)$$,
-  '42501', null, 'usage is not writable directly');
+  $$insert into public.credit_ledger (user_id, delta, bucket, reason, idempotency_key)
+    values ('22222222-2222-2222-2222-222222222222', 999, 'pack', 'adjust', 'free-money')$$,
+  '42501', null, 'the credit ledger is not writable directly');
 
 -- ── storage paths are scoped to the user folder ──
 select throws_ok(

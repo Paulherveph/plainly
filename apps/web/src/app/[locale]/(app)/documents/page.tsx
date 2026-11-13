@@ -4,7 +4,8 @@ import { DocumentInput } from "@/modules/documents/ui/document-input";
 import { DocumentLibrary } from "@/modules/documents/ui/document-library";
 import { LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { SamplePicker } from "@/modules/documents/ui/sample-picker";
-import { QuotaSkeleton } from "@/modules/quota/ui/quota-skeleton";
+import { CreditSkeleton } from "@/modules/billing/ui/credit-skeleton";
+import { CreditMeter } from "@/modules/billing/ui/credit-meter";
 import { container } from "@/server/container";
 import { ok } from "@/shared/lib/result";
 import { RevealSuspense } from "@/shared/ui/reveal-suspense";
@@ -28,7 +29,7 @@ export default async function DocumentsPage({ params }: PageProps<"/[locale]/doc
           </h1>
           <p className="mt-2 text-muted-foreground">{t("sub")}</p>
         </div>
-        <RevealSuspense fallback={<QuotaSkeleton />}>
+        <RevealSuspense fallback={<CreditSkeleton />}>
           <QuotaMeter />
         </RevealSuspense>
       </div>
@@ -66,20 +67,11 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 }
 
 async function QuotaMeter() {
-  const t = await getTranslations("Documents");
   const c = await container();
   if (!(await c.currentUser())) return null;
-  const status = await c.quota.status("analysis");
-  if (!status.ok) return null;
-  const { remaining, limit } = status.value;
-  return (
-    <div className="flex items-center gap-2.5 text-muted-foreground text-[13px]" data-testid="quota">
-      <div className="h-1.5 w-18 overflow-hidden rounded-full bg-surface-2" aria-hidden="true">
-        <div className="h-full rounded-full bg-brand" style={{ width: `${(remaining / limit) * 100}%` }} />
-      </div>
-      {t("quota", { left: remaining, max: limit })}
-    </div>
-  );
+  const balance = await c.entitlements.balance();
+  if (!balance.ok) return null;
+  return <CreditMeter balance={balance.value} variant="inline" />;
 }
 
 async function Library() {

@@ -3,11 +3,12 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { cn } from "cn";
-import { MessageCircleIcon, RefreshCwIcon, SendIcon, SquareIcon } from "lucide-react";
+import { MessageCircleIcon, RefreshCwIcon, SendIcon, SparklesIcon, SquareIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
 import type { Cite, OutputLocale } from "@/modules/analysis/domain/analysis";
 import { CitationChip } from "@/modules/analysis/ui/citation-chip";
+import { PaywallDialog, type PaywallReason } from "@/modules/billing/ui/paywall-dialog";
 import { Button } from "@/shared/ui/button";
 import { MAX_QUESTION_CHARS } from "../domain/grounding";
 import type { ChatUIMessage, CitationsData } from "./chat-message";
@@ -24,16 +25,39 @@ export function ChatPanel({
   onCite: (cite: Cite) => void;
 }) {
   const t = useTranslations("Chat");
-  const tq = useTranslations("Quota");
+  const tq = useTranslations("Billing");
   const [input, setInput] = useState("");
+  const [deep, setDeep] = useState(false);
+  const deepRef = useRef(false);
+  deepRef.current = deep;
   const listRef = useRef<HTMLDivElement>(null);
+  const [transport] = useState(
+    () =>
+      new DefaultChatTransport<ChatUIMessage>({
+        api: "/api/chat",
+        // Only the latest turn goes up: history is read from the database (never from the client).
+        prepareSendMessagesRequest: ({ messages: all, trigger }) => ({
+          body: { documentId, locale, trigger, deep: deepRef.current, messages: all.slice(-2) },
+        }),
+      }),
+  );
   const { messages, sendMessage, status, stop, regenerate, error } = useChat<ChatUIMessage>({
     id: documentId,
     messages: initialMessages,
-    transport: new DefaultChatTransport({ api: "/api/chat", body: { documentId, locale } }),
+    transport,
   });
   const busy = status === "submitted" || status === "streaming";
-  const quotaHit = Boolean(error?.message.includes("quota_exceeded"));
+  const paywall: PaywallReason | null = error?.message.includes("feature_not_in_plan")
+    ? { kind: "feature_not_in_plan", feature: "deep_chat" }
+    : error?.message.includes("insufficient_credits")
+      ? { kind: "insufficient_credits", needed: deep ? 3 : 1 }
+      : null;
+  const quotaHit = paywall !== null;
+  const [paywallOpen, setPaywallOpen] = useState(false);
+  // biome-ignore lint/correctness/useExhaustiveDependencies: open once per new paywall reason
+  useEffect(() => {
+    if (paywall) setPaywallOpen(true);
+  }, [paywall?.kind]);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: keep the latest message in view while it streams
   useEffect(() => {
@@ -136,6 +160,16 @@ export function ChatPanel({
             placeholder={t("placeholder")}
             className="h-10 min-w-0 flex-1 bg-transparent text-[15px] outline-none placeholder:text-faint"
           />
+          <button
+            type="button"
+            aria-pressed={deep}
+            onClick={() => setDeep((d) => !d)}
+            title={t("deepHint")}
+            className="inline-flex h-8 shrink-0 items-center gap-1.5 rounded-full border px-2.5 text-muted-foreground text-xs transition-colors hover:text-foreground focus-visible:outline-2 focus-visible:outline-brand aria-pressed:border-brand aria-pressed:bg-brand-soft aria-pressed:text-foreground"
+          >
+            <SparklesIcon className="size-3.5" aria-hidden="true" />
+            {t("deep")}
+          </button>
           {busy ? (
             <Button
               type="button"
@@ -159,6 +193,7 @@ export function ChatPanel({
           )}
         </form>
       </div>
+      {paywall ? <PaywallDialog open={paywallOpen} onOpenChange={setPaywallOpen} reason={paywall} /> : null}
     </>
   );
 }
@@ -172,9 +207,9 @@ function noticeText({
   quotaHit: boolean;
   failed: boolean;
   t: (key: "error" | "stopped") => string;
-  tq: (key: "chatLimit") => string;
+  tq: (key: "chatPaywall") => string;
 }): string {
-  if (quotaHit) return tq("chatLimit");
+  if (quotaHit) return tq("chatPaywall");
   if (failed) return t("error");
   return t("stopped");
 }

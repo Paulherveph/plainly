@@ -115,7 +115,7 @@ function setup(o: Opts = {}) {
     credits,
     admission: { admit: vi.fn(async () => ok({ degraded: false })) },
     profileVersion: "test",
-    translateCredits: 1,
+    translateCredits: async () => 1,
     hash: async () => "b".repeat(64),
   });
   const run = () => analyze({ userId: "u1", documentId: "d1", locale: "en", requestId: "r1" });

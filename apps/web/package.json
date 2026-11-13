@@ -15,7 +15,8 @@
     "ai:try": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-try.ts",
     "ai:eval": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-eval.ts",
     "ai:report": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-report.ts",
-    "ai:samples": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-samples.ts"
+    "ai:samples": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-samples.ts",
+    "test:int": "vitest run --config vitest.int.config.mts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.99",

@@ -8,6 +8,7 @@ import { Link, usePathname } from "@/shared/i18n/navigation";
 const ITEMS = [
   { href: "/documents", key: "documents" },
   { href: "/deadlines", key: "deadlines" },
+  { href: "/pricing", key: "pricing" },
   { href: "/privacy", key: "privacy" },
 ] as const;
 

@@ -11,7 +11,8 @@ export default defineConfig({
   },
   test: {
     include: ["src/**/*.test.ts", "evals/**/*.test.ts"],
-    exclude: ["node_modules", ".next", "e2e"],
+    // *.int.test.ts need local Supabase: `pnpm test:int` (vitest.int.config.mts).
+    exclude: ["node_modules", ".next", "e2e", "**/*.int.test.ts"],
     environment: "node",
   },
 });

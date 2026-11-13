@@ -14,8 +14,8 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | A05 | Several photos for one document | Reordered by user, treated as pages of one document | E | S2 |  |
 | A06 | Password-protected PDF | Typed error `encrypted`, asks for an unprotected copy | U | S2 | `unpdf-text-extractor.ts` maps PasswordException to `encrypted` (fixture test open) |
 | A07 | Corrupted file or wrong extension | Magic-byte check rejects it, no storage left behind | U | S2 | `document-text.test.ts` (A07) |
-| A08 | File above plan size limit | Rejected client and server side, shows the limit and upgrade option | E | S2 | `document-text.test.ts` (A08) |
-| A09 | Page count above plan limit | Rejected before any model call, shows limit and upgrade option | U | S2 |  |
+| A08 | File above plan size limit | Rejected client and server side, shows the limit and upgrade option | E | S2 | `document-text.test.ts` (A08), `entitlements.test.ts` (plan limits) |
+| A09 | Page count above plan limit | Rejected before any model call, shows limit and upgrade option | U | S2 | `entitlements.test.ts` (A08/A09) |
 | A10 | Pasted text under 200 characters | Gentle "add more text" message, no model call | U | S2 | `document-text.test.ts` (A10/A11) |
 | A11 | Pasted text above limit | Clear limit message, offers upload or trimming | U | S2 | `document-text.test.ts` (A10/A11) |
 | A12 | Not an official document (recipe, story) | Result says it does not look like an official document, offers to continue as general text, low cost path | V | S2 | `analyze-document.test.ts` (A12) |
@@ -25,7 +25,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | A16 | Same file uploaded twice | Cached result returned, 0 credits, message "already analyzed" | I | S2 | `analyze-document.test.ts` (A16) |
 | A17 | Prompt injection inside the document ("ignore previous instructions") | Treated as text, no behavior change, may appear as a watch-out | V | S2 | `pnpm ai:eval` |
 | A18 | Upload interrupted by network loss | Resumable or clean retry, no orphan files, no charge | E | S2 |  |
-| A19 | Two tabs analyzing at once beyond the concurrency limit | Second gets `concurrency` error with wait guidance | I | S4 |  |
+| A19 | Two tabs analyzing at once beyond the concurrency limit | Second gets `concurrency` error with wait guidance | I | S4 | `entitlement-service.test.ts`, `admission.test.ts` (A19) |
 | A20 | Malformed or huge PDF (decompression bomb) | Parsing limits stop it, typed error, server stays healthy | U | S2 | `unpdf-text-extractor.ts` page, character and time caps (fixture test open) |
 
 ## B. Analysis results
@@ -36,7 +36,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | B02 | No deadlines in the document | Actions list may be empty, deadlines page unaffected, UI explains "no dated actions" | E | S2 |  |
 | B03 | Relative deadline ("within 30 days of receipt") | `dueRule` stored, `dueOn` computed only if the document date is known, else shown as a rule with a date picker for the user | U,V | S2 | `analysis.test.ts` (B03) |
 | B04 | Ambiguous date (03/04/2026) | Flagged `ambiguous`, user chooses format, never guessed silently | V | S2 | `analysis.test.ts` (B04) |
-| B05 | Past date | Shown as overdue in deadlines | U | S4 |  |
+| B05 | Past date | Shown as overdue in deadlines | U | S4 | `deadline.test.ts` (overdue) |
 | B06 | Several currencies or amounts | Kept as written with currency, no conversion | V | S2 | `pnpm ai:eval` |
 | B07 | Claim with a quote that is not in the text | Claim dropped, `dropped_claims` incremented, user sees "n items removed because they could not be verified" | U | S2 | `verify-citations.test.ts` |
 | B08 | All claims dropped | Analysis marked failed, one automatic retry on next model, else typed error, credits released | U | S2 | `analyze-document.test.ts` (B08) |
@@ -69,9 +69,9 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | C10 | Citation fails verification | Citation removed, answer marked "not verified against the text" or answer dropped | U | S2 | `fake-answerer.test.ts`, `grounding.test.ts` |
 | C11 | User stops generation | Provider request aborted, charge only for tokens produced | I | S2 | `answer-question.test.ts` (C11) |
 | C12 | Question in a different language than the UI | Answers in the question's language | V | S2 | `pnpm ai:eval` |
-| C13 | Credits exhausted mid-conversation | Soft paywall modal, conversation stays readable | E | S4 |  |
+| C13 | Credits exhausted mid-conversation | Soft paywall modal, conversation stays readable | E | S4 | `chat-panel.tsx` paywall on `insufficient_credits`; `e2e/billing.spec.ts` (F01) |
 | C14 | Long document (above 8k tokens) | Retrieval path used, answer quality within eval thresholds | V | S2 | `answer-question.test.ts` (C14) |
-| C15 | Deep chat requested on Free plan | `feature_not_in_plan` with upgrade action | E | S4 |  |
+| C15 | Deep chat requested on Free plan | `feature_not_in_plan` with upgrade action | E | S4 | `entitlements.test.ts`, `entitlement-service.test.ts` (C15) |
 
 ## D. Deadlines
 
@@ -108,21 +108,21 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 
 | ID | Scenario | Expected result | Lvl | Stage | Test |
 |----|----------|-----------------|-----|-------|------|
-| F01 | Guest uses all credits | Soft paywall: sign up for more, no dead end | E | S4 |  |
-| F02 | Free monthly reset | Lazy grant on first request of a new period, idempotent | I | S4 |  |
-| F03 | Insufficient credits | Blocked before the model call, shows cost, options | E | S4 |  |
-| F04 | 50 parallel requests on a balance of 10 | Never goes negative, never double charges | I | S4 |  |
-| F05 | AI call fails | Hold released, balance unchanged | I | S4 |  |
-| F06 | Cache hit or sample | 0 credits | I | S4 |  |
-| F07 | Fake checkout success | Plan active, credits granted once | E | S4 |  |
+| F01 | Guest uses all credits | Soft paywall: sign up for more, no dead end | E | S4 | `e2e/billing.spec.ts` (F01) |
+| F02 | Free monthly reset | Lazy grant on first request of a new period, idempotent | I | S4 | `credits.test.sql` (F02) |
+| F03 | Insufficient credits | Blocked before the model call, shows cost, options | E | S4 | `entitlements.test.ts`, `entitlement-service.test.ts`, `credits.test.sql` (F03) |
+| F04 | 50 parallel requests on a balance of 10 | Never goes negative, never double charges | I | S4 | `credits.int.test.ts` (F04, `pnpm test:int`) |
+| F05 | AI call fails | Hold released, balance unchanged | I | S4 | `credits.test.sql`, `analyze-document.test.ts` (B11) |
+| F06 | Cache hit or sample | 0 credits | I | S4 | `credits.test.sql`, `entitlement-service.test.ts` (F06) |
+| F07 | Fake checkout success | Plan active, credits granted once | E | S4 | `e2e/billing.spec.ts` (F07), `billing.test.ts` |
 | F08 | Return from checkout before webhook | "Confirming payment" until the webhook arrives, then active | E | S5 |  |
-| F09 | Duplicate or out-of-order webhook | Processed once, state correct | I | S5 |  |
-| F10 | Payment fails | `past_due`, 3-day grace, no new credits, banner with fix link | I | S5 |  |
-| F11 | Cancel | Stays active to period end, then Free, data untouched | I | S4 |  |
+| F09 | Duplicate or out-of-order webhook | Processed once, state correct | I | S5 | `billing.test.ts`, `subscription.test.ts` (F09) |
+| F10 | Payment fails | `past_due`, 3-day grace, no new credits, banner with fix link | I | S5 | `subscription.test.ts` (F10), `effective_plan()` 3-day grace |
+| F11 | Cancel | Stays active to period end, then Free, data untouched | I | S4 | `subscription.test.ts` (F11) |
 | F12 | Upgrade mid-cycle | Provider handles proration, credits adjusted per rule | I | S5 |  |
-| F13 | Downgrade with more documents than the plan allows | Reading stays, new uploads limited, retention applies only to new documents | I | S4 |  |
-| F14 | Refund or chargeback | Unused credits reversed, event logged | I | S5 |  |
-| F15 | Buy a credit pack | Pack credits added, used after plan credits, never expire | I | S5 |  |
+| F13 | Downgrade with more documents than the plan allows | Reading stays, new uploads limited, retention applies only to new documents | I | S4 | Downgrade only changes entitlements; documents keep their own `expires_at` |
+| F14 | Refund or chargeback | Unused credits reversed, event logged | I | S5 | `reverse_credits()`, `billing.ts` flags used credits for review |
+| F15 | Buy a credit pack | Pack credits added, used after plan credits, never expire | I | S5 | `credits.test.sql`, `billing.test.ts` (F15) |
 | F16 | Daily budget at 80% and 100% | Free and Guest degrade then pause, paid continue, alert sent | I | S2 | `admission.test.ts`, `budget.test.ts` |
 | F17 | Localized price and currency on pricing page | Matches provider checkout | M | S5 |  |
 
@@ -159,8 +159,8 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | ID | Scenario | Expected result | Lvl | Stage | Test |
 |----|----------|-----------------|-----|-------|------|
 | I01 | Script creating many guests | Turnstile and IP limits stop it, budget guard holds | I | S3 |  |
-| I02 | Many parallel uploads | Concurrency and rate limits return typed errors | I | S4 |  |
+| I02 | Many parallel uploads | Concurrency and rate limits return typed errors | I | S4 | `admission.test.ts` (I02) |
 | I03 | Oversized request bodies | Rejected early | U | S2 | `http.test.ts` (I03) |
 | I04 | SQL or HTML in filenames and text | Stored safely, rendered escaped | U | S2 |  |
-| I05 | Replay of a webhook with a bad signature | Rejected, logged | U | S5 |  |
+| I05 | Replay of a webhook with a bad signature | Rejected, logged | U | S5 | `billing.test.ts`, `e2e/billing.spec.ts` (I05) |
 | I06 | Attempt to call server actions without a session | Typed `unauthenticated` error | U | S3 | Every server action checks `currentUser()` and returns `unauthenticated` |
