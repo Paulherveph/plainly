@@ -1,0 +1,5 @@
+{
+  "env": {
+    "ECC_DISABLED_HOOKS": "pre:observe,post:observe:continuous-learning,post:session-activity-tracker"
+  }
+}
