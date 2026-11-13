@@ -18,14 +18,14 @@ One Vercel project. **Root Directory** = `apps/web`. "Include source files outsi
 
 Exit 0 skips the build, exit 1 builds. It runs from `apps/web`. `package.json` at the root is included because it carries `packageManager`.
 
-Dry run (scratch branch, three throwaway commits, run from `apps/web`): see the results table below.
+Dry run on 2026-11-14 (detached HEAD, five throwaway commits, `bash -c "<cmd>"` from `apps/web`):
 
 | Commit touches | Expected | Result |
 |---|---|---|
-| `docs/` only | 0 (skip) | see S0 gate report |
-| `apps/web/` | 1 (build) | see S0 gate report |
-| `pnpm-lock.yaml` | 1 (build) | see S0 gate report |
-| `supabase/` or `assets/` only | 0 (skip) | see S0 gate report |
+| `docs/` only | 0 (skip) | 0 (skip) |
+| `apps/web/` | 1 (build) | 1 (build) |
+| `pnpm-lock.yaml` | 1 (build) | 1 (build) |
+| `supabase/` or `assets/` only | 0 (skip) | 0 (skip) |
 
 If the clone is shallow and `HEAD^` is missing, the command fails and Vercel builds. That is the safe default.
 
