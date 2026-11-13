@@ -311,9 +311,6 @@
     "mobilePreview": "手机上的 Plainly"
   },
   "Video": {
-    "showreelEyebrow": "实际演示",
-    "showreelTitle": "从一份 3 页的租约，到一张简短的待办清单。",
-    "showreelLabel": "视频：一份示例租约被逐节解释，一条引文被核对，截止日期被导出，一个问题根据文件得到回答。",
     "explainerCta": "观看 30 秒介绍",
     "explainerTitle": "30 秒了解 Plainly",
     "explainerLabel": "视频：为什么文件难懂，Plainly 做什么，三个步骤如何运作，以及引文的核实比例。",

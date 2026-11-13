@@ -27,7 +27,7 @@ test.describe("hero", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
     await page.goto("/en");
     await expect(page.getByTestId("hero-static")).toBeVisible();
-    await expect(page.getByTestId("hero-static-image")).toBeVisible(); // the render of the real orb
+    await expect(page.getByTestId("hero-static-image")).toBeVisible({ timeout: 15_000 }); // the decision comes 3 s after load, then at idle
     await expect(page.getByTestId("hero-orb")).toHaveAttribute("data-tier", "static");
     await expect(page.locator("canvas")).toHaveCount(0);
     // Scroll must not drive anything either: the calm variable is never set.
@@ -45,7 +45,7 @@ test.describe("hero", () => {
       HTMLCanvasElement.prototype.getContext = () => null;
     });
     await page.goto("/en");
-    await expect(page.getByTestId("hero-static-image")).toBeVisible();
+    await expect(page.getByTestId("hero-static-image")).toBeVisible({ timeout: 15_000 });
     await expect(page.getByTestId("hero-orb")).toHaveAttribute("data-tier", "static");
     expect(errors).toEqual([]);
   });

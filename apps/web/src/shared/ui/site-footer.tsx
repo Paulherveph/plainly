@@ -15,10 +15,10 @@ export function SiteFooter() {
           <p className="mt-2.5 text-faint text-[13px]">{t("Footer.note")}</p>
         </div>
         <nav aria-label={t("Nav.main")} className="flex flex-wrap gap-5 text-muted-foreground text-sm">
-          <Link href="/documents" className="hover:text-foreground">
+          <Link prefetch={false} href="/documents" className="hover:text-foreground">
             {t("Nav.documents")}
           </Link>
-          <Link href="/deadlines" className="hover:text-foreground">
+          <Link prefetch={false} href="/deadlines" className="hover:text-foreground">
             {t("Nav.deadlines")}
           </Link>
           <Link href="/privacy" className="hover:text-foreground">

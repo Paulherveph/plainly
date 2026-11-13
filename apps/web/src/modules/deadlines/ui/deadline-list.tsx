@@ -40,7 +40,9 @@ export function DeadlineList({ deadlines, today }: { deadlines: Deadline[]; toda
         <h2 className="font-semibold">{t("emptyTitle")}</h2>
         <p className="mt-1 text-muted-foreground text-sm">{t("emptyBody")}</p>
         <Button asChild variant="outline" size="sm" className="mt-4">
-          <Link href="/documents">{t("emptyCta")}</Link>
+          <Link prefetch={false} href="/documents">
+            {t("emptyCta")}
+          </Link>
         </Button>
       </div>
     );
@@ -168,7 +170,11 @@ function Row({
         <div className="mt-0.5 hidden flex-wrap items-center gap-2 text-[13px] text-muted-foreground sm:flex">
           <span>
             {t("from")}{" "}
-            <Link href={`/documents/${d.documentId}`} className="text-brand-text hover:underline">
+            <Link
+              prefetch={false}
+              href={`/documents/${d.documentId}`}
+              className="text-brand-text hover:underline"
+            >
               {d.documentTitle}
             </Link>
           </span>

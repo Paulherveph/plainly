@@ -34,6 +34,8 @@ function Links({ variant = "bar", onNavigate, pathname }: Props & { pathname: st
       <Link
         key={item.href}
         href={item.href}
+        // App pages create a guest on first visit; a prefetch would create one per link and race the cookies.
+        prefetch={false}
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
         className={cn(

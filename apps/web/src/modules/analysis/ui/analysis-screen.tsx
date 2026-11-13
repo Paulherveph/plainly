@@ -92,7 +92,7 @@ export function AnalysisScreen({
       <header className="mb-6 flex flex-col gap-4 border-b pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <Button asChild variant="ghost" size="sm" className="-ml-3">
-            <Link href="/documents">
+            <Link prefetch={false} href="/documents">
               <ArrowLeftIcon />
               {t("back")}
             </Link>

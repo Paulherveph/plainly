@@ -60,12 +60,16 @@ export function Hero() {
             {t("ctaSample")}
             <ArrowRightIcon className="size-4" />
           </TrySampleLink>
-          <Link href="/documents" className={buttonVariants({ variant: "outline", size: "lg" })}>
+          <Link
+            prefetch={false}
+            href="/documents"
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
             <UploadIcon className="size-4" />
             {t("ctaUpload")}
           </Link>
         </div>
-        <ul className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-faint">
+        <ul className="mt-5.5 flex flex-wrap justify-center gap-x-5 gap-y-2 text-[13px] text-muted-foreground">
           {(["trustSignup", "trustDeleted", "trustLanguages"] as const).map((k) => (
             <li key={k} className="inline-flex items-center gap-1.5">
               <CheckIcon className="size-3.5 text-ok" aria-hidden="true" />
@@ -410,9 +414,9 @@ export function PrivacyBand() {
 export function PricingTeaser({ guestLimit, memberLimit }: { guestLimit: number; memberLimit: number }) {
   const t = useTranslations("Landing");
   const items = [
-    { value: String(guestLimit), label: t("pricingGuest") },
-    { value: String(memberLimit), label: t("pricingMember") },
-    { value: "✓", label: t("pricingRead") },
+    { value: String(guestLimit), label: t("pricingGuest"), decorative: false },
+    { value: String(memberLimit), label: t("pricingMember"), decorative: false },
+    { value: "✓", label: t("pricingRead"), decorative: true },
   ];
   return (
     <section className="mx-auto max-w-marketing px-5 pb-22 md:px-8 md:pb-30" aria-labelledby="pricing-title">
@@ -420,7 +424,9 @@ export function PricingTeaser({ guestLimit, memberLimit }: { guestLimit: number;
       <ul className="reveal mx-auto grid max-w-[900px] gap-4 sm:grid-cols-3">
         {items.map((i) => (
           <li key={i.label} className="glass rounded-2xl p-6 text-center">
-            <div className="font-semibold text-4xl text-brand-text tabular-nums">{i.value}</div>
+            <div aria-hidden={i.decorative} className="font-semibold text-4xl text-brand-text tabular-nums">
+              {i.value}
+            </div>
             <p className="mt-2 text-[15px] text-muted-foreground">{i.label}</p>
           </li>
         ))}
@@ -481,7 +487,11 @@ export function FinalCta() {
             {t("ctaSample")}
             <ArrowRightIcon className="size-4" />
           </TrySampleLink>
-          <Link href="/documents" className={buttonVariants({ variant: "outline", size: "lg" })}>
+          <Link
+            prefetch={false}
+            href="/documents"
+            className={buttonVariants({ variant: "outline", size: "lg" })}
+          >
             {t("ctaUpload")}
           </Link>
         </div>

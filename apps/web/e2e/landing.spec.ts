@@ -18,17 +18,24 @@ test("landing is translated and the locale switch keeps the page", async ({ page
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("隐私说明，简单直白");
 });
 
-test("router prefetches never create a guest, real navigations do", async ({ request }) => {
-  const hasSession = async () =>
-    (await request.storageState()).cookies.some((c) => c.name.includes("auth-token"));
+test("a visitor who clicks 'Upload a document' lands in the app with a working session", async ({ page }) => {
+  await page.goto("/en");
+  await page.getByRole("link", { name: "Upload a document" }).first().click();
+  await page.waitForURL(/\/en\/documents$/);
+  await expect(page.getByRole("heading", { name: "Your documents" })).toBeVisible();
+  await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0); // not Next's route announcer
+  await page.getByTestId("sample-lease").click(); // needs a guest session
+  await page.waitForURL(/\/en\/documents\/[0-9a-f-]{36}$/);
+});
 
-  // What the landing header's <Link> prefetch sends. Next adds its own _rsc redirect, then serves the shell.
-  const prefetch = await request.get("/en/documents", {
-    headers: { "sec-fetch-mode": "cors", rsc: "1", "next-router-prefetch": "1" },
+test("the landing page does not prefetch app pages (each prefetch would create its own guest)", async ({
+  page,
+}) => {
+  const prefetched: string[] = [];
+  page.on("request", (r) => {
+    if (/\/(documents|deadlines)(\?|$)/.test(r.url()) && r.url().includes("_rsc")) prefetched.push(r.url());
   });
-  expect(prefetch.status()).toBeLessThan(500);
-  expect(await hasSession()).toBe(false);
-
-  await request.get("/en/documents", { headers: { "sec-fetch-mode": "navigate" }, maxRedirects: 0 });
-  expect(await hasSession()).toBe(true);
+  await page.goto("/en");
+  await page.waitForLoadState("networkidle");
+  expect(prefetched).toEqual([]);
 });
