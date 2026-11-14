@@ -96,3 +96,8 @@ Short ADRs for choices a reviewer might question. Newest last.
 ## ADR 15: Fake billing until the owner picks a provider (2026-11-14, S4)
 **Decision.** `BillingProvider` has one adapter for now, `FakeBillingProvider`. Its checkout and portal open a dev-only simulator, which posts HMAC-signed events to the real webhook route. Signature check, idempotent event storage, the state machine (with out-of-order protection) and credit grants all run exactly as they will in production. S5 adds one real adapter behind the same port.
 **Consequences.** The simulator returns 404 unless `BILLING_PROVIDER=fake`, and in production builds it also needs `ALLOW_FAKE_BILLING=true`, which only E2E sets.
+
+## ADR 16: Free, Pro and Max on the pricing page; Guest is a trial (2026-11-14, S7)
+**Context.** Four cards (Guest, Free, Pro) read as three ways to get nothing, and there was no tier for heavy users.
+**Decision.** The page sells Free, Pro ($12 a month or $120 a year) and Max ($39 a month or $390 a year). Yearly is 10 × monthly. Guest keeps its entitlements as the no-account trial but has no card. Migration `20261114500000_plans_max.sql` activates `max_month`, adds `max_year` and sets `pro_year` to $120. Teams and Enterprise stay out (PRD non-goal): Max says "Need more? Write to us".
+**Consequences.** No code path changed for entitlements, because plans are data. The fake checkout accepts the Max ids, and simulated yearly periods use the `_year` suffix. Prices are estimates until `pnpm ai:report` confirms the 3 × cost rule.

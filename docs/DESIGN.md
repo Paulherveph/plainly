@@ -39,6 +39,7 @@ Light theme: invert surfaces, keep the same accent, check contrast (AA). Theme t
 - **Videos** (`assets/media/videos/`) are content, not effects. They are muted, load lazily, play only in view,
   show the poster only with reduced motion, and have a pause button when longer than 5 s.
 - **One** hero effect on the whole site. No parallax stacks, no cursor gimmicks elsewhere.
+- **Ambient loops** are the one exception to the 250 ms rule, and only in the use-case hub (section 3b): slow, low-contrast, decorative, and removed entirely under reduced motion.
 
 Every page has a skeleton that matches its layout (`loading.tsx` + module `*-skeleton.tsx`).
 
@@ -51,6 +52,30 @@ Every page has a skeleton that matches its layout (`loading.tsx` + module `*-ske
 - Headline: "Paperwork, in plain language." Sub: one sentence, no jargon.
 - Primary CTA: "Try a sample" (zero friction). Secondary: "Upload a document".
 - Below the fold: 3-step strip (Upload, Understand, Act), a live analysis preview, privacy statement, FAQ.
+
+## 3b. Use-case hub (home page, after "How it works")
+
+`src/shared/ui/use-cases.tsx`. One picture of what Plainly reads: a central **Plainly core** wired to six document cards.
+
+```
+   [Visa]                       [Job offer]
+        ╲                      ╱
+[Lease] ─── ┌──── PLAINLY ────┐ ─── [Insurance]
+            │   orb + logo    │
+            │ Reads. Explains.│
+            │    Reminds.     │
+            └───────●─────────┘
+   [Contract] ──────╯ ╰────── [Official letter]
+
+          ── PLAIN. SOURCED. ACTIONABLE. ──
+```
+
+- **Cards**: glass tile, brand-tinted icon, document name, a verb chip ("find the deadlines →"). Visa, Lease and Job offer open the matching sample (plain `<a>`, never prefetched). Contract, Insurance and Official letter go to upload. Every card has an accessible name ("Visa: open a sample").
+- **Core**: gradient hairline frame, a small orb with a slowly turning highlight ring around the logo, and three words, with the middle one in the accent color.
+- **Wires** (`lg` and up): SVG cubic paths in one 1000 × 620 space that the cards share, so they always meet the anchors. Three layers: a static 35% brand line, the same line passed through a re-seeded `feTurbulence` displacement so it trembles like the hero orb, and a bright 8% dash that flows from each document into the core (3.3 s loop, staggered). Anchor dots breathe.
+- **Below `lg`**: no wires. The core sits on top, with the cards in 2 columns (3 at `md`).
+- **Reduced motion**: the whole moving layer (`.uc-live`) is hidden, so only the static wires remain. Tested by `e2e/landing.spec.ts` (H11).
+- No new dependency: CSS keyframes in `globals.css` and SVG only. One accent: every glow is `--brand`.
 
 ## 4. Using the inspiration sources
 

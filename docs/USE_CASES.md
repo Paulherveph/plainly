@@ -125,6 +125,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | F15 | Buy a credit pack | Pack credits added, used after plan credits, never expire | I | S5 | `credits.test.sql`, `billing.test.ts` (F15) |
 | F16 | Daily budget at 80% and 100% | Free and Guest degrade then pause, paid continue, alert sent | I | S2 | `admission.test.ts`, `budget.test.ts`, `drills.int.test.ts` (budget drill) |
 | F17 | Localized price and currency on pricing page | Matches provider checkout | M | S5 |  |
+| F18 | Pricing page | Free, Pro and Max cards in every locale, yearly switch shows "Save 17%", plan facts match the `plans` seed | E | S7 | `e2e/billing.spec.ts` (F18), `public-plans.test.ts` |
 
 ## G. Privacy and safety
 
@@ -153,6 +154,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | H08 | Locale parity | en, fr, zh keys identical, no raw keys visible | U | S0 | `messages.test.ts` |
 | H09 | Health endpoint | Reports DB and provider status, no secrets | I | S6 | `/api/health` |
 | H10 | Install as app | Manifest, icons, share target accepts a file | E | S6 | `manifest.ts` share_target + `/api/share` |
+| H11 | Use-case hub on the home page | Six document cards wired to the core. Samples open, the others go to upload. Wires animate, and stay still with reduced motion | E | S7 | `e2e/landing.spec.ts` (H11) |
 
 ## I. Abuse and edge security
 

@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 /** Group F with FakeBillingProvider. Needs `supabase start`, USE_FAKE_AI and ALLOW_FAKE_BILLING (playwright.config). */
 
-test("pricing page shows three plans in every locale", async ({ page }) => {
+test("F18: pricing page shows Free, Pro and Max in every locale", async ({ page }) => {
   for (const locale of ["en", "fr", "zh"]) {
     await page.goto(`/${locale}/pricing`);
     await expect(page.locator("main section h2")).toHaveCount(3 + 1); // three cards + FAQ heading

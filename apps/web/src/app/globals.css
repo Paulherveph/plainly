@@ -397,6 +397,63 @@
 
 /* H07: a clean printout of an explanation. App chrome, chat, preview and actions are hidden;
    colors go to plain ink on paper; quotes stay next to their claims. */
+/* ───────── Use-case hub (src/shared/ui/use-cases.tsx, docs/DESIGN.md section 3b) ───────── */
+:root {
+  --uc-pulse: #7b5cfa;
+}
+.dark {
+  --uc-pulse: #d9d0ff;
+}
+.uc-core-frame {
+  background: linear-gradient(
+    160deg,
+    rgb(201 189 255 / 0.7),
+    rgb(148 120 255 / 0.12) 40%,
+    rgb(148 120 255 / 0.12) 60%,
+    rgb(123 155 255 / 0.55)
+  );
+}
+/* A bright 8% dash travels each wire, document to core. */
+.uc-pulse {
+  stroke-dasharray: 8 92;
+  animation: uc-flow 3.3s linear infinite;
+}
+@keyframes uc-flow {
+  from {
+    stroke-dashoffset: 100;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+.uc-node {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: uc-breathe 2.4s ease-in-out infinite;
+}
+@keyframes uc-breathe {
+  50% {
+    transform: scale(1.6);
+    opacity: 0.55;
+  }
+}
+.uc-orb-ring {
+  background: conic-gradient(from 0deg, transparent 0 55%, rgb(201 189 255 / 0.9) 70%, transparent 80%);
+  mask: radial-gradient(closest-side, transparent calc(100% - 1.5px), #000 calc(100% - 1px));
+  animation: uc-spin 6s linear infinite;
+}
+@keyframes uc-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+/* The moving layer also holds an SMIL-animated filter, which CSS cannot pause, so hide it outright. */
+@media (prefers-reduced-motion: reduce) {
+  .uc-live {
+    display: none;
+  }
+}
+
 @media print {
   @page {
     margin: 16mm;

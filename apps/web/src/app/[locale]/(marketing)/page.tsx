@@ -11,6 +11,7 @@ import {
   PrivacyBand,
   SocialProof,
 } from "@/shared/ui/landing";
+import { UseCases } from "@/shared/ui/use-cases";
 
 export async function generateMetadata({ params }: PageProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
@@ -22,10 +23,14 @@ export default function LandingPage() {
     <>
       <Hero />
       <HowItWorks />
+      <UseCases />
       <PrivacyBand />
       <InstallSection />
       <SocialProof />
-      <PricingTeaser guestLimit={PUBLIC_PLANS.guest.credits} memberLimit={PUBLIC_PLANS.free.credits} />
+      <PricingTeaser
+        freeCredits={PUBLIC_PLANS.free.credits}
+        proMonthCents={PUBLIC_PLANS.pro.priceMonthCents}
+      />
       <Faq />
       <FinalCta />
     </>

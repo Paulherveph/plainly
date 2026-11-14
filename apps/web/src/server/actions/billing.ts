@@ -79,7 +79,7 @@ export async function simulateBillingAction(input: { session: string; event: str
 
   const now = new Date();
   const at = now.toISOString();
-  const end = new Date(now.getTime() + (session.productId === "pro_year" ? 365 : 30) * 86_400_000).toISOString();
+  const end = new Date(now.getTime() + (session.productId.endsWith("_year") ? 365 : 30) * 86_400_000).toISOString();
   const subscriptionId = `fake_sub_${session.userId}`;
   const eventId = `fake_evt_${crypto.randomUUID()}`;
   const plans = await (await container()).plans();

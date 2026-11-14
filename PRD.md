@@ -70,7 +70,7 @@ Guests are signed in anonymously (Supabase anonymous auth) so they can try it at
 | F7 | **Auth** | Anonymous by default. Sign up and sign in with Google or email (magic link or one-time code). Guest data is kept on upgrade, and merged if the email already has an account. Account page with usage, plan, export and delete. See `docs/AUTH.md` |
 | F8 | **Privacy** | Private storage, row-level security, signed URLs, "Delete everything now" button, automatic deletion after 30 days |
 | F9 | **i18n** | UI in en, fr, zh. Locale in the URL |
-| F10 | **Limits** | Credits and plan entitlements (Guest, Free, Pro, credit packs). See `docs/PRICING.md` |
+| F10 | **Limits** | Credits and plan entitlements (Free, Pro, Max and credit packs, plus a no-account Guest trial). See `docs/PRICING.md` |
 | F15 | **Multi-provider AI** | Fallback across providers and cost metering. See `docs/AI_PROVIDERS.md` |
 | F16 | **Pricing page and upgrade flow** | See `docs/PRICING.md` |
 | F17 | **Terms of Service page** | en, fr, zh |

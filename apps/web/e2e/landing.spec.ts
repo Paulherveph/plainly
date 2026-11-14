@@ -39,3 +39,21 @@ test("the landing page does not prefetch app pages (each prefetch would create i
   await page.waitForLoadState("networkidle");
   expect(prefetched).toEqual([]);
 });
+
+test("H11: the use-case hub links six documents to Plainly and stays still with reduced motion", async ({
+  browser,
+}) => {
+  for (const reducedMotion of ["no-preference", "reduce"] as const) {
+    const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, reducedMotion });
+    await page.goto("/en");
+    const hub = page.locator("section[aria-labelledby=uses-title]");
+    await hub.scrollIntoViewIfNeeded();
+    await expect(hub.getByRole("link")).toHaveCount(6);
+    await expect(hub.getByRole("link", { name: "Visa: open a sample" })).toHaveAttribute(
+      "href",
+      "/en/documents/try?sample=visa",
+    );
+    await expect(hub.locator(".uc-live")).toBeVisible({ visible: reducedMotion === "no-preference" });
+    await page.close();
+  }
+});

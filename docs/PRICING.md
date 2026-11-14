@@ -8,9 +8,12 @@
 
 ## 2. Plans (starting hypotheses, calibrate after S2)
 
-| | Guest | Free | Pro | Max |
+The pricing page sells three plans: **Free, Pro and Max**. Guest is the no-account trial. It keeps its own limits in the `plans` table, but it has no pricing card and is never marketed as a plan: a guest who wants more is asked to create a free account.
+
+| | Guest (trial, not on the page) | Free | Pro | Max |
 |---|---|---|---|---|
-| Price | 0 | 0 | about $12 per month ($99 per year) | about $39 per month |
+| Price | 0 | 0 | $12 per month, or $120 per year | $39 per month, or $390 per year |
+| Plan ids | `guest` | `free` | `pro_month`, `pro_year` | `max_month`, `max_year` |
 | Credits | 8, once | 24 per month | 400 per month | 1500 per month |
 | Max pages per document | 5 | 10 | 40 | 100 |
 | Max file size | 5 MB | 10 MB | 20 MB | 30 MB |
@@ -22,7 +25,13 @@
 | Support | none | docs | email | priority email |
 | Credit packs | no | yes | yes | yes |
 
-Packs: 200 credits for about $5, never expire. Annual plans get 2 months free. Price display uses the billing provider's localized pricing where available. Launch with Guest, Free, Pro and packs. Keep Max behind a flag until Pro shows demand. Final prices must be set from measured cost (`price per credit ≥ 3 × cost per credit`).
+Packs: 200 credits for about $5, never expire. Yearly plans are 10 × the monthly price (two months free), shown as "Save 17%". Price display uses the billing provider's localized pricing where available.
+
+**Why these prices.** Pro at $12 sits under the usual $15–20 for single-purpose AI tools, and 400 credits covers about 60 typical analyses (a 5-page document uses 3 credits) plus questions. Max at $39 is about 3.3 × Pro for 3.75 × the credits, longer documents, a year of retention and 5 parallel analyses, so it rewards heavy users without undercutting Pro. Both must still pass the cost rule: `price per credit ≥ 3 × cost per credit`. Pro is $0.030 per credit, Max $0.026. Check both against `pnpm ai:report` before charging, and adjust here, in `PUBLIC_PLANS` and in a new migration together.
+
+**Teams and Enterprise** are a PRD non-goal. The page says "Need more than Max? Write to us" instead of showing a fourth card. Revisit only if those emails show real demand.
+
+**Source of truth.** Rows in `plans` (seed `20261114300000_credits_billing.sql`, then `20261114500000_plans_max.sql`, which activates Max, adds `max_year` and sets `pro_year` to $120). Static marketing pages read `PUBLIC_PLANS` in `modules/billing/domain/public-plans.ts`, and `public-plans.test.ts` fails if the two drift.
 
 ## 3. Data model (all tables with RLS; ledger and events are server-write only)
 
@@ -49,7 +58,13 @@ SQL functions (security definer, called only from server code):
 One application service, `EntitlementService.check(userId, action, params)`, returns `allowed` or a typed reason (`insufficient_credits`, `page_limit`, `file_too_large`, `feature_not_in_plan`, `concurrency`, `capacity`). The UI shows the reason with the right upgrade or top-up action. The same service is called by every use case. UI checks are only for display.
 
 ## 5. UX (match the quality of Claude and OpenAI)
-- **Pricing page** `/[locale]/pricing`: three cards, monthly and yearly toggle, comparison table, FAQ (credits, refunds, data, cancel anytime), currency by locale.
+- **Pricing page** `/[locale]/pricing` (`modules/billing/ui/pricing-plans.tsx`), top to bottom:
+  1. Title and one-line credit explanation.
+  2. Monthly / Yearly switch with "Save 17%" in the accent color. It changes both paid cards, and yearly shows the monthly equivalent plus "$120 billed yearly".
+  3. Three equal cards: Free, Pro (highlighted with a brand hairline and soft glow, no "popular" badge) and Max. Each card has a line glyph that grows with the plan, its name, a one-line tagline, a large price with "USD / month" and the billing line, one full-width CTA, "No commitment · Cancel anytime" under paid CTAs, and below a divider "Everything in Free, plus:" (or "in Pro") with a short checklist.
+  4. Footnotes: credits reset monthly and use varies, prices in USD plus tax, "Need more than Max? Write to us".
+  5. Credit pack line, the full comparison table (Free, Pro, Max), and the FAQ (credits, refunds, data, cancel anytime, running out).
+- **Home page teaser**: free credits per month, Pro's monthly price and "reading is always free", with a link to compare plans.
 - **Credits meter** in the header: small ring plus number, tooltip with reset date.
 - **Before an action**: show the cost ("This will use 5 credits") for analyses above 5 credits. Never surprise.
 - **Soft paywall modal** when blocked: what happened, what it costs, three choices (wait for reset with date, buy a pack, upgrade). Never a dead end.

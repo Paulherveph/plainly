@@ -243,7 +243,7 @@ function MiniWatch({ tone, title, body }: { tone: "critical" | "caution"; title:
   );
 }
 
-function SectionHead({
+export function SectionHead({
   eyebrow,
   title,
   muted,
@@ -410,12 +410,18 @@ export function PrivacyBand() {
   );
 }
 
-/** Real limits only, passed in from the quota domain. A pricing link joins the header after Stage S4. */
-export function PricingTeaser({ guestLimit, memberLimit }: { guestLimit: number; memberLimit: number }) {
+/** Real numbers only, passed in from PUBLIC_PLANS. The full comparison lives on /pricing. */
+export function PricingTeaser({
+  freeCredits,
+  proMonthCents,
+}: {
+  freeCredits: number;
+  proMonthCents: number;
+}) {
   const t = useTranslations("Landing");
   const items = [
-    { value: String(guestLimit), label: t("pricingGuest"), decorative: false },
-    { value: String(memberLimit), label: t("pricingMember"), decorative: false },
+    { value: String(freeCredits), label: t("pricingFree"), decorative: false },
+    { value: `$${proMonthCents / 100}`, label: t("pricingPro"), decorative: false },
     { value: "✓", label: t("pricingRead"), decorative: true },
   ];
   return (
@@ -431,6 +437,12 @@ export function PricingTeaser({ guestLimit, memberLimit }: { guestLimit: number;
           </li>
         ))}
       </ul>
+      <div className="reveal mt-8 flex justify-center">
+        <Link href="/pricing" className={buttonVariants({ variant: "outline" })}>
+          {t("pricingSee")}
+          <ArrowRightIcon className="size-4" />
+        </Link>
+      </div>
     </section>
   );
 }
