@@ -12,9 +12,29 @@ export const MAX_TEXT_CHARS = 1_500_000;
 export const MIN_PAGE_CHARS = 40;
 export const RETENTION_DAYS = 30;
 
-export const MEDIA_TYPES = ["application/pdf", "image/png", "image/jpeg", "text/plain"] as const;
+export const DOCX = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+export const XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+export const PPTX = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+export const MEDIA_TYPES = [
+  "application/pdf",
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+  "text/plain",
+  DOCX,
+  XLSX,
+  PPTX,
+] as const;
 export type MediaType = (typeof MEDIA_TYPES)[number];
-export const UPLOAD_MEDIA_TYPES: readonly MediaType[] = ["application/pdf", "image/png", "image/jpeg"];
+export type OfficeType = typeof DOCX | typeof XLSX | typeof PPTX;
+/** Every stored type can be uploaded. Markdown and CSV files are stored as text/plain. */
+export const UPLOAD_MEDIA_TYPES: readonly MediaType[] = MEDIA_TYPES;
+/** For the file picker. */
+export const UPLOAD_ACCEPT = ".pdf,.docx,.xlsx,.pptx,.png,.jpg,.jpeg,.webp,.txt,.md,.csv";
+
+export function isOffice(mediaType: MediaType): mediaType is OfficeType {
+  return mediaType === DOCX || mediaType === XLSX || mediaType === PPTX;
+}
 
 export const DOCUMENT_STATUSES = ["uploaded", "analyzing", "ready", "failed"] as const;
 export type DocumentStatus = (typeof DOCUMENT_STATUSES)[number];
@@ -78,30 +98,68 @@ export function mergeTranscription(
 
 /** Input to the content hash: whitespace and case differences must not defeat the cache. */
 export function normalizeForHash(pages: readonly string[]): string {
-  return pages
-    .map((p) => p.normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase())
-    .join("\f");
+  return pages.map((p) => p.normalize("NFKC").replace(/\s+/g, " ").trim().toLowerCase()).join("\f");
 }
 
-/** Checks the real file type from its first bytes (never trust the extension). */
-export function sniffMediaType(bytes: Uint8Array): MediaType | null {
-  const b = bytes;
-  if (b.length >= 5 && b[0] === 0x25 && b[1] === 0x50 && b[2] === 0x44 && b[3] === 0x46 && b[4] === 0x2d)
-    return "application/pdf";
-  if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return "image/png";
-  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return "image/jpeg";
-  return null;
+/** Bytes read from the start of a file to check its real type. */
+export const HEAD_BYTES = 16;
+
+const ascii = (s: string) => [...s].map((c) => c.charCodeAt(0));
+const startsWith = (b: Uint8Array, sig: readonly number[], at = 0) => sig.every((v, i) => b[at + i] === v);
+
+/**
+ * True when the first bytes match the declared type (never trust the name or the browser).
+ * Office files are ZIP archives; the extractor then checks the parts inside.
+ */
+export function matchesSignature(mediaType: MediaType, head: Uint8Array): boolean {
+  switch (mediaType) {
+    case "application/pdf":
+      return startsWith(head, ascii("%PDF-"));
+    case "image/png":
+      return startsWith(head, [0x89, 0x50, 0x4e, 0x47]);
+    case "image/jpeg":
+      return startsWith(head, [0xff, 0xd8, 0xff]);
+    case "image/webp":
+      return startsWith(head, ascii("RIFF")) && startsWith(head, ascii("WEBP"), 8);
+    case "text/plain":
+      return head.length > 0 && !head.includes(0);
+    default:
+      return startsWith(head, [0x50, 0x4b, 0x03, 0x04]);
+  }
 }
 
 const EXTENSIONS: Record<MediaType, string> = {
   "application/pdf": "pdf",
   "image/png": "png",
   "image/jpeg": "jpg",
+  "image/webp": "webp",
   "text/plain": "txt",
+  [DOCX]: "docx",
+  [XLSX]: "xlsx",
+  [PPTX]: "pptx",
+};
+
+const BY_EXTENSION: Record<string, MediaType> = {
+  ...Object.fromEntries(Object.entries(EXTENSIONS).map(([type, ext]) => [ext, type as MediaType])),
+  jpeg: "image/jpeg",
+  md: "text/plain",
+  markdown: "text/plain",
+  csv: "text/plain",
 };
 
 export function isMediaType(value: string): value is MediaType {
   return (MEDIA_TYPES as readonly string[]).includes(value);
+}
+
+/**
+ * The type to validate: the browser's when it is one we store, otherwise the one the file name
+ * implies. Browsers often send "" or application/octet-stream for Office files, and
+ * text/markdown or text/csv for text we store as text/plain. The bytes are still checked.
+ */
+export function resolveMediaType(declared: string, fileName: string): string {
+  if (isMediaType(declared)) return declared;
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  return BY_EXTENSION[ext] ?? declared;
 }
 
 /**
@@ -117,7 +175,7 @@ export function validateUpload(file: {
     return err("unsupported_type");
   if (file.size === 0) return err("empty");
   if (file.size > MAX_FILE_BYTES) return err("too_large");
-  if (file.head && sniffMediaType(file.head) !== file.mediaType) return err("unsupported_type");
+  if (file.head && !matchesSignature(file.mediaType, file.head)) return err("unsupported_type");
   return ok(file.mediaType);
 }
 

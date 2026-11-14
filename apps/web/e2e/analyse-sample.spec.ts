@@ -40,6 +40,11 @@ test("the preview shows the uploaded file and toggles to the extracted text", as
   playwright,
 }) => {
   test.skip(isMobile, "the desktop aside is enough; the mobile sheet renders the same component");
+  // The page CSP must allow framing our own original-file route (it once allowed only Turnstile).
+  const cspErrors: string[] = [];
+  page.on("console", (m) => {
+    if (m.type() === "error" && m.text().includes("Content Security Policy")) cspErrors.push(m.text());
+  });
   await page.goto("/en/documents");
   await page.getByTestId("sample-lease").click();
   await page.waitForURL(/\/en\/documents\/[0-9a-f-]{36}$/);
@@ -57,6 +62,7 @@ test("the preview shows the uploaded file and toggles to the extracted text", as
 
   await preview.getByRole("button", { name: "Show original file" }).click();
   await expect(preview.locator("iframe")).toBeVisible();
+  expect(cspErrors).toEqual([]);
 
   // owner gets the file, framable by our pages only; a stranger gets nothing
   const res = await page.request.get(src);
@@ -81,7 +87,8 @@ test("unsupported files are rejected with a clear message", async ({ page }) => 
   await page.goto("/en/documents");
   const input = page.locator('input[type="file"]');
   await expect(input).toBeEnabled(); // enabled only once React has attached its handler
-  await input.setInputFiles({ name: "notes.docx", mimeType: "application/msword", buffer: Buffer.from("x") });
+  // An old binary Word file: only the newer .docx is read.
+  await input.setInputFiles({ name: "notes.doc", mimeType: "application/msword", buffer: Buffer.from("x") });
   await expect(page.getByRole("tabpanel", { name: "Upload" }).getByRole("alert")).toContainText(
     "isn't supported",
   );

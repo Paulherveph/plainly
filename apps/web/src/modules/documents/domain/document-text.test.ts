@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  DOCX,
   detectVisionPages,
   mergeTranscription,
   normalizeForHash,
-  sniffMediaType,
   validatePastedText,
   validateUpload,
 } from "./document";
@@ -27,8 +27,16 @@ describe("text-first helpers", () => {
   });
 
   it("A07: rejects a file whose bytes do not match its declared type", () => {
-    expect(sniffMediaType(PDF)).toBe("application/pdf");
-    expect(sniffMediaType(PNG)).toBe("image/png");
+    const ZIP = new Uint8Array([0x50, 0x4b, 0x03, 0x04, 0x14, 0x00]);
+    const WEBP = new TextEncoder().encode("RIFF\0\0\0\0WEBPVP8 ");
+    expect(validateUpload({ mediaType: DOCX, size: 10, head: ZIP }).ok).toBe(true);
+    expect(validateUpload({ mediaType: DOCX, size: 10, head: PDF }).ok).toBe(false);
+    expect(validateUpload({ mediaType: "image/webp", size: 10, head: WEBP }).ok).toBe(true);
+    expect(validateUpload({ mediaType: "image/webp", size: 10, head: PNG }).ok).toBe(false);
+    expect(validateUpload({ mediaType: "text/plain", size: 10, head: PNG }).ok).toBe(true);
+    expect(
+      validateUpload({ mediaType: "text/plain", size: 10, head: new Uint8Array([0x41, 0, 0x42]) }).ok,
+    ).toBe(false);
     expect(validateUpload({ mediaType: "application/pdf", size: 10, head: PNG })).toEqual({
       ok: false,
       error: "unsupported_type",

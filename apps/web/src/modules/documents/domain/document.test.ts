@@ -1,14 +1,18 @@
 import { describe, expect, it } from "vitest";
 import {
+  DOCX,
   daysUntil,
   joinPages,
   MAX_FILE_BYTES,
+  PPTX,
+  resolveMediaType,
   splitPages,
   storagePath,
   titleFromFilename,
   validatePageCount,
   validatePastedText,
   validateUpload,
+  XLSX,
 } from "./document";
 
 describe("validateUpload", () => {
@@ -19,15 +23,21 @@ describe("validateUpload", () => {
     });
     expect(validateUpload({ mediaType: "image/jpeg", size: MAX_FILE_BYTES }).ok).toBe(true);
   });
-  it("rejects other types, including text/plain uploads", () => {
-    expect(validateUpload({ mediaType: "application/msword", size: 10 })).toEqual({
-      ok: false,
-      error: "unsupported_type",
-    });
-    expect(validateUpload({ mediaType: "text/plain", size: 10 })).toEqual({
-      ok: false,
-      error: "unsupported_type",
-    });
+  it("accepts Word, Excel, PowerPoint, WebP and text files", () => {
+    for (const mediaType of [DOCX, XLSX, PPTX, "image/webp", "text/plain"])
+      expect(validateUpload({ mediaType, size: 10 }).ok).toBe(true);
+  });
+  it("rejects other types, such as old binary Word files and HEIC photos", () => {
+    for (const mediaType of ["application/msword", "image/heic", "application/zip"])
+      expect(validateUpload({ mediaType, size: 10 })).toEqual({ ok: false, error: "unsupported_type" });
+  });
+  it("resolves a missing or generic browser type from the file name", () => {
+    expect(resolveMediaType("", "Quote.DOCX")).toBe(DOCX);
+    expect(resolveMediaType("application/octet-stream", "budget.xlsx")).toBe(XLSX);
+    expect(resolveMediaType("text/markdown", "notes.md")).toBe("text/plain");
+    expect(resolveMediaType("text/csv", "rows.csv")).toBe("text/plain");
+    expect(resolveMediaType("image/png", "renamed.pdf")).toBe("image/png");
+    expect(resolveMediaType("", "letter.doc")).toBe("");
   });
   it("rejects empty and oversized files", () => {
     expect(validateUpload({ mediaType: "image/png", size: 0 })).toEqual({ ok: false, error: "empty" });

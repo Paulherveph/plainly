@@ -53,7 +53,8 @@ Apply these in the Supabase dashboard of the **production** project (and the pre
 |---|---|---|
 | Authentication → Sign In / Providers → Anonymous | Allow anonymous sign-ins | On |
 | Authentication → Sign In / Providers → Email | Enable email provider | On |
-| | Confirm email | On (email verification gates monthly credits) |
+| | Confirm email | On (the emailed code approves a new account; it also gates monthly credits) |
+| | Minimum password length | 8 |
 | | Email OTP length | 6 |
 | | Email OTP expiration | 3600 seconds |
 | | Secure email change | Off (a guest has no previous address to confirm) |
@@ -68,7 +69,7 @@ Apply these in the Supabase dashboard of the **production** project (and the pre
 | Authentication → URL Configuration | Site URL | `https://<your domain>` |
 | | Redirect URLs | `https://<your domain>/auth/callback`, `https://*-<team>.vercel.app/auth/callback`, `http://localhost:3000/auth/callback` |
 | Authentication → Emails → SMTP | Custom SMTP | Resend: host `smtp.resend.com`, port 465, user `resend`, password = Resend API key, sender `Plainly <hello@your-domain>` |
-| Authentication → Emails → Templates | Magic link, Confirm signup, Change email | Paste `supabase/templates/code.html` into each, subject "Your Plainly code" |
+| Authentication → Emails → Templates | Confirm signup, Change email, Reset password, Magic link | Paste `supabase/templates/code.html` into each, subject "Your Plainly code" |
 
 Resend domain: add the SPF, DKIM and DMARC records Resend shows for the sending domain, and wait for "Verified" before switching SMTP.
 
@@ -100,7 +101,7 @@ Nothing here has been run. Work through it in order. Each step says who does it.
 - [ ] Backups: confirm daily backups are on (Pro), then run the restore drill in `docs/RUNBOOK.md`.
 
 ### 3. Supabase Auth settings
-Apply the table in "Supabase Auth settings for production (S3)" above: anonymous sign-ins, email OTP, Google, manual linking, Turnstile captcha, rate limits, redirect URLs, Resend SMTP, the code template.
+Apply the table in "Supabase Auth settings for production (S3)" above: anonymous sign-ins, email + password with confirmation, Google, manual linking, Turnstile captcha, rate limits, redirect URLs, Resend SMTP, the code template.
 
 ### 4. Environment variables (Vercel → Project → Settings → Environment Variables)
 `P` = Production, `V` = Preview. Server-only unless the name starts with `NEXT_PUBLIC_`.

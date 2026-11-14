@@ -1,6 +1,7 @@
 import type { AppError } from "@/shared/lib/errors";
 import { err, ok, type Result } from "@/shared/lib/result";
 import {
+  HEAD_BYTES,
   normalizeForHash,
   RETENTION_DAYS,
   storagePath,
@@ -29,7 +30,11 @@ type Deps = {
   hasher: Hasher;
   newId: () => string;
   /** Checks plan limits before anything is stored (S4 entitlements). */
-  checkLimits?: (input: { userId: string; pages: number; bytes: number }) => Promise<Result<UploadLimits, AppError>>;
+  checkLimits?: (input: {
+    userId: string;
+    pages: number;
+    bytes: number;
+  }) => Promise<Result<UploadLimits, AppError>>;
 };
 
 export type UploadCommand =
@@ -55,7 +60,11 @@ export function makeUploadDocument(deps: Deps) {
     // Samples are free and fixed; everything else is checked against the plan.
     let retentionDays = RETENTION_DAYS;
     if (cmd.source !== "sample" && deps.checkLimits) {
-      const limits = await deps.checkLimits({ userId: cmd.userId, pages: pageCount.value, bytes: file.bytes.byteLength });
+      const limits = await deps.checkLimits({
+        userId: cmd.userId,
+        pages: pageCount.value,
+        bytes: file.bytes.byteLength,
+      });
       if (!limits.ok) return limits;
       retentionDays = limits.value.retentionDays;
     }
@@ -111,7 +120,7 @@ async function resolveInput(
       const type = validateUpload({
         mediaType: cmd.mediaType,
         size: cmd.bytes.byteLength,
-        head: cmd.bytes.subarray(0, 8),
+        head: cmd.bytes.subarray(0, HEAD_BYTES),
       });
       if (!type.ok) return err({ kind: "invalid_input", reason: type.error });
       return ok({ title: cmd.title, file: { bytes: cmd.bytes, mediaType: type.value } });

@@ -26,6 +26,11 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | A17 | Prompt injection inside the document ("ignore previous instructions") | Treated as text, no behavior change, may appear as a watch-out | V | S2 | `pnpm ai:eval` |
 | A18 | Upload interrupted by network loss | Resumable or clean retry, no orphan files, no charge | E | S2 |  |
 | A19 | Two tabs analyzing at once beyond the concurrency limit | Second gets `concurrency` error with wait guidance | I | S4 | `entitlement-service.test.ts`, `admission.test.ts` (A19) |
+| A20 | Word file (DOCX) | Text read per page, analysis and chat work, preview shows the Word layout | U,E | S7 | `office.test.ts`, `e2e/formats.spec.ts` (A20) |
+| A21 | Excel file (XLSX) | One page per sheet, preview shows a grid with sheet tabs | U,E | S7 | `office.test.ts`, `e2e/formats.spec.ts` (A21) |
+| A22 | PowerPoint file (PPTX) | One page per slide in deck order, preview shows one card per slide | U,E | S7 | `office.test.ts`, `e2e/formats.spec.ts` (A22) |
+| A23 | WebP screenshot, or a TXT/MD/CSV file | WebP goes through vision like PNG. Text files are read as text, split into pages | U,E | S7 | `document.test.ts`, `e2e/formats.spec.ts` (A23) |
+| A24 | Old .doc/.xls/.ppt, HEIC, or a ZIP renamed .docx | Refused with "save in the newer format" or `unsupported_type`, nothing stored | U | S7 | `document.test.ts`, `office.test.ts` |
 | A20 | Malformed or huge PDF (decompression bomb) | Parsing limits stop it, typed error, server stays healthy | U | S2 | `unpdf-text-extractor.ts` page, character and time caps (fixture test open) |
 
 ## B. Analysis results
@@ -91,8 +96,8 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 |----|----------|-----------------|-----|-------|------|
 | E01 | First visit, first action | Anonymous user created after Turnstile, nothing stored before that | E | S3 | `e2e/auth.spec.ts` (E01) |
 | E02 | Captcha fails or is blocked | Clear message, retry, no anonymous user created | E | S3 | `startGuestAction` returns `captcha_failed` before `signInAnonymously` (e2e needs Turnstile test keys) |
-| E03 | Sign up with email code | Code arrives (local mailbox), account created, guest data kept | E | S3 | `e2e/auth.spec.ts` (E03) |
-| E04 | Wrong or expired code | Clear error, rate limit after 5 tries | E | S3 | `e2e/auth.spec.ts` (E04); Supabase `token_verifications` limit |
+| E03 | Sign up with email and password | Code arrives (local mailbox), the code approves the account, guest data kept | E | S3 | `e2e/auth.spec.ts` (E03) |
+| E04 | Wrong code, wrong password, or sign-in before approval | Clear error; an unapproved account gets a fresh code; rate limit after 5 tries | E | S3 | `e2e/auth.spec.ts` (E04); Supabase `token_verifications` limit |
 | E05 | Sign in with Google (new) | Guest upgraded in place, documents kept | E | S3 | `continueWithGoogle` links the identity (manual check, needs Google keys) |
 | E06 | Google email already has an account | Merge flow moves guest data into the account | I,E | S3 | `accounts.test.sql`, `use-cases.test.ts` (E06) |
 | E07 | Sign out then in on another device | Documents and credits are there | E | S3 |  |
@@ -102,7 +107,8 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | E11 | Export my data | Zip with JSON and originals arrives, matches stored data | I | S3 | `use-cases.test.ts` (E11), `e2e/auth.spec.ts` (E11) |
 | E12 | Delete account | Auth user, rows, storage objects, subscription gone, confirmation email sent | I | S3 | `use-cases.test.ts` (E12) |
 | E13 | Open redirect attempt in `next` param | Ignored, goes to default page | U | S3 | `safe-next.test.ts`, `e2e/auth.spec.ts` (E13) |
-| E14 | Email not verified (Free) | Documents work, monthly credits wait until verified | I | S3 |  |
+| E14 | Email not verified (Free) | Documents work, monthly credits wait until verified | I | S3 | `pnpm test-user status` shows 0 credits until approved |
+| E15 | Forgot password | Code by email, new password saved, signed in | E | S3 | `e2e/auth.spec.ts` (E15) |
 
 ## F. Credits and billing
 

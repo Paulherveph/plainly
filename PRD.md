@@ -61,7 +61,7 @@ Guests are signed in anonymously (Supabase anonymous auth) so they can try it at
 
 | ID | Feature | Acceptance criteria |
 |----|---------|---------------------|
-| F1 | **Input** | Upload PDF, PNG, JPG (max 10 MB, max 20 pages) or paste text. Drag and drop, paste from clipboard, progress, clear errors for unsupported or oversized files |
+| F1 | **Input** | Upload PDF, Word (DOCX), Excel (XLSX), PowerPoint (PPTX), image (PNG, JPG, WebP) or text file (size and page limits per plan), or paste text. Drag and drop, paste from clipboard, progress, clear errors for unsupported or oversized files |
 | F2 | **Sample documents** | 3 built-in samples (lease, visa notice, job offer) analysable with one click, no upload |
 | F3 | **Analysis** | Streams structured sections. Includes summary, key facts, actions, watch-outs, glossary. Output language selectable (en, fr, zh) |
 | F4 | **Source proof** | Each fact, action and watch-out shows page and quote. Quotes that fail verification against the document text are removed, and a count of removed claims is logged |

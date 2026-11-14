@@ -101,3 +101,19 @@ Short ADRs for choices a reviewer might question. Newest last.
 **Context.** Four cards (Guest, Free, Pro) read as three ways to get nothing, and there was no tier for heavy users.
 **Decision.** The page sells Free, Pro ($12 a month or $120 a year) and Max ($39 a month or $390 a year). Yearly is 10 × monthly. Guest keeps its entitlements as the no-account trial but has no card. Migration `20261114500000_plans_max.sql` activates `max_month`, adds `max_year` and sets `pro_year` to $120. Teams and Enterprise stay out (PRD non-goal): Max says "Need more? Write to us".
 **Consequences.** No code path changed for entitlements, because plans are data. The fake checkout accepts the Max ids, and simulated yearly periods use the `_year` suffix. Prices are estimates until `pnpm ai:report` confirms the 3 × cost rule.
+
+## ADR 17: Email + password, approved by an emailed code (2026-11-14, S3)
+**Context.** The owner wants sign-in to work like Claude or Cursor: email and password, with an emailed code that proves the address is real. This replaces AUTH.md v1 ("email code, no password").
+**Decision.** Supabase email + password with "Confirm email" on. The 6-digit code confirms the account (`email_confirmed_at`), and that timestamp is the single approval flag (ADR 19 adds a mirrored checkbox for Studio). Sign-in before approval sends a new code. Forgot password uses the same code step. Google stays. Local testing uses one shared account from the git-ignored `apps/web/.env.test-user`, created, approved and switched between plans with `pnpm test-user` (AUTH.md section 7). No test credentials in migrations.
+**Consequences.** Hosted Supabase needs "Confirm email" on, an 8-character minimum and the code template on the reset email (DEPLOY.md). Passwords add a reset flow to maintain.
+
+## ADR 18: Word, Excel, PowerPoint, WebP and text uploads, with a preview for each (2026-11-14, S7)
+**Context.** People get paperwork as Word quotes, Excel tables, slide decks and phone screenshots, not only as PDFs. The "Original" panel also showed nothing: the page CSP had `frame-src` without `'self'`, so the PDF iframe was blocked.
+**Decision.** Accept DOCX, XLSX, PPTX, WebP and text (TXT, MD and CSV, stored as `text/plain`) next to PDF, PNG and JPG. Office files are ZIPs of XML. `shared/lib/office.ts` reads their text with `fflate` (already a dependency), with an unpacked-size cap against zip bombs. A Word page, an Excel sheet or a PowerPoint slide each become one page, so citations keep pointing at the right place. Office files never go to vision. The preview shows Word with its layout (`docx-preview`, the one new dependency, loaded only when needed), Excel as a grid with sheet tabs, and PowerPoint as one card per slide with its text. Every type has an "Open original" link. `frame-src` now includes `'self'`. Old binary .doc/.xls/.ppt and HEIC are refused with a "save in the newer format" message.
+**Consequences.** Slide pictures and layout are not drawn (the card says so, and the link opens the file). Excel dates show as stored numbers. Word page breaks follow the last save by Word. Files from other editors are split about every 3,000 characters.
+
+## ADR 19: Email and approval visible on profiles (2026-11-14, S7)
+**Context.** In Studio, users showed only as UUIDs, and approving one meant running SQL on `auth.users`.
+**Decision.** `profiles` gets `email` and `approved`, kept equal to `auth.users.email` and `email_confirmed_at` by triggers in both directions. `email_confirmed_at` stays the source of truth (credits, sign-in). The email is stored on `profiles` only, not copied into every table. A service-role view, `user_overview`, joins email, approval, plan, credits and document count for support.
+**Consequences.** Approving is a checkbox in Studio. Users cannot change either column (column-level grants). A guest cannot be approved (the trigger refuses).
+

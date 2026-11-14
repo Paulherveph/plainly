@@ -1,13 +1,14 @@
 "use client";
 
 import { cn } from "cn";
-import { FileIcon, TextIcon } from "lucide-react";
+import { ExternalLinkIcon, FileIcon, TextIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MediaType } from "@/modules/documents/domain/document";
+import { isOffice, type MediaType } from "@/modules/documents/domain/document";
 import { Button } from "@/shared/ui/button";
 import type { Cite } from "../domain/analysis";
 import { findQuoteRange, reflowPage } from "../domain/quote-range";
+import { OfficePreview, type PreviewState } from "./office-preview";
 
 type View = "original" | "text";
 
@@ -33,6 +34,7 @@ export function DocumentPreview({
   const [view, setView] = useState<View>(hasOriginal && !highlight ? "original" : "text");
   const showingText = view === "text";
   const toggleLabel = showingText ? t("showOriginal") : t("showText");
+  const src = `/api/documents/${documentId}/original`;
 
   function goTo(page: number) {
     setCurrent(page);
@@ -89,25 +91,38 @@ export function DocumentPreview({
           </nav>
         ) : null}
         {hasOriginal ? (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setView(showingText ? "original" : "text")}
-            aria-label={toggleLabel}
-            title={toggleLabel}
-          >
-            {showingText ? (
-              <FileIcon key="file" className="motion-safe:animate-icon-in" />
-            ) : (
-              <TextIcon key="text" className="motion-safe:animate-icon-in" />
-            )}
-          </Button>
+          <span className="flex items-center gap-1">
+            <Button variant="ghost" size="icon-sm" asChild>
+              <a
+                href={src}
+                target="_blank"
+                rel="noopener"
+                aria-label={t("openOriginal")}
+                title={t("openOriginal")}
+              >
+                <ExternalLinkIcon />
+              </a>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setView(showingText ? "original" : "text")}
+              aria-label={toggleLabel}
+              title={toggleLabel}
+            >
+              {showingText ? (
+                <FileIcon key="file" className="motion-safe:animate-icon-in" />
+              ) : (
+                <TextIcon key="text" className="motion-safe:animate-icon-in" />
+              )}
+            </Button>
+          </span>
         ) : null}
       </div>
 
       {hasOriginal ? (
         <OriginalFile
-          src={`/api/documents/${documentId}/original`}
+          src={src}
           mediaType={mediaType}
           title={t("original")}
           errorText={t("originalError")}
@@ -156,7 +171,7 @@ function OriginalFile({
   errorText: string;
   hidden: boolean;
 }) {
-  const [state, setState] = useState<"loading" | "ready" | "error">("loading");
+  const [state, setState] = useState<PreviewState>("loading");
 
   return (
     <div hidden={hidden} className="relative min-h-0 flex-1 bg-bg-deep">
@@ -169,6 +184,8 @@ function OriginalFile({
         <p role="alert" className="py-10 text-center text-muted-foreground text-sm">
           {errorText}
         </p>
+      ) : isOffice(mediaType) ? (
+        <OfficePreview src={src} mediaType={mediaType} onState={setState} />
       ) : mediaType === "application/pdf" ? (
         <iframe
           src={`${src}#view=FitH`}

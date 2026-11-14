@@ -26,7 +26,8 @@
     "ai:report": "pnpm --filter @plainly/web ai:report",
     "ai:samples": "pnpm --filter @plainly/web ai:samples",
     "test:int": "pnpm --filter @plainly/web test:int",
-    "smoke": "node scripts/smoke.mjs"
+    "smoke": "node scripts/smoke.mjs",
+    "test-user": "pnpm --filter @plainly/web test-user"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",

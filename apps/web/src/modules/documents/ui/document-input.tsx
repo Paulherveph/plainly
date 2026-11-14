@@ -4,16 +4,23 @@ import { cn } from "cn";
 import { ClipboardIcon, OctagonAlertIcon, UploadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useId, useRef, useState, useTransition } from "react";
-import { useGuestGate } from "@/shared/ui/guest-gate";
 import { uploadFileAction, uploadTextAction } from "@/server/actions/documents";
 import { useRouter } from "@/shared/i18n/navigation";
 import type { AppError } from "@/shared/lib/errors";
 import { Button } from "@/shared/ui/button";
+import { useGuestGate } from "@/shared/ui/guest-gate";
 import { Input } from "@/shared/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/ui/tabs";
 import { Textarea } from "@/shared/ui/textarea";
 import { useHydrated } from "@/shared/ui/use-hydrated";
-import { MAX_FILE_BYTES, MAX_PASTE_CHARS, MIN_PASTE_CHARS, UPLOAD_MEDIA_TYPES } from "../domain/document";
+import {
+  isMediaType,
+  MAX_FILE_BYTES,
+  MAX_PASTE_CHARS,
+  MIN_PASTE_CHARS,
+  resolveMediaType,
+  UPLOAD_ACCEPT,
+} from "../domain/document";
 import { useErrorMessage } from "./use-error-message";
 
 export function DocumentInput() {
@@ -58,8 +65,7 @@ function DropZone() {
   function submit(file: File) {
     setError(null);
     // Same checks as the server, for instant feedback. The server re-validates.
-    if (!(UPLOAD_MEDIA_TYPES as readonly string[]).includes(file.type))
-      return setError(t("errorUnsupported"));
+    if (!isMediaType(resolveMediaType(file.type, file.name))) return setError(t("errorUnsupported"));
     if (file.size > MAX_FILE_BYTES) return setError(t("errorTooLarge"));
     if (file.size === 0) return setError(t("errorEmpty"));
     setFileName(file.name);
@@ -130,7 +136,7 @@ function DropZone() {
             type="file"
             className="sr-only"
             disabled={!hydrated}
-            accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg"
+            accept={UPLOAD_ACCEPT}
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (file) submit(file);

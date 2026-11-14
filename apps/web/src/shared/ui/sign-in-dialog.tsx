@@ -4,9 +4,9 @@ import { KeyRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./dialog";
-import { SignInForm } from "./sign-in-form";
+import { type AuthMode, SignInForm } from "./sign-in-form";
 
-/** Modal version of /sign-in, opened by "Save your work" and by paywalls. */
+/** Modal version of /sign-in, opened by "Save your work" and by paywalls. Opens on "create account". */
 export function SignInDialog({
   trigger,
   open,
@@ -18,6 +18,7 @@ export function SignInDialog({
 }) {
   const t = useTranslations("Auth");
   const [inner, setInner] = useState(false);
+  const [mode, setMode] = useState<AuthMode>("signup");
   const isOpen = open ?? inner;
   const setOpen = onOpenChange ?? setInner;
   return (
@@ -31,7 +32,7 @@ export function SignInDialog({
           <DialogTitle className="text-xl">{t("title")}</DialogTitle>
           <DialogDescription>{t("body")}</DialogDescription>
         </DialogHeader>
-        <SignInForm onDone={() => setOpen(false)} />
+        <SignInForm mode={mode} onModeChange={setMode} onDone={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

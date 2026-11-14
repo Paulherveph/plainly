@@ -25,7 +25,8 @@ const csp = [
   "img-src 'self' data: blob:",
   "font-src 'self'",
   `connect-src 'self' ${TURNSTILE}${SENTRY}${isDev ? " ws:" : ""}`,
-  `frame-src ${TURNSTILE}`,
+  // 'self': the original-file preview (/api/documents/:id/original) is an iframe.
+  `frame-src 'self' ${TURNSTILE}`,
   "frame-ancestors 'none'",
   "form-action 'self'",
   "base-uri 'self'",

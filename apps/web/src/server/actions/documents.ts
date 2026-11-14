@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import type { SampleId } from "@/modules/documents/application/ports";
-import { titleFromFilename } from "@/modules/documents/domain/document";
+import { resolveMediaType, titleFromFilename } from "@/modules/documents/domain/document";
 import { container } from "@/server/container";
 import type { AppError } from "@/shared/lib/errors";
 import { log } from "@/shared/lib/log";
@@ -29,7 +29,7 @@ export async function uploadFileAction(formData: FormData): Promise<Created> {
       userId,
       source: "file",
       title: titleFromFilename(file.name, "Document"),
-      mediaType: file.type,
+      mediaType: resolveMediaType(file.type, file.name),
       bytes: new Uint8Array(await file.arrayBuffer()),
     }),
   );

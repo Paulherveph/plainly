@@ -16,7 +16,8 @@
     "ai:eval": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-eval.ts",
     "ai:report": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-report.ts",
     "ai:samples": "tsx --conditions=react-server --tsconfig tsconfig.json scripts/ai-samples.ts",
-    "test:int": "vitest run --config vitest.int.config.mts"
+    "test:int": "vitest run --config vitest.int.config.mts",
+    "test-user": "tsx scripts/test-user.ts"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.99",
@@ -27,6 +28,7 @@
     "ai": "^7.0.166",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.2",
+    "docx-preview": "0.4.1",
     "fflate": "^0.8.3",
     "lucide-react": "^1.71.0",
     "motion": "^14.12.0",

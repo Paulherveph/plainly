@@ -57,6 +57,10 @@ next-intl (en, fr, zh) · Biome · Vitest · Playwright · pnpm · Node 20.19+.
 - Use `middleware.ts` (Next.js 16 uses `proxy.ts`), `getServerSideProps`, or the Pages Router.
 - Use `localStorage` for anything sensitive.
 
+## Local test user
+- Sign in as the shared test account from `apps/web/.env.test-user` (git-ignored). Never commit it or seed it in a migration.
+- Missing (e.g. after `supabase db reset`)? Run `pnpm test-user create`, then `pnpm test-user approve` (or ask the owner to tick `approved` in Studio → `profiles`). Out of credits? `pnpm test-user reset`. `pnpm test-user plan free|pro|max` switches the plan. See `docs/AUTH.md` section 7.
+
 ## Handoff 01 rules
 
 - **Monorepo.** The app lives in `apps/web`. Shared infra (`supabase/`, `docs/`, `.github/`) stays at the root. Do not add `packages/*` until a second consumer exists.

@@ -6,7 +6,11 @@ import { Link } from "@/shared/i18n/navigation";
 import { Button } from "./button";
 import { SignInDialog } from "./sign-in-dialog";
 
-export function AccountButton({ email }: { email: string | null }) {
+/**
+ * Header account slot. Member: link to the account page. Visitor: "Sign in". Guest (has a session but no
+ * account yet): "Sign in" for people who already have one, and "Save your work" to create one in place.
+ */
+export function AccountButton({ email, isGuest }: { email: string | null; isGuest: boolean }) {
   const t = useTranslations("Nav");
   if (email) {
     return (
@@ -21,13 +25,24 @@ export function AccountButton({ email }: { email: string | null }) {
       </Link>
     );
   }
+  const signIn = (
+    <Button asChild variant={isGuest ? "ghost" : "outline"} size="sm">
+      <Link href="/sign-in" prefetch={false}>
+        {t("signIn")}
+      </Link>
+    </Button>
+  );
+  if (!isGuest) return signIn;
   return (
-    <SignInDialog
-      trigger={
-        <Button variant="outline" size="sm">
-          {t("save")}
-        </Button>
-      }
-    />
+    <span className="inline-flex items-center gap-1">
+      {signIn}
+      <SignInDialog
+        trigger={
+          <Button variant="outline" size="sm">
+            {t("save")}
+          </Button>
+        }
+      />
+    </span>
   );
 }

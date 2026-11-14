@@ -15,7 +15,9 @@ test("F01: a guest who runs out of credits gets a soft paywall, never a dead end
   // 8 guest credits: samples are free, so paste a text twice to spend real credits.
   for (let i = 0; i < 3; i++) {
     await page.getByRole("tab", { name: "Paste text" }).click();
-    await page.getByLabel("Document text").fill(`Notice ${i}. ${"The tenant must pay the rent before the fifth day of each month. ".repeat(8)}`);
+    await page
+      .getByLabel("Document text")
+      .fill(`Notice ${i}. ${"The tenant must pay the rent before the fifth day of each month. ".repeat(8)}`);
     await page.getByRole("button", { name: "Explain this text" }).click();
     await page.waitForURL(/\/en\/documents\/[0-9a-f-]{36}/, { timeout: 30_000 });
     await page.goto("/en/documents");
@@ -26,14 +28,16 @@ test("F01: a guest who runs out of credits gets a soft paywall, never a dead end
 
 test("F07: fake checkout activates Pro once", async ({ page }) => {
   const email = `billing-${Date.now()}@test.local`;
-  await page.goto("/en/sign-in");
+  await page.goto("/en/sign-in?mode=signup", { waitUntil: "networkidle" });
   await page.getByPlaceholder("Email").fill(email);
-  await page.getByRole("button", { name: "Email me a code" }).click();
+  await page.getByPlaceholder("Password", { exact: true }).fill("plainly-e2e-pass");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await page.getByText("Confirm your email").waitFor();
   const res = await fetch(`http://127.0.0.1:54328/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`);
   const id = ((await res.json()) as { messages: { ID: string }[] }).messages[0]?.ID;
   const msg = (await (await fetch(`http://127.0.0.1:54328/api/v1/message/${id}`)).json()) as { Text: string };
-  await page.getByLabel("6-digit code").fill(msg.Text.match(/\b(\d{6})\b/)?.[1] ?? "");
-  await page.getByRole("button", { name: "Continue" }).click();
+  // The sixth digit submits the code, which approves the new account and signs in.
+  await page.getByLabel("Digit 1 of 6").fill(msg.Text.match(/\b(\d{6})\b/)?.[1] ?? "");
   await page.waitForURL(/\/en\/documents/);
 
   await page.goto("/en/pricing");
@@ -51,7 +55,14 @@ test("the billing simulator is never public without fake billing", async ({ requ
 
 test("I05: a webhook with a bad signature is rejected", async ({ request }) => {
   const res = await request.post("/api/billing/webhook", {
-    data: { type: "pack.purchased", eventId: "x", occurredAt: new Date().toISOString(), userId: crypto.randomUUID(), packId: "pack_200", credits: 200 },
+    data: {
+      type: "pack.purchased",
+      eventId: "x",
+      occurredAt: new Date().toISOString(),
+      userId: crypto.randomUUID(),
+      packId: "pack_200",
+      credits: 200,
+    },
     headers: { "x-fake-billing-signature": "forged.value" },
   });
   expect(res.status()).toBe(401);

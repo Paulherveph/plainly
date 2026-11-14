@@ -16,7 +16,7 @@ Legend: ✅ verified · ⚠️ accepted trade-off (documented) · ⏳ to do befo
 | 5 | `usage` is not writable directly; quota only through `consume_quota()` | ✅ | grant is `select` only; pgTAP "usage is not writable directly" |
 | 6 | Quota cannot be exceeded by concurrent requests | ✅ | single conditional `UPDATE … where analyses < limit` (row lock); `supabase/tests/quota.test.sql` |
 | 7 | `security definer` functions pin `search_path = ''` | ✅ | `pg_proc.proconfig` for `consume_quota`, `refund_quota`, `owns_document` |
-| 8 | Storage bucket is private, 10 MB, PDF/PNG/JPG/text only | ✅ | `storage.buckets` → `public = f`, `file_size_limit = 10485760` |
+| 8 | Storage bucket is private, 30 MB, PDF/DOCX/XLSX/PPTX/PNG/JPG/WebP/text only (ADR 18) | ✅ | `storage.buckets` → `public = f`, `file_size_limit = 31457280` |
 | 9 | Storage paths are scoped to `{user_id}/…` | ✅ | storage policies on `storage.objects`; pgTAP "cannot upload into another user's folder" |
 | 10 | Original files are only served to their owner, same-origin, never cached | ✅ | `GET /api/documents/:id/original` checks the session and ownership (`readOriginal`, RLS); `cache-control: private, no-store`; framable only by our own pages |
 | 11 | Every server read goes through the session-bound client, so RLS applies | ✅ | `server/container.ts` builds all adapters from `createSupabase()`; the service client exists only in `server/retention.ts` |

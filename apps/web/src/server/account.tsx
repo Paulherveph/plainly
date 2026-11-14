@@ -10,7 +10,10 @@ export async function Account() {
   return (
     <span className="inline-flex items-center gap-2">
       {balance?.ok ? <CreditMeter balance={balance.value} /> : null}
-      <AccountButton email={user && !user.isAnonymous ? user.email : null} />
+      <AccountButton
+        email={user && !user.isAnonymous ? user.email : null}
+        isGuest={Boolean(user?.isAnonymous)}
+      />
     </span>
   );
 }

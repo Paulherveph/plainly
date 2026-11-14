@@ -12,6 +12,9 @@ const buttonVariants = cva(
           "bg-primary text-primary-foreground shadow-[0_0_0_1px_rgb(255_255_255/0.1),var(--shadow-glow)] hover:shadow-[0_0_0_1px_rgb(255_255_255/0.2),0_10px_40px_-6px_var(--brand-glow)]",
         outline:
           "border border-line-strong bg-[color-mix(in_oklab,var(--surface)_62%,transparent)] backdrop-blur-md hover:bg-surface-2",
+        // Violet gradient for the one primary action on a screen. White text stays above 4.5:1 on both stops.
+        brand:
+          "bg-[linear-gradient(100deg,#7356F5,#5B3FD6)] text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.2),0_12px_32px_-12px_rgb(124_92_255/0.75)] hover:brightness-110",
         secondary: "bg-secondary text-secondary-foreground hover:bg-surface-2",
         ghost: "text-muted-foreground hover:bg-surface-2 hover:text-foreground",
         // Fixed dark red in both themes: white text stays above 4.5:1.
