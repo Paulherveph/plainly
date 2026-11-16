@@ -27,7 +27,7 @@ Real-document guard: `scripts/check-files.mjs` runs first in `pnpm check` (so in
 | `@img/sharp-libvips-*` | LGPL-3.0-or-later | prebuilt native lib, not modified or bundled; noted |
 | `jszip` | MIT or GPL-3.0 | used under MIT |
 | `sentry` | FSL-1.1-Apache-2.0 | dependency only; noted |
-| `crystalized-ball.tsx` | React Bits, **MIT + Commons Clause v1.0** | documented in `THIRD_PARTY_NOTICES.md`; **open question** |
+| `crystalized-ball.tsx` | React Bits, **MIT + Commons Clause v1.0** | kept, documented in `THIRD_PARTY_NOTICES.md` (owner decision) |
 | shadcn/ui primitives | MIT | noted |
 | `assets/images-mockup/` (11 files) | none (third-party marketing images) | **untracked and git-ignored**, kept on disk; still in history (**open question**) |
 
@@ -54,6 +54,6 @@ Identity: nothing personal is hard-coded; the operator shown in the footer and T
 
 ## Open questions for the owner
 
-1. **React Bits orb**: the Commons Clause forbids redistributing the component itself, and a public repo does. Options: (a) keep it and accept the notice, (b) remove it and ship the static orb, (c) write an own orb. It is also in history.
+1. **React Bits orb**: resolved 2026-11-16. The owner keeps it as documented in `THIRD_PARTY_NOTICES.md` (excluded from the MIT license; forks that redistribute or sell code remove it and get the static orb).
 2. **Mood-board images in history**: untracked now, but the first push publishes the old commits. Only a history rewrite or a fresh single-commit history removes them.
 3. **Internal working docs**: `_handoff-01/`, `docs/PROMPTS*.md`, `docs/ECC_INVENTORY.md`, `docs/BLOCKERS.md`, `.claude/settings.json`, `CLAUDE.md`, `AGENTS.md`. No secrets; keep public (shows how it was built) or remove.
