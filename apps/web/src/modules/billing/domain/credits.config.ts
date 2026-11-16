@@ -19,7 +19,12 @@ export const CONFIRM_ABOVE = 5;
 /** Low-credit nudge at 20% left, once per period. */
 export const LOW_CREDIT_RATIO = 0.2;
 
-export type PlanPrice = { id: string; priceCents: number; interval: "month" | "year" | "once"; credits: number };
+export type PlanPrice = {
+  id: string;
+  priceCents: number;
+  interval: "month" | "year" | "once";
+  credits: number;
+};
 
 /** Revenue per credit for a paid plan or pack (a yearly plan grants credits monthly). */
 export function pricePerCredit(p: PlanPrice): number {

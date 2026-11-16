@@ -15,7 +15,10 @@ export default function manifest(): MetadataRoute.Manifest {
       action: "/api/share",
       method: "POST",
       enctype: "multipart/form-data",
-      params: { title: "title", files: [{ name: "file", accept: ["application/pdf", "image/png", "image/jpeg"] }] },
+      params: {
+        title: "title",
+        files: [{ name: "file", accept: ["application/pdf", "image/png", "image/jpeg"] }],
+      },
     },
     background_color: "#0b0b0f",
     theme_color: "#0b0b0f",

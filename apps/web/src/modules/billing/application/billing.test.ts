@@ -25,7 +25,11 @@ function memoryStore() {
       return ok(subs.get(id) ?? null);
     },
     async saveSubscription(_p, input) {
-      subs.set(input.subscriptionId, { ...input.state, userId: input.userId, subscriptionId: input.subscriptionId });
+      subs.set(input.subscriptionId, {
+        ...input.state,
+        userId: input.userId,
+        subscriptionId: input.subscriptionId,
+      });
       return ok(null);
     },
     async activeSubscriptionIds() {

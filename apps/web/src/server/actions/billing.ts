@@ -2,8 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import type { CreditBalance } from "@/modules/billing/application/ports";
 import { shouldNudge } from "@/modules/billing/application/entitlement-service";
+import type { CreditBalance } from "@/modules/billing/application/ports";
 import { billingProvider, simulatorEnabled } from "@/server/billing";
 import { container } from "@/server/container";
 import { publicEnv } from "@/shared/config/env";
@@ -28,7 +28,11 @@ export async function markLowNudgedAction(): Promise<void> {
 }
 
 /** Opens the provider checkout for a plan or a pack. Guests sign in first (paid plans need an account). */
-export async function checkoutAction(input: { productId: string; locale: string; back?: string }): Promise<Result<never, AppError>> {
+export async function checkoutAction(input: {
+  productId: string;
+  locale: string;
+  back?: string;
+}): Promise<Result<never, AppError>> {
   const locale = Locale.parse(input.locale);
   const c = await container();
   const user = await c.currentUser();
@@ -45,7 +49,8 @@ export async function checkoutAction(input: { productId: string; locale: string;
     returnUrl,
   });
   log("billing.checkout", { ok: res.ok, product: input.productId });
-  if (!res.ok) return err(res.error.kind === "billing_failed" ? { kind: "db_failed" } : (res.error as AppError));
+  if (!res.ok)
+    return err(res.error.kind === "billing_failed" ? { kind: "db_failed" } : (res.error as AppError));
   redirect(res.value.url);
 }
 
@@ -70,7 +75,10 @@ const SimEvent = z.enum(["success", "renewal", "payment_failed", "cancel", "canc
  * Dev-only fake billing: builds a provider-like event, signs it, and posts it to our own webhook,
  * so the real webhook path (signature, idempotency, state machine) is what runs.
  */
-export async function simulateBillingAction(input: { session: string; event: string }): Promise<Result<{ next: string }, AppError>> {
+export async function simulateBillingAction(input: {
+  session: string;
+  event: string;
+}): Promise<Result<{ next: string }, AppError>> {
   if (!simulatorEnabled()) return err({ kind: "not_found" });
   const provider = billingProvider();
   const session = provider.readSession ? await provider.readSession(input.session) : null;
@@ -79,15 +87,26 @@ export async function simulateBillingAction(input: { session: string; event: str
 
   const now = new Date();
   const at = now.toISOString();
-  const end = new Date(now.getTime() + (session.productId.endsWith("_year") ? 365 : 30) * 86_400_000).toISOString();
+  const end = new Date(
+    now.getTime() + (session.productId.endsWith("_year") ? 365 : 30) * 86_400_000,
+  ).toISOString();
   const subscriptionId = `fake_sub_${session.userId}`;
   const eventId = `fake_evt_${crypto.randomUUID()}`;
   const plans = await (await container()).plans();
-  const pack = plans.ok ? plans.value.find((p) => p.id === session.productId && p.kind === "pack") : undefined;
+  const pack = plans.ok
+    ? plans.value.find((p) => p.id === session.productId && p.kind === "pack")
+    : undefined;
 
   const event =
     kind.data === "success" && pack
-      ? { type: "pack.purchased", eventId, occurredAt: at, userId: session.userId, packId: pack.id, credits: pack.entitlements.credits }
+      ? {
+          type: "pack.purchased",
+          eventId,
+          occurredAt: at,
+          userId: session.userId,
+          packId: pack.id,
+          credits: pack.entitlements.credits,
+        }
       : kind.data === "success" || kind.data === "renewal"
         ? {
             type: kind.data === "success" ? "subscription.activated" : "subscription.renewed",
@@ -103,8 +122,21 @@ export async function simulateBillingAction(input: { session: string; event: str
         : kind.data === "payment_failed"
           ? { type: "subscription.payment_failed", eventId, occurredAt: at, subscriptionId }
           : kind.data === "refund"
-            ? { type: "payment.refunded", eventId, occurredAt: at, userId: session.userId, bucket: pack ? "pack" : "plan", credits: pack?.entitlements.credits ?? 400 }
-            : { type: "subscription.canceled", eventId, occurredAt: at, subscriptionId, atPeriodEnd: kind.data === "cancel" };
+            ? {
+                type: "payment.refunded",
+                eventId,
+                occurredAt: at,
+                userId: session.userId,
+                bucket: pack ? "pack" : "plan",
+                credits: pack?.entitlements.credits ?? 400,
+              }
+            : {
+                type: "subscription.canceled",
+                eventId,
+                occurredAt: at,
+                subscriptionId,
+                atPeriodEnd: kind.data === "cancel",
+              };
 
   const body = JSON.stringify(event);
   const sig = provider.sign ? await provider.sign(body) : null;

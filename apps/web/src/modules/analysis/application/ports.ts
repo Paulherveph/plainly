@@ -28,7 +28,12 @@ export interface DocumentAnalyzer {
   /** Cheap check on the first 1.5k characters with the `fast` profile. */
   classify(input: { text: string; ctx: AiContext }): Promise<Result<Classification, AppError>>;
   /** Text only. `general` uses the cheap profile (A12: not an official document). */
-  analyze(input: { pages: readonly string[]; locale: OutputLocale; mode: "full" | "general"; ctx: AiContext }): AnalysisRun;
+  analyze(input: {
+    pages: readonly string[];
+    locale: OutputLocale;
+    mode: "full" | "general";
+    ctx: AiContext;
+  }): AnalysisRun;
   /** Scanned pages only: verbatim text per requested page. */
   transcribe(input: {
     file: StoredFile;
@@ -36,7 +41,11 @@ export interface DocumentAnalyzer {
     ctx: AiContext;
   }): Promise<Result<Map<number, string>, AppError>>;
   /** New locale from an existing analysis (translate profile). Quotes never change. */
-  translate(input: { analysis: Analysis; to: OutputLocale; ctx: AiContext }): Promise<Result<Analysis, AppError>>;
+  translate(input: {
+    analysis: Analysis;
+    to: OutputLocale;
+    ctx: AiContext;
+  }): Promise<Result<Analysis, AppError>>;
 }
 
 export type StoredAnalysis = {
@@ -82,14 +91,19 @@ export interface JobStore {
 
 /** Credits: reserve before the call, settle on success, release on failure (S4 implements it). */
 export interface CreditPort {
-  reserve(input: { userId: string; amount: number; key: string }): Promise<Result<{ holdId: string | null }, AppError>>;
+  reserve(input: {
+    userId: string;
+    amount: number;
+    key: string;
+  }): Promise<Result<{ holdId: string | null }, AppError>>;
   settle(holdId: string | null, amount: number): Promise<void>;
   release(holdId: string | null): Promise<void>;
 }
 
 /** Budget, per-user rate and concurrency limits, checked before any model call. */
 export interface AiAdmission {
-  admit(input: { userId: string; action: "analysis" | "chat" | "chat_deep" | "translate" }): Promise<
-    Result<{ degraded: boolean }, AppError>
-  >;
+  admit(input: {
+    userId: string;
+    action: "analysis" | "chat" | "chat_deep" | "translate";
+  }): Promise<Result<{ degraded: boolean }, AppError>>;
 }

@@ -51,14 +51,19 @@ export function makeAdmission(deps: {
       to: deps.alertTo,
       subject: `Plainly AI budget at ${level}%`,
       text: `Spend today: $${(micros / 1_000_000).toFixed(2)} of $${deps.budgetUsd.toFixed(2)}. ${
-        level === 100 ? "Guest and Free analyses are paused until tomorrow (UTC)." : "Guest and Free use the cheaper model."
+        level === 100
+          ? "Guest and Free analyses are paused until tomorrow (UTC)."
+          : "Guest and Free use the cheaper model."
       }`,
     });
     if (!sent.ok) logError("budget.alert_failed", { level });
   }
 
   return {
-    async admit(input: { userId: string; action: AdmissionAction }): Promise<Result<{ degraded: boolean }, AppError>> {
+    async admit(input: {
+      userId: string;
+      action: AdmissionAction;
+    }): Promise<Result<{ degraded: boolean }, AppError>> {
       const [{ tier, maxConcurrentAnalyses }, activity] = await Promise.all([
         deps.tiers.tier(input.userId),
         deps.activity.recent(input.userId),

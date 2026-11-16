@@ -1,5 +1,5 @@
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest, NextResponse } from "next/server";
 import { publicEnv } from "@/shared/config/env";
 
 type CookieToSet = { name: string; value: string; options: Parameters<NextResponse["cookies"]["set"]>[2] };

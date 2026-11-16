@@ -9,7 +9,8 @@ export default async function DevBillingPage({ searchParams }: PageProps<"/[loca
   if (!simulatorEnabled()) notFound();
   const token = (await searchParams).session;
   const provider = billingProvider();
-  const session = typeof token === "string" && provider.readSession ? await provider.readSession(token) : null;
+  const session =
+    typeof token === "string" && provider.readSession ? await provider.readSession(token) : null;
   if (!session || typeof token !== "string") notFound();
   return (
     <section className="mx-auto max-w-lg px-5 pt-14 pb-24">

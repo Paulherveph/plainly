@@ -22,7 +22,12 @@ export class SupabaseAnalysisCache implements AnalysisCache {
 
   async put(key: string, value: { analysis: Analysis; dropped: number; model: string }) {
     const { error } = await this.db.from("analysis_cache").upsert(
-      { cache_key: key, result: value.analysis as unknown as Json, model: value.model, dropped: value.dropped },
+      {
+        cache_key: key,
+        result: value.analysis as unknown as Json,
+        model: value.model,
+        dropped: value.dropped,
+      },
       { onConflict: "user_id,cache_key" },
     );
     if (error) logError("analysis_cache.put_failed", { code: error.code });

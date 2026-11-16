@@ -37,7 +37,10 @@ export class SupabaseAccountData implements AccountDataReader {
     for (const row of data ?? []) {
       const file = await this.files.read(row.storage_path);
       if (!file.ok) continue;
-      out.push({ path: `${row.id}/${row.storage_path.split("/").pop() ?? "original"}`, bytes: file.value.bytes });
+      out.push({
+        path: `${row.id}/${row.storage_path.split("/").pop() ?? "original"}`,
+        bytes: file.value.bytes,
+      });
     }
     return ok(out);
   }

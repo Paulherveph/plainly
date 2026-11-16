@@ -20,13 +20,22 @@ async function key(secret: string) {
   ]);
 }
 
-export async function signValue(value: string, secret: string, ttlSeconds: number, now = Date.now()): Promise<string> {
+export async function signValue(
+  value: string,
+  secret: string,
+  ttlSeconds: number,
+  now = Date.now(),
+): Promise<string> {
   const payload = enc.encode(JSON.stringify({ v: value, exp: Math.floor(now / 1000) + ttlSeconds }));
   const sig = new Uint8Array(await crypto.subtle.sign("HMAC", await key(secret), payload));
   return `${b64url(payload)}.${b64url(sig)}`;
 }
 
-export async function verifyValue(token: string | undefined, secret: string, now = Date.now()): Promise<string | null> {
+export async function verifyValue(
+  token: string | undefined,
+  secret: string,
+  now = Date.now(),
+): Promise<string | null> {
   if (!token) return null;
   const [p, s] = token.split(".");
   if (!p || !s) return null;

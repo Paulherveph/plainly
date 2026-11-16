@@ -59,8 +59,7 @@ export function SecurityPanel({ identities, email }: { identities: string[]; ema
               if (res.ok) {
                 clearOfflineCache();
                 window.location.assign(`/${locale}`);
-              }
-              else toast.error(t("failed"));
+              } else toast.error(t("failed"));
             })
           }
         >

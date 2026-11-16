@@ -56,7 +56,10 @@ export function aiGateway(session: SupabaseClient<Database>): AiGateway {
 }
 
 export function providerHealth() {
-  return gatewayForHealth?.health() ?? serverEnv().AI_PROVIDERS_ALLOWED.map((provider) => ({ provider, state: "ok" as const }));
+  return (
+    gatewayForHealth?.health() ??
+    serverEnv().AI_PROVIDERS_ALLOWED.map((provider) => ({ provider, state: "ok" as const }))
+  );
 }
 
 export function admission(session: SupabaseClient<Database>, tiers: TierReader) {
@@ -66,7 +69,8 @@ export function admission(session: SupabaseClient<Database>, tiers: TierReader) 
     activity: new SupabaseActivityReader(session),
     tiers,
     flags: flagStore(),
-    mailer: env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null,
+    mailer:
+      env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null,
     alertTo: env.ALERT_EMAIL ?? null,
     budgetUsd: env.AI_DAILY_BUDGET_USD,
   });

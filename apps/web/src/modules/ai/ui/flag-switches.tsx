@@ -7,7 +7,13 @@ import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
 
 /** Emergency levers (docs/AI_PROVIDERS.md section 5). Admin tool, English only on purpose. */
-export function FlagSwitches({ flags, providers }: { flags: Record<string, unknown>; providers: readonly string[] }) {
+export function FlagSwitches({
+  flags,
+  providers,
+}: {
+  flags: Record<string, unknown>;
+  providers: readonly string[];
+}) {
   const [pending, start] = useTransition();
   const [override, setOverride] = useState(String(flags["profile_override:analysis"] ?? ""));
   const set = (key: string, value: unknown) =>

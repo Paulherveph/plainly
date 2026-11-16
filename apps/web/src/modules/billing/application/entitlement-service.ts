@@ -17,7 +17,9 @@ export function makeEntitlements(deps: { plans: PlanReader; credits: CreditStore
     return deps.plans.myPlan();
   }
 
-  async function check(action: Action): Promise<Result<{ planId: string; entitlements: Entitlements }, AppError>> {
+  async function check(
+    action: Action,
+  ): Promise<Result<{ planId: string; entitlements: Entitlements }, AppError>> {
     const p = await plan();
     if (!p.ok) return p;
     const needsBalance = action.kind !== "upload";
@@ -36,7 +38,8 @@ export function makeEntitlements(deps: { plans: PlanReader; credits: CreditStore
       if (amount === 0) return ok({ holdId: null });
       const res = await deps.credits.reserve(amount, key);
       if (!res.ok) return res;
-      if (!res.value.holdId) return err({ kind: "insufficient_credits", needed: amount, available: res.value.available });
+      if (!res.value.holdId)
+        return err({ kind: "insufficient_credits", needed: amount, available: res.value.available });
       return ok({ holdId: res.value.holdId });
     },
     async settle(holdId, amount) {
@@ -74,7 +77,9 @@ export function makeEntitlements(deps: { plans: PlanReader; credits: CreditStore
     /** B16: 1 credit for an extra locale, 0 on plans with all locales. */
     async translateCredits(): Promise<number> {
       const p = await plan();
-      return p.ok ? extraLocaleCost(p.value.entitlements, CREDIT_COSTS.extraLocale) : CREDIT_COSTS.extraLocale;
+      return p.ok
+        ? extraLocaleCost(p.value.entitlements, CREDIT_COSTS.extraLocale)
+        : CREDIT_COSTS.extraLocale;
     },
     balance: () => deps.credits.balance(),
   };

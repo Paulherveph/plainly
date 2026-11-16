@@ -16,7 +16,10 @@ export function LowCreditNudge() {
       const left = res.value.planCredits + res.value.packCredits;
       toast(t("lowTitle", { count: left }), {
         description: t("lowBody"),
-        action: { label: t("seePlans"), onClick: () => window.location.assign(`${window.location.pathname.slice(0, 3)}/pricing`) },
+        action: {
+          label: t("seePlans"),
+          onClick: () => window.location.assign(`${window.location.pathname.slice(0, 3)}/pricing`),
+        },
       });
     });
     return () => {

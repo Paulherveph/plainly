@@ -1,5 +1,9 @@
 import type { DocumentRepository, FileStore } from "@/modules/documents/application/ports";
-import { mergeTranscription, needsTranscription, normalizeForHash } from "@/modules/documents/domain/document";
+import {
+  mergeTranscription,
+  needsTranscription,
+  normalizeForHash,
+} from "@/modules/documents/domain/document";
 import type { AppError } from "@/shared/lib/errors";
 import { log, logError } from "@/shared/lib/log";
 import { err, ok, type Result } from "@/shared/lib/result";
@@ -86,7 +90,11 @@ export function makeAnalyzeDocument(deps: Deps) {
       const result: StoredAnalysis = { documentId: doc.id, locale: cmd.locale, analysis, dropped, model };
       const saved = await deps.analyses.save(cmd.userId, result);
       if (!saved.ok) return saved;
-      await deps.documents.update(doc.id, { status: "ready", kind: analysis.documentType, sourceLang: analysis.language });
+      await deps.documents.update(doc.id, {
+        status: "ready",
+        kind: analysis.documentType,
+        sourceLang: analysis.language,
+      });
       await deps.onAnalyzed?.({ userId: cmd.userId, documentId: doc.id, result });
       log("analysis.reused", { documentId: doc.id, reason });
       return ok<AnalyzeOutcome>({ kind: "cached", result, reason });
@@ -126,8 +134,15 @@ export function makeAnalyzeDocument(deps: Deps) {
     if (job.value === null) return ok({ kind: "running" });
     const jobId = job.value.id;
 
-    const credits = analysisCredits(doc.pageCount, doc.pages === null ? doc.pageCount : doc.visionPages.length);
-    const hold = await deps.credits.reserve({ userId: cmd.userId, amount: credits, key: `analysis:${jobId}` });
+    const credits = analysisCredits(
+      doc.pageCount,
+      doc.pages === null ? doc.pageCount : doc.visionPages.length,
+    );
+    const hold = await deps.credits.reserve({
+      userId: cmd.userId,
+      amount: credits,
+      key: `analysis:${jobId}`,
+    });
     if (!hold.ok) {
       await deps.jobs.finish(jobId, "failed", hold.error.kind);
       return hold;
@@ -172,7 +187,10 @@ export function makeAnalyzeDocument(deps: Deps) {
     const run = deps.analyzer.analyze({ pages: text, locale: cmd.locale, mode, ctx });
 
     const verify = async (startAt: number): Promise<Result<StoredAnalysis, AppError>> => {
-      const attempt = startAt === 0 ? run : deps.analyzer.analyze({ pages: text, locale: cmd.locale, mode, ctx: { ...ctx, startAt } });
+      const attempt =
+        startAt === 0
+          ? run
+          : deps.analyzer.analyze({ pages: text, locale: cmd.locale, mode, ctx: { ...ctx, startAt } });
       const draft = await attempt.final.catch(() => err<AppError>({ kind: "ai_failed" }));
       if (!draft.ok) return draft;
       const tightened = toAnalysis(draft.value.draft);
@@ -198,7 +216,12 @@ export function makeAnalyzeDocument(deps: Deps) {
       const result = verified.value;
       const saved = await deps.analyses.save(cmd.userId, result);
       if (!saved.ok) return fail(saved.error);
-      if (cacheKey) await deps.cache.put(cacheKey, { analysis: result.analysis, dropped: result.dropped, model: result.model });
+      if (cacheKey)
+        await deps.cache.put(cacheKey, {
+          analysis: result.analysis,
+          dropped: result.dropped,
+          model: result.model,
+        });
       await deps.documents.update(doc.id, {
         status: "ready",
         kind: result.analysis.documentType,
@@ -207,7 +230,13 @@ export function makeAnalyzeDocument(deps: Deps) {
       await deps.onAnalyzed?.({ userId: cmd.userId, documentId: doc.id, result });
       await deps.credits.settle(holdId, credits);
       await deps.jobs.finish(jobId, "done");
-      log("analysis.ready", { documentId: doc.id, dropped: result.dropped, ms: Date.now() - startedAt, model: result.model, credits });
+      log("analysis.ready", {
+        documentId: doc.id,
+        dropped: result.dropped,
+        ms: Date.now() - startedAt,
+        model: result.model,
+        credits,
+      });
       return ok(result);
     });
 
@@ -227,7 +256,11 @@ export function makeAnalyzeDocument(deps: Deps) {
       if (jobT.value === null) return ok({ kind: "running" });
       const tJob = jobT.value.id;
       const cost = await deps.translateCredits();
-      const holdT = await deps.credits.reserve({ userId: cmd.userId, amount: cost, key: `translation:${tJob}` });
+      const holdT = await deps.credits.reserve({
+        userId: cmd.userId,
+        amount: cost,
+        key: `translation:${tJob}`,
+      });
       if (!holdT.ok) {
         await deps.jobs.finish(tJob, "failed", holdT.error.kind);
         return holdT;

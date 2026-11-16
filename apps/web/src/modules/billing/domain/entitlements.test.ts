@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 import { checkAction, Entitlements, extraLocaleCost, tierOf } from "./entitlements";
 
 const free = Entitlements.parse({ credits: 24, maxPages: 10, maxBytes: 10_485_760, deepChat: false });
-const pro = Entitlements.parse({ credits: 400, maxPages: 40, maxBytes: 20_971_520, deepChat: true, allLocales: true });
+const pro = Entitlements.parse({
+  credits: 400,
+  maxPages: 40,
+  maxBytes: 20_971_520,
+  deepChat: true,
+  allLocales: true,
+});
 
 describe("entitlements", () => {
   it("A08/A09: file size and page limits come from the plan", () => {

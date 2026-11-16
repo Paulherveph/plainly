@@ -10,11 +10,15 @@ export function fakeResponder(call: AiCall): FakeReply {
   const text = allText(call.messages);
   switch (call.task) {
     case "classify":
-      return { value: { official: !/\b(recipe|once upon a time|ingredients)\b/i.test(text), language: "other" } };
+      return {
+        value: { official: !/\b(recipe|once upon a time|ingredients)\b/i.test(text), language: "other" },
+      };
     case "transcribe": {
       const pages = (text.match(/pages: ([\d, ]+)/)?.[1] ?? "1").split(",").map((n) => Number(n.trim()));
       return {
-        value: { pages: pages.map((page) => ({ page, text: "(transcription is not available with the fake AI)" })) },
+        value: {
+          pages: pages.map((page) => ({ page, text: "(transcription is not available with the fake AI)" })),
+        },
       };
     }
     case "translate": {
@@ -36,16 +40,23 @@ export function fakeResponder(call: AiCall): FakeReply {
   }
 }
 
-const LOCALE_NAMES: Record<OutputLocale, string> = { en: "in English", fr: "in French", zh: "in Simplified Chinese" };
+const LOCALE_NAMES: Record<OutputLocale, string> = {
+  en: "in English",
+  fr: "in French",
+  zh: "in Simplified Chinese",
+};
 
 function allText(messages: AiMessage[]): string {
   return messages
-    .flatMap((m) => (typeof m.content === "string" ? [m.content] : m.content.map((p) => (p.type === "text" ? p.text : ""))))
+    .flatMap((m) =>
+      typeof m.content === "string" ? [m.content] : m.content.map((p) => (p.type === "text" ? p.text : "")),
+    )
     .join("\n");
 }
 
 function pagesOf(text: string): string[] {
   const pages: string[] = [];
-  for (const m of text.matchAll(/<page number="(\d+)">\n([\s\S]*?)\n<\/page>/g)) pages[Number(m[1]) - 1] = m[2] ?? "";
+  for (const m of text.matchAll(/<page number="(\d+)">\n([\s\S]*?)\n<\/page>/g))
+    pages[Number(m[1]) - 1] = m[2] ?? "";
   return Array.from(pages, (p) => p ?? "");
 }

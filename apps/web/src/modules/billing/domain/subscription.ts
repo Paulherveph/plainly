@@ -33,7 +33,14 @@ export type BillingEvent =
       /** true: keeps access to the end of the period (F11); false: ends now. */
       atPeriodEnd: boolean;
     }
-  | { type: "pack.purchased"; eventId: string; occurredAt: string; userId: string; packId: string; credits: number }
+  | {
+      type: "pack.purchased";
+      eventId: string;
+      occurredAt: string;
+      userId: string;
+      packId: string;
+      credits: number;
+    }
   | {
       type: "payment.refunded";
       eventId: string;

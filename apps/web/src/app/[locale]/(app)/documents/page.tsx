@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { CreditMeter } from "@/modules/billing/ui/credit-meter";
+import { CreditSkeleton } from "@/modules/billing/ui/credit-skeleton";
 import { DocumentInput } from "@/modules/documents/ui/document-input";
 import { DocumentLibrary } from "@/modules/documents/ui/document-library";
 import { LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { SamplePicker } from "@/modules/documents/ui/sample-picker";
-import { CreditSkeleton } from "@/modules/billing/ui/credit-skeleton";
-import { CreditMeter } from "@/modules/billing/ui/credit-meter";
 import { container } from "@/server/container";
 import { ok } from "@/shared/lib/result";
 import { RevealSuspense } from "@/shared/ui/reveal-suspense";

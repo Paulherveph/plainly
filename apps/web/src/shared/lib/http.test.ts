@@ -12,6 +12,9 @@ describe("http helpers", () => {
   it("maps typed errors to statuses and keeps only numbers and kinds in details", () => {
     expect(httpStatus("insufficient_credits")).toBe(402);
     expect(httpStatus("capacity")).toBe(503);
-    expect(errorDetail({ kind: "insufficient_credits", needed: 5, available: 2 })).toEqual({ needed: 5, available: 2 });
+    expect(errorDetail({ kind: "insufficient_credits", needed: 5, available: 2 })).toEqual({
+      needed: 5,
+      available: 2,
+    });
   });
 });

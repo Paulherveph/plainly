@@ -15,7 +15,12 @@ export function CheckoutStatus() {
   const [next, setNext] = useState("/");
 
   useEffect(() => {
-    setNext(safeNext(new URLSearchParams(window.location.search).get("next"), `${window.location.pathname.slice(0, 3)}/documents`));
+    setNext(
+      safeNext(
+        new URLSearchParams(window.location.search).get("next"),
+        `${window.location.pathname.slice(0, 3)}/documents`,
+      ),
+    );
     let tries = 0;
     let stop = false;
     const tick = async () => {
@@ -38,7 +43,10 @@ export function CheckoutStatus() {
       {state === "done" ? (
         <CheckCircle2Icon className="size-10 text-ok" aria-hidden="true" />
       ) : (
-        <Loader2Icon className="size-10 animate-spin text-muted-foreground motion-reduce:animate-none" aria-hidden="true" />
+        <Loader2Icon
+          className="size-10 animate-spin text-muted-foreground motion-reduce:animate-none"
+          aria-hidden="true"
+        />
       )}
       <h1 className="font-semibold text-2xl tracking-tight">
         {state === "done" ? t("successTitle") : t("confirmingTitle")}

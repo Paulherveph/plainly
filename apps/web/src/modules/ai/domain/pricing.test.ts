@@ -12,9 +12,19 @@ describe("pricing", () => {
   });
 
   it("applies the cache formula from TOKEN_ECONOMY section 6", () => {
-    const price = { inputPerM: 2, outputPerM: 10, cacheWritePerM: 2.5, cacheReadPerM: 0.1, verifiedOn: "x", evalPassedOn: null };
+    const price = {
+      inputPerM: 2,
+      outputPerM: 10,
+      cacheWritePerM: 2.5,
+      cacheReadPerM: 0.1,
+      verifiedOn: "x",
+      evalPassedOn: null,
+    };
     // 1000 input of which 600 cache read and 200 cache write; 100 output.
-    const micros = costMicros({ inputTokens: 1000, cacheReadTokens: 600, cacheWriteTokens: 200, outputTokens: 100 }, price);
+    const micros = costMicros(
+      { inputTokens: 1000, cacheReadTokens: 600, cacheWriteTokens: 200, outputTokens: 100 },
+      price,
+    );
     expect(micros).toBe(200 * 2 + 200 * 2.5 + 600 * 0.1 + 100 * 10);
   });
 

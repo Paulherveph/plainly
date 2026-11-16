@@ -1,7 +1,7 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import { useId, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { updateProfileAction } from "@/server/actions/account";

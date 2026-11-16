@@ -41,17 +41,34 @@ describe("deadline rules and caps", () => {
     const a = toAnalysis({
       ...base,
       actions: [
-        { title: "Reply", detail: "d", dueOn: null, dueRule: "within 30 days of receipt", cite: { page: 1, quote: "q" } },
+        {
+          title: "Reply",
+          detail: "d",
+          dueOn: null,
+          dueRule: "within 30 days of receipt",
+          cite: { page: 1, quote: "q" },
+        },
       ],
     });
-    expect(a.actions[0]).toMatchObject({ dueOn: null, dueRule: "within 30 days of receipt", dateAmbiguous: false });
+    expect(a.actions[0]).toMatchObject({
+      dueOn: null,
+      dueRule: "within 30 days of receipt",
+      dateAmbiguous: false,
+    });
   });
 
   it("B04: an ambiguous date is flagged and never stored as a date", () => {
     const a = toAnalysis({
       ...base,
       actions: [
-        { title: "Pay", detail: "d", dueOn: "2026-04-03", dateAmbiguous: true, dueRule: "03/04/2026", cite: { page: 1, quote: "q" } },
+        {
+          title: "Pay",
+          detail: "d",
+          dueOn: "2026-04-03",
+          dateAmbiguous: true,
+          dueRule: "03/04/2026",
+          cite: { page: 1, quote: "q" },
+        },
       ],
     });
     expect(a.actions[0]).toMatchObject({ dueOn: null, dateAmbiguous: true, dueRule: "03/04/2026" });

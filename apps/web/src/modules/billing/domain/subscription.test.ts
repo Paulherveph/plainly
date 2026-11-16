@@ -44,7 +44,12 @@ describe("subscription state machine", () => {
   it("F09: an older event never overwrites a newer state", () => {
     const active = applyEvent(null, { ...activated, occurredAt: "2026-11-05T00:00:00Z" }) as Subscription;
     expect(
-      applyEvent(active, { type: "subscription.payment_failed", eventId: "old", occurredAt: "2026-11-02T00:00:00Z", subscriptionId: "s" }),
+      applyEvent(active, {
+        type: "subscription.payment_failed",
+        eventId: "old",
+        occurredAt: "2026-11-02T00:00:00Z",
+        subscriptionId: "s",
+      }),
     ).toBeNull();
   });
 });

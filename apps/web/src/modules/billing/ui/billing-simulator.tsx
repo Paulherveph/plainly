@@ -17,7 +17,11 @@ const PORTAL = [
 ] as const;
 
 /** Developer tool, English only on purpose: it never ships to users (404 outside fake billing). */
-export function BillingSimulator(props: { token: string; kind: "plan" | "pack" | "portal"; productId: string }) {
+export function BillingSimulator(props: {
+  token: string;
+  kind: "plan" | "pack" | "portal";
+  productId: string;
+}) {
   const [pending, start] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const actions = props.kind === "portal" ? PORTAL : CHECKOUT;

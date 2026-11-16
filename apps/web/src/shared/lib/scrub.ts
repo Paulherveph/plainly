@@ -6,10 +6,23 @@
 type Frame = { filename?: string; function?: string; lineno?: number; colno?: number; in_app?: boolean };
 type ScrubbableEvent = {
   message?: unknown;
-  request?: { url?: string; method?: string; data?: unknown; cookies?: unknown; headers?: unknown; query_string?: unknown };
+  request?: {
+    url?: string;
+    method?: string;
+    data?: unknown;
+    cookies?: unknown;
+    headers?: unknown;
+    query_string?: unknown;
+  };
   user?: { id?: string } & Record<string, unknown>;
   extra?: unknown;
-  breadcrumbs?: { category?: string; level?: string; timestamp?: number; message?: unknown; data?: unknown }[];
+  breadcrumbs?: {
+    category?: string;
+    level?: string;
+    timestamp?: number;
+    message?: unknown;
+    data?: unknown;
+  }[];
   exception?: { values?: { type?: string; value?: string; stacktrace?: { frames?: Frame[] } }[] };
   contexts?: Record<string, unknown>;
   tags?: Record<string, unknown>;
@@ -27,7 +40,11 @@ export function scrubEvent<E extends ScrubbableEvent>(event: E): E {
   delete event.extra;
   if (typeof event.message === "string" && !SAFE_VALUE.test(event.message)) event.message = "[scrubbed]";
   if (event.breadcrumbs) {
-    event.breadcrumbs = event.breadcrumbs.map((b) => ({ category: b.category, level: b.level, timestamp: b.timestamp }));
+    event.breadcrumbs = event.breadcrumbs.map((b) => ({
+      category: b.category,
+      level: b.level,
+      timestamp: b.timestamp,
+    }));
   }
   for (const value of event.exception?.values ?? []) {
     // Our own errors carry only error kinds (snake_case); anything else may contain content.

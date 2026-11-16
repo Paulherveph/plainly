@@ -27,7 +27,8 @@ const expect = (cond, message) => {
 };
 const get = (path, init) => fetch(`${BASE}${path}`, { redirect: "manual", ...init });
 /** A message key printed instead of its text, e.g. "Pricing.title". */
-const RAW_KEY = /\b(Landing|Analysis|Billing|Pricing|Auth|Account|Terms|Privacy|Documents|Chat|Nav)\.[a-zA-Z_]+\b/;
+const RAW_KEY =
+  /\b(Landing|Analysis|Billing|Pricing|Auth|Account|Terms|Privacy|Documents|Chat|Nav)\.[a-zA-Z_]+\b/;
 
 for (const locale of ["en", "fr", "zh"]) {
   for (const path of ["", "/pricing", "/privacy", "/terms", "/documents", "/deadlines", "/sign-in"]) {
@@ -75,7 +76,11 @@ await check("robots.txt, sitemap.xml, manifest, service worker", async () => {
 
 await check("protected APIs refuse anonymous calls (I06)", async () => {
   const post = (path, body) =>
-    get(path, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+    get(path, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
   const analysis = await post("/api/analysis", { documentId: crypto.randomUUID(), locale: "en" });
   expect(analysis.status === 401, `analysis ${analysis.status}`);
   const chat = await post("/api/chat", {
@@ -107,6 +112,7 @@ await check("open redirect is ignored (E13)", async () => {
 });
 
 const failed = results.filter((r) => !r.ok);
-for (const r of results) console.log(`${r.ok ? "✓" : "✗"} ${r.name} (${r.ms} ms)${r.ok ? "" : ` — ${r.error}`}`);
+for (const r of results)
+  console.log(`${r.ok ? "✓" : "✗"} ${r.name} (${r.ms} ms)${r.ok ? "" : ` — ${r.error}`}`);
 console.log(`\n${results.length - failed.length}/${results.length} passed against ${BASE}`);
 process.exit(failed.length ? 1 : 0);

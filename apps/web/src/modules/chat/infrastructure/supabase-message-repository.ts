@@ -58,7 +58,13 @@ export class SupabaseMessageRepository implements MessageRepository {
   async append(
     userId: string,
     documentId: string,
-    m: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean; questionHash?: string },
+    m: {
+      role: "user" | "assistant";
+      text: string;
+      citations: Cite[];
+      refused: boolean;
+      questionHash?: string;
+    },
   ): Promise<Result<null, AppError>> {
     const parts =
       m.role === "user"
@@ -67,15 +73,13 @@ export class SupabaseMessageRepository implements MessageRepository {
             { type: "text", text: m.text },
             { type: "data-citations", data: { citations: m.citations, refused: m.refused } },
           ];
-    const { error } = await this.db
-      .from("messages")
-      .insert({
-        user_id: userId,
-        document_id: documentId,
-        role: m.role,
-        parts: parts as unknown as Json,
-        question_hash: m.questionHash ?? null,
-      });
+    const { error } = await this.db.from("messages").insert({
+      user_id: userId,
+      document_id: documentId,
+      role: m.role,
+      parts: parts as unknown as Json,
+      question_hash: m.questionHash ?? null,
+    });
     return error ? err({ kind: "db_failed" }) : ok(null);
   }
 

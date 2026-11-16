@@ -63,7 +63,10 @@ export function makeExportDeadlines({ deadlines, now }: Deps) {
  */
 export function makeAddDeadlineFromAction(deps: {
   deadlines: DeadlineRepository;
-  findAnalysis: (documentId: string, locale: "en" | "fr" | "zh") => Promise<Result<StoredAnalysis | null, AppError>>;
+  findAnalysis: (
+    documentId: string,
+    locale: "en" | "fr" | "zh",
+  ) => Promise<Result<StoredAnalysis | null, AppError>>;
 }) {
   return async (input: {
     userId: string;

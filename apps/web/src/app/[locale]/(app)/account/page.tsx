@@ -20,7 +20,10 @@ export default async function AccountPage({ params, searchParams }: PageProps<"/
     <section className="mx-auto max-w-[880px] px-5 pt-10 pb-24 md:px-8 md:pt-14">
       <h1 className="font-semibold text-3xl tracking-tight md:text-[40px] md:leading-[1.1]">{t("title")}</h1>
       <Suspense fallback={<Skeleton className="mt-8 h-96 w-full rounded-2xl" />}>
-        <Account locale={locale} tab={searchParams.then((p) => (typeof p.tab === "string" ? p.tab : undefined))} />
+        <Account
+          locale={locale}
+          tab={searchParams.then((p) => (typeof p.tab === "string" ? p.tab : undefined))}
+        />
       </Suspense>
     </section>
   );
@@ -40,7 +43,9 @@ async function Account({ locale, tab }: { locale: string; tab: Promise<string | 
     <AccountTabs
       initialTab={await tab}
       email={user.email}
-      profile={profile.ok ? profile.value : { userId: user.id, displayName: null, locale: "en", theme: "system" }}
+      profile={
+        profile.ok ? profile.value : { userId: user.id, displayName: null, locale: "en", theme: "system" }
+      }
       identities={identities}
       plan={balance.ok ? <PlanPanel balance={balance.value} ledger={ledger.ok ? ledger.value : []} /> : null}
     />

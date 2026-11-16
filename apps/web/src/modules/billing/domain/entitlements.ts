@@ -33,11 +33,7 @@ export type Action =
  * One place that decides what a plan allows (docs/PRICING.md section 4). Pure: the caller passes
  * the plan and balance. UI checks are for display only; every use case calls this.
  */
-export function checkAction(
-  action: Action,
-  ent: Entitlements,
-  available: number,
-): Result<null, AppError> {
+export function checkAction(action: Action, ent: Entitlements, available: number): Result<null, AppError> {
   switch (action.kind) {
     case "upload":
       if (action.bytes > ent.maxBytes) return err({ kind: "file_too_large", maxBytes: ent.maxBytes });

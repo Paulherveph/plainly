@@ -9,7 +9,15 @@ import { join } from "node:path";
 import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analyzer";
 import { groundAnswer } from "@/modules/chat/domain/grounding";
 import { GatewayAnswerer } from "@/modules/chat/infrastructure/gateway-answerer";
-import { EVAL_DIR, failures, loadEvalDocs, loadUnanswerable, type DocScore, scoreDoc, summarize } from "../evals/score";
+import {
+  type DocScore,
+  EVAL_DIR,
+  failures,
+  loadEvalDocs,
+  loadUnanswerable,
+  scoreDoc,
+  summarize,
+} from "../evals/score";
 import { arg, gatewayFor, modelArg, recorder, usd } from "./lib";
 
 const model = modelArg();
@@ -58,7 +66,9 @@ for (const doc of docs) {
     latencyMs: Date.now() - started,
   });
   scores.push(s);
-  console.log(`✓ ${doc.name}: ${s.claims - s.dropped}/${s.claims} quotes, deadlines ${s.deadlineHits}/${s.deadlineTotal}, ${usd(s.costMicros)}`);
+  console.log(
+    `✓ ${doc.name}: ${s.claims - s.dropped}/${s.claims} quotes, deadlines ${s.deadlineHits}/${s.deadlineTotal}, ${usd(s.costMicros)}`,
+  );
 }
 
 const byName = new Map(docs.map((d) => [d.name, d]));
@@ -91,7 +101,10 @@ const dir = join(EVAL_DIR, "results");
 mkdirSync(dir, { recursive: true });
 const file = join(dir, `${date}-${model.provider}-${model.model}.json`);
 const totalMicros = usage.rows.reduce((n, r) => n + r.costMicros, 0);
-writeFileSync(file, `${JSON.stringify({ model, profile, date, summary, failed, scores, totalCostUsd: totalMicros / 1e6 }, null, 2)}\n`);
+writeFileSync(
+  file,
+  `${JSON.stringify({ model, profile, date, summary, failed, scores, totalCostUsd: totalMicros / 1e6 }, null, 2)}\n`,
+);
 
 console.log("\nSummary", summary);
 console.log(`Total spend for this run: ${usd(totalMicros)}`);
@@ -100,4 +113,6 @@ if (failed.length) {
   console.log(`\nNOT promotable:\n- ${failed.join("\n- ")}`);
   process.exit(1);
 }
-console.log(`\nPromotable. Set evalPassedOn: "${date}" for ${model.provider}:${model.model} in src/modules/ai/domain/pricing.ts.`);
+console.log(
+  `\nPromotable. Set evalPassedOn: "${date}" for ${model.provider}:${model.model} in src/modules/ai/domain/pricing.ts.`,
+);

@@ -5,12 +5,21 @@ import { Link } from "@/shared/i18n/navigation";
 import type { CreditBalance } from "../application/ports";
 
 /** Small ring plus the number of credits left; the title shows the reset date. */
-export function CreditMeter({ balance, variant = "ring" }: { balance: CreditBalance; variant?: "ring" | "inline" }) {
+export function CreditMeter({
+  balance,
+  variant = "ring",
+}: {
+  balance: CreditBalance;
+  variant?: "ring" | "inline";
+}) {
   const t = useTranslations("Billing");
   const format = useFormatter();
   const left = balance.planCredits + balance.packCredits;
-  const ratio = balance.planTotal > 0 ? Math.min(1, balance.planCredits / balance.planTotal) : left > 0 ? 1 : 0;
-  const reset = balance.periodEnd ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" }) : null;
+  const ratio =
+    balance.planTotal > 0 ? Math.min(1, balance.planCredits / balance.planTotal) : left > 0 ? 1 : 0;
+  const reset = balance.periodEnd
+    ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" })
+    : null;
   const title = reset ? t("resetsOn", { date: reset }) : t("noReset");
   const low = balance.planTotal > 0 && left <= balance.planTotal * 0.2;
   const r = 8;

@@ -36,8 +36,18 @@ const draft: AnalysisDraft = {
   summary: "A lease.",
   keyFacts: [{ label: "Deposit", value: "€1,700", cite: { page: 1, quote: "security deposit of €1,700" } }],
   actions: [
-    { title: "Pay", detail: "", dueOn: "2026-11-20", cite: { page: 1, quote: "no later than 20 November 2026" } },
-    { title: "Invented", detail: "", dueOn: null, cite: { page: 1, quote: "the landlord pays the electricity" } },
+    {
+      title: "Pay",
+      detail: "",
+      dueOn: "2026-11-20",
+      cite: { page: 1, quote: "no later than 20 November 2026" },
+    },
+    {
+      title: "Invented",
+      detail: "",
+      dueOn: null,
+      cite: { page: 1, quote: "the landlord pays the electricity" },
+    },
   ],
   watchOuts: [],
   glossary: [],
@@ -70,7 +80,9 @@ function setup(o: Opts = {}) {
     (call) => {
       if (call.task === "classify") return { value: { official: o.official ?? true, language: "en" } };
       if (call.task === "translate") {
-        const json = JSON.parse(String((call.messages[0]?.content as string).split("\n").slice(1).join("\n")));
+        const json = JSON.parse(
+          String((call.messages[0]?.content as string).split("\n").slice(1).join("\n")),
+        );
         return { value: { ...json, summary: "Un bail." } };
       }
       analyzeCalls++;
@@ -82,7 +94,9 @@ function setup(o: Opts = {}) {
     getOwned: vi.fn(async () => ok(doc)),
     update: vi.fn(async () => ok(null)),
   } as unknown as DocumentRepository;
-  const files = { read: vi.fn(async () => ok({ bytes: new Uint8Array(), mediaType: "application/pdf" })) } as unknown as FileStore;
+  const files = {
+    read: vi.fn(async () => ok({ bytes: new Uint8Array(), mediaType: "application/pdf" })),
+  } as unknown as FileStore;
   const analyses: AnalysisRepository = {
     find: vi.fn(async () => ok(o.stored ?? null)),
     findAny: vi.fn(async () => ok(o.other ?? null)),
@@ -92,7 +106,11 @@ function setup(o: Opts = {}) {
     }),
   };
   const cache: AnalysisCache = {
-    get: vi.fn(async () => (o.cacheHit ? { analysis: o.other?.analysis ?? (o.stored?.analysis as Analysis), dropped: 0, model: "m" } : null)),
+    get: vi.fn(async () =>
+      o.cacheHit
+        ? { analysis: o.other?.analysis ?? (o.stored?.analysis as Analysis), dropped: 0, model: "m" }
+        : null,
+    ),
     put: vi.fn(async () => {}),
   };
   const credits: CreditPort = {
@@ -142,7 +160,9 @@ const verified = (): Analysis => ({
 
 describe("analyzeDocument", () => {
   it("returns a stored analysis without any model call or charge", async () => {
-    const s = setup({ stored: { documentId: "d1", locale: "en", analysis: verified(), dropped: 0, model: "m" } });
+    const s = setup({
+      stored: { documentId: "d1", locale: "en", analysis: verified(), dropped: 0, model: "m" },
+    });
     const res = await s.run();
     expect(res.ok && res.value.kind).toBe("cached");
     expect(s.gateway.calls).toHaveLength(0);
@@ -157,14 +177,19 @@ describe("analyzeDocument", () => {
   });
 
   it("A16: the same content again returns the cached result for 0 credits", async () => {
-    const s = setup({ cacheHit: true, other: { documentId: "x", locale: "en", analysis: verified(), dropped: 0, model: "m" } });
+    const s = setup({
+      cacheHit: true,
+      other: { documentId: "x", locale: "en", analysis: verified(), dropped: 0, model: "m" },
+    });
     const res = await s.run();
     expect(res.ok && res.value.kind === "cached" && res.value.reason).toBe("duplicate");
     expect(s.credits.reserve).not.toHaveBeenCalled();
   });
 
   it("B16: a new locale translates the existing analysis with the translate profile for 1 credit", async () => {
-    const s = setup({ other: { documentId: "d1", locale: "fr", analysis: verified(), dropped: 0, model: "m" } });
+    const s = setup({
+      other: { documentId: "d1", locale: "fr", analysis: verified(), dropped: 0, model: "m" },
+    });
     const res = await s.run();
     expect(res.ok && res.value.kind === "cached" && res.value.reason).toBe("translated");
     expect(s.gateway.calls.map((c) => c.profile)).toEqual(["translate"]);
@@ -230,7 +255,8 @@ describe("analyzeDocument", () => {
   it("A02: scanned pages are transcribed once with the fast profile, only those pages", async () => {
     const s = setup({
       doc: { pages: [PAGES[0] as string, ""], pageCount: 2, visionPages: [2] },
-      respond: (call) => (call.task === "transcribe" ? { pages: [{ page: 2, text: "Scanned page text." }] } : draft),
+      respond: (call) =>
+        call.task === "transcribe" ? { pages: [{ page: 2, text: "Scanned page text." }] } : draft,
     });
     await finish(await s.run());
     const transcribe = s.gateway.calls.find((c) => c.task === "transcribe");

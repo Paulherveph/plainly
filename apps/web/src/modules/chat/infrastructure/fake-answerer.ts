@@ -50,6 +50,7 @@ export function fakeChatDraft(pages: readonly string[], question: string): ChatD
 export function fakeChatPartials(draft: ChatDraft): { found: boolean; answer: string }[] {
   const words = draft.answer.split(/(?<=\s)/);
   const out: { found: boolean; answer: string }[] = [];
-  for (let i = 1; i <= words.length; i += 2) out.push({ found: draft.found, answer: words.slice(0, i + 1).join("") });
+  for (let i = 1; i <= words.length; i += 2)
+    out.push({ found: draft.found, answer: words.slice(0, i + 1).join("") });
   return out;
 }

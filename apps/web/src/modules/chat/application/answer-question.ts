@@ -1,5 +1,4 @@
-import type { AiAdmission, CreditPort } from "@/modules/analysis/application/ports";
-import type { AnalysisRepository } from "@/modules/analysis/application/ports";
+import type { AiAdmission, AnalysisRepository, CreditPort } from "@/modules/analysis/application/ports";
 import type { OutputLocale } from "@/modules/analysis/domain/analysis";
 import type { DocumentRepository } from "@/modules/documents/application/ports";
 import type { AppError } from "@/shared/lib/errors";
@@ -101,7 +100,11 @@ export function makeAnswerQuestion(deps: Deps) {
     if (!history.ok) return history;
 
     const credits = deps.creditsFor(deep);
-    const hold = await deps.credits.reserve({ userId: cmd.userId, amount: credits, key: `chat:${cmd.requestId}` });
+    const hold = await deps.credits.reserve({
+      userId: cmd.userId,
+      amount: credits,
+      key: `chat:${cmd.requestId}`,
+    });
     if (!hold.ok) return hold;
     const holdId = hold.value.holdId;
     const ctx = {
@@ -122,10 +125,16 @@ export function makeAnswerQuestion(deps: Deps) {
     const plan = planHistory(turns, stored);
     let summary = plan.older.length > 0 ? (stored?.text ?? null) : null;
     if (plan.needsRefresh) {
-      const fresh = await deps.answerer.summarize({ turns: plan.older.slice(stored?.covered ?? 0), previous: stored?.text ?? null, ctx });
+      const fresh = await deps.answerer.summarize({
+        turns: plan.older.slice(stored?.covered ?? 0),
+        previous: stored?.text ?? null,
+        ctx,
+      });
       if (fresh.ok) {
         summary = fresh.value;
-        await deps.documents.update(doc.id, { chatSummary: formatSummary({ covered: plan.older.length, text: fresh.value }) });
+        await deps.documents.update(doc.id, {
+          chatSummary: formatSummary({ covered: plan.older.length, text: fresh.value }),
+        });
       }
     }
 
@@ -192,7 +201,10 @@ export function makeAnswerQuestion(deps: Deps) {
         deps.documents.searchPages(doc.id, q, RETRIEVED_PAGES),
         deps.analyses.findAny(doc.id),
       ]);
-      const found = hits.ok && hits.value.length > 0 ? hits.value : (pages ?? []).slice(0, 2).map((text, i) => ({ page: i + 1, text }));
+      const found =
+        hits.ok && hits.value.length > 0
+          ? hits.value
+          : (pages ?? []).slice(0, 2).map((text, i) => ({ page: i + 1, text }));
       const docSummary = analysis.ok && analysis.value ? analysis.value.analysis.summary : "";
       return { kind: "retrieved", summary: docSummary, hits: found };
     }

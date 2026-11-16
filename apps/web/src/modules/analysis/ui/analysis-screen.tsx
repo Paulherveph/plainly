@@ -15,12 +15,12 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
+import { PaywallDialog } from "@/modules/billing/ui/paywall-dialog";
 import type { ChatUIMessage } from "@/modules/chat/ui/chat-message";
 import { ChatPanel } from "@/modules/chat/ui/chat-panel";
 import type { MediaType } from "@/modules/documents/domain/document";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "@/shared/ui/button";
-import { PaywallDialog } from "@/modules/billing/ui/paywall-dialog";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/shared/ui/sheet";
 import type { Analysis, Cite, OutputLocale, PartialAnalysis } from "../domain/analysis";
 import { DocumentPreview } from "./document-preview";
@@ -82,7 +82,10 @@ export function AnalysisScreen({
   const [quotaOpen, setQuotaOpen] = useState(false);
 
   useEffect(() => {
-    if (state.status === "error" && (state.error === "quota_exceeded" || state.error === "insufficient_credits"))
+    if (
+      state.status === "error" &&
+      (state.error === "quota_exceeded" || state.error === "insufficient_credits")
+    )
       setQuotaOpen(true);
   }, [state]);
 
@@ -159,7 +162,9 @@ export function AnalysisScreen({
           {!confirmed ? (
             <section className="rounded-xl border bg-surface p-6" data-testid="confirm-cost">
               <h2 className="font-semibold">{t("confirmTitle")}</h2>
-              <p className="mt-1.5 text-muted-foreground text-sm">{t("confirmBody", { count: confirmCost ?? 0 })}</p>
+              <p className="mt-1.5 text-muted-foreground text-sm">
+                {t("confirmBody", { count: confirmCost ?? 0 })}
+              </p>
               <Button className="mt-4" onClick={() => setConfirmed(true)}>
                 {t("confirmStart")}
               </Button>
@@ -288,7 +293,10 @@ export function AnalysisScreen({
         onOpenChange={setQuotaOpen}
         reason={{
           kind: "insufficient_credits",
-          needed: state.status === "error" && typeof state.detail?.needed === "number" ? state.detail.needed : undefined,
+          needed:
+            state.status === "error" && typeof state.detail?.needed === "number"
+              ? state.detail.needed
+              : undefined,
         }}
       />
     </div>
@@ -363,7 +371,15 @@ const ERROR_KEYS: Record<string, string> = {
   quota_exceeded: "errorCredits",
 };
 
-function FailedCard({ error, incomplete, onRetry }: { error: string; incomplete: boolean; onRetry: () => void }) {
+function FailedCard({
+  error,
+  incomplete,
+  onRetry,
+}: {
+  error: string;
+  incomplete: boolean;
+  onRetry: () => void;
+}) {
   const t = useTranslations();
   const key = ERROR_KEYS[error];
   return (

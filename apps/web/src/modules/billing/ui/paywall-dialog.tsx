@@ -40,13 +40,16 @@ export function PaywallDialog({
 
   const guest = balance?.planId === "guest" || balance === null;
   const left = balance ? balance.planCredits + balance.packCredits : 0;
-  const reset = balance?.periodEnd ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" }) : null;
+  const reset = balance?.periodEnd
+    ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" })
+    : null;
   const buy = (productId: string) =>
     start(async () => {
       await checkoutAction({ productId, locale, back: window.location.pathname });
     });
 
-  if (signIn) return <SignInDialog open onOpenChange={(o) => !o && (setSignIn(false), onOpenChange(false))} />;
+  if (signIn)
+    return <SignInDialog open onOpenChange={(o) => !o && (setSignIn(false), onOpenChange(false))} />;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

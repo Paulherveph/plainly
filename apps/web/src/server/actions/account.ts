@@ -18,12 +18,18 @@ export async function updateProfileAction(input: unknown): Promise<Result<null, 
 }
 
 /** E12: type-to-confirm, then everything goes. The confirmation email is sent in the user's language. */
-export async function deleteAccountAction(input: { typed: string; locale: string }): Promise<Result<null, AppError>> {
+export async function deleteAccountAction(input: {
+  typed: string;
+  locale: string;
+}): Promise<Result<null, AppError>> {
   const c = await container();
   const user = await c.currentUser();
   if (!user || user.isAnonymous) return err({ kind: "unauthenticated" });
   if (!c.deleteAccount) return err({ kind: "db_failed" });
-  const t = await getTranslations({ locale: ["fr", "zh"].includes(input.locale) ? input.locale : "en", namespace: "Account" });
+  const t = await getTranslations({
+    locale: ["fr", "zh"].includes(input.locale) ? input.locale : "en",
+    namespace: "Account",
+  });
   const res = await c.deleteAccount({
     userId: user.id,
     email: user.email,

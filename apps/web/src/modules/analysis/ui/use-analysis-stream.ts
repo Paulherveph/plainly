@@ -84,7 +84,12 @@ export function useAnalysisStream(
               else setTimeout(() => alive.current && void run(mode, false), POLL_MS);
             } else {
               settled = true;
-              setState({ status: "error", error: line.error, detail: line.detail, partial: lastPartial.current });
+              setState({
+                status: "error",
+                error: line.error,
+                detail: line.detail,
+                partial: lastPartial.current,
+              });
             }
           }
         }

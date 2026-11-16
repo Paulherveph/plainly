@@ -1,8 +1,15 @@
 import "server-only";
-import { generateText, type LanguageModel, type LanguageModelUsage, type ModelMessage, Output, streamText } from "ai";
+import {
+  generateText,
+  type LanguageModel,
+  type LanguageModelUsage,
+  type ModelMessage,
+  Output,
+  streamText,
+} from "ai";
 import type { z } from "zod";
-import { logError } from "@/shared/lib/log";
 import { latestChannel } from "@/shared/lib/latest-channel";
+import { logError } from "@/shared/lib/log";
 import { err, ok } from "@/shared/lib/result";
 import type {
   AiCall,
@@ -62,7 +69,11 @@ type Deps = {
 };
 
 type AttemptOutput<T> = { value: T; usage: LanguageModelUsage | null };
-type Attempt<T> = (model: LanguageModel, messages: ModelMessage[], signal: AbortSignal) => Promise<AttemptOutput<T>>;
+type Attempt<T> = (
+  model: LanguageModel,
+  messages: ModelMessage[],
+  signal: AbortSignal,
+) => Promise<AttemptOutput<T>>;
 
 /**
  * Resolves a profile to an ordered model list, falls back on provider errors, keeps an
@@ -155,7 +166,9 @@ export class AiSdkGateway implements AiGateway {
         const remaining = deadline - Date.now();
         if (remaining <= 0) return err(lastError);
         attempts++;
-        const signal = call.signal ? AbortSignal.any([call.signal, AbortSignal.timeout(remaining)]) : AbortSignal.timeout(remaining);
+        const signal = call.signal
+          ? AbortSignal.any([call.signal, AbortSignal.timeout(remaining)])
+          : AbortSignal.timeout(remaining);
         const startedAt = Date.now();
         try {
           const model = (await this.factory(ref.provider))(ref.model);
@@ -176,7 +189,8 @@ export class AiSdkGateway implements AiGateway {
             action,
           );
           lastError = terminalError(action);
-          if (action === "aborted" || action === "refused" || action === "context_too_long") return err(lastError);
+          if (action === "aborted" || action === "refused" || action === "context_too_long")
+            return err(lastError);
           if (action === "repair" && !repaired) {
             repaired = true;
             messages = [...base, { role: "user", content: REPAIR_NOTE }];
@@ -208,7 +222,8 @@ export class AiSdkGateway implements AiGateway {
             .filter((r): r is ModelRef => r !== null && priceFor(r) !== null)
         : [];
     let list = fromFlag.length > 0 ? fromFlag : this.deps.profiles[call.profile];
-    if (call.degraded) list = [...list].sort((a, b) => (priceFor(a)?.inputPerM ?? 0) - (priceFor(b)?.inputPerM ?? 0));
+    if (call.degraded)
+      list = [...list].sort((a, b) => (priceFor(a)?.inputPerM ?? 0) - (priceFor(b)?.inputPerM ?? 0));
 
     const usable: ModelRef[] = [];
     for (const ref of list) {
@@ -219,7 +234,9 @@ export class AiSdkGateway implements AiGateway {
     const now = Date.now();
     const healthy = (r: ModelRef) => (this.degradedUntil.get(r.provider) ?? 0) <= now;
     // Degraded providers move to the end instead of disappearing (the breaker is advisory).
-    const ordered = [...usable.filter(healthy), ...usable.filter((r) => !healthy(r))].slice(call.startAt ?? 0);
+    const ordered = [...usable.filter(healthy), ...usable.filter((r) => !healthy(r))].slice(
+      call.startAt ?? 0,
+    );
     return ordered.length > 0 ? ordered : { kind: "unavailable" };
   }
 
@@ -301,7 +318,10 @@ class RefusalSignal extends Error {
 }
 
 /** Adding a provider: install its package, add a case here, a price row and an env key. */
-async function loadProvider(provider: ProviderName, apiKey: string | undefined): Promise<(id: string) => LanguageModel> {
+async function loadProvider(
+  provider: ProviderName,
+  apiKey: string | undefined,
+): Promise<(id: string) => LanguageModel> {
   switch (provider) {
     case "anthropic": {
       const { createAnthropic } = await import("@ai-sdk/anthropic");

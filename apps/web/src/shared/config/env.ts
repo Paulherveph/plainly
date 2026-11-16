@@ -27,7 +27,8 @@ const profile = (fallback: string) =>
         .map((v) => {
           const ref = parseModelRef(v);
           if (!ref) ctx.addIssue({ code: "custom", message: `Unknown provider in "${v}"` });
-          else if (!priceFor(ref)) ctx.addIssue({ code: "custom", message: `No price entry for "${v}" in ai/pricing.ts` });
+          else if (!priceFor(ref))
+            ctx.addIssue({ code: "custom", message: `No price entry for "${v}" in ai/pricing.ts` });
           return ref;
         })
         .filter((r): r is ModelRef => r !== null);
@@ -39,7 +40,10 @@ const PublicEnv = z.object({
   NEXT_PUBLIC_SUPABASE_URL: z.url(),
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: z.string().min(1),
   NEXT_PUBLIC_SITE_URL: z.url().default("http://localhost:3000"),
-  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.preprocess((v) => (v === "" ? undefined : v), z.string().min(1).optional()),
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: z.preprocess(
+    (v) => (v === "" ? undefined : v),
+    z.string().min(1).optional(),
+  ),
   NEXT_PUBLIC_SENTRY_DSN: z.preprocess((v) => (v === "" ? undefined : v), z.url().optional()),
   /** Shown in the footer and the Terms: who operates Plainly (company or sole proprietor). */
   NEXT_PUBLIC_OPERATOR: z.preprocess((v) => (v === "" ? undefined : v), z.string().max(200).optional()),
@@ -51,7 +55,12 @@ const ServerEnv = PublicEnv.extend({
   AI_PROVIDERS_ALLOWED: z
     .string()
     .default("anthropic")
-    .transform((v) => v.split(",").map((p) => p.trim()).filter(Boolean))
+    .transform((v) =>
+      v
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean),
+    )
     .pipe(z.array(z.enum(SUPPORTED_PROVIDERS)).min(1)),
   AI_PROFILE_ANALYSIS: profile("anthropic:claude-sonnet-5-5"),
   AI_PROFILE_CHAT: profile("anthropic:claude-haiku-5-5,anthropic:claude-sonnet-5-5"),

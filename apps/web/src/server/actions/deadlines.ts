@@ -27,7 +27,9 @@ const AddInput = z.object({
 });
 
 /** Turns a relative or ambiguous deadline into a dated one with the date the user picked. */
-export async function addDeadlineFromActionAction(input: z.input<typeof AddInput>): Promise<Result<null, AppError>> {
+export async function addDeadlineFromActionAction(
+  input: z.input<typeof AddInput>,
+): Promise<Result<null, AppError>> {
   const parsed = AddInput.safeParse(input);
   if (!parsed.success) return err({ kind: "invalid_input", reason: "empty" });
   const c = await container();

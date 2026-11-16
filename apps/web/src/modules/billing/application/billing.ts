@@ -17,11 +17,13 @@ export function makeStartCheckout(deps: { provider: BillingProvider; plans: Plan
     const plans = await deps.plans.listPlans();
     if (!plans.ok) return plans;
     const product = plans.value.find((p) => p.id === input.productId);
-    if (!product || (product.kind !== "subscription" && product.kind !== "pack")) return err({ kind: "not_found" });
+    if (!product || (product.kind !== "subscription" && product.kind !== "pack"))
+      return err({ kind: "not_found" });
     if (product.kind === "pack") {
       const mine = await deps.plans.myPlan();
       if (!mine.ok) return mine;
-      if (!mine.value.entitlements.packs) return err({ kind: "feature_not_in_plan", feature: "credit_packs" });
+      if (!mine.value.entitlements.packs)
+        return err({ kind: "feature_not_in_plan", feature: "credit_packs" });
     }
     return deps.provider.createCheckout({
       userId: input.userId,

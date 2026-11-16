@@ -34,7 +34,8 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
   // Never cache API responses, originals, auth flows or the billing simulator.
-  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/") || url.pathname.includes("/dev/")) return;
+  if (url.pathname.startsWith("/api/") || url.pathname.startsWith("/auth/") || url.pathname.includes("/dev/"))
+    return;
 
   if (request.mode === "navigate" && isAppPage(url)) {
     event.respondWith(networkFirst(request));

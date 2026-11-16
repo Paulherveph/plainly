@@ -84,7 +84,8 @@ console.log(JSON.stringify(report, null, 2));
 console.log(
   `\nMedian analysis ${usd(report.analysis.medianCostUsd * 1e6)}, chat message ${usd(report.chat.medianCostUsd * 1e6)}`,
 );
-for (const line of impliedMargins(report.analysis.medianCostUsd, report.chat.medianCostUsd)) console.log(line);
+for (const line of impliedMargins(report.analysis.medianCostUsd, report.chat.medianCostUsd))
+  console.log(line);
 
 const baselineFile = join(process.cwd(), "evals", "baseline.json");
 if (process.argv.includes("--update-baseline")) {
@@ -93,8 +94,13 @@ if (process.argv.includes("--update-baseline")) {
   console.log(`Baseline updated: ${baselineFile}`);
 } else if (existsSync(baselineFile) && report.analysis.count > 0) {
   const baseline = JSON.parse(readFileSync(baselineFile, "utf8")) as { medianAnalysisCostUsd: number };
-  if (baseline.medianAnalysisCostUsd > 0 && report.analysis.medianCostUsd > baseline.medianAnalysisCostUsd * 1.25) {
-    console.error(`Cost per analysis grew more than 25% over the baseline (${baseline.medianAnalysisCostUsd}).`);
+  if (
+    baseline.medianAnalysisCostUsd > 0 &&
+    report.analysis.medianCostUsd > baseline.medianAnalysisCostUsd * 1.25
+  ) {
+    console.error(
+      `Cost per analysis grew more than 25% over the baseline (${baseline.medianAnalysisCostUsd}).`,
+    );
     process.exit(1);
   }
 }

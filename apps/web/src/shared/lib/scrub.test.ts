@@ -16,8 +16,15 @@ describe("error event scrubbing (S6, G05)", () => {
       },
       user: { id: "u1", email: "a@b.c", ip_address: "1.2.3.4" },
       extra: { prompt: secret },
-      breadcrumbs: [{ category: "fetch", level: "info", timestamp: 1, message: secret, data: { body: secret } }],
-      exception: { values: [{ type: "Error", value: secret }, { type: "Error", value: "ai_failed" }] },
+      breadcrumbs: [
+        { category: "fetch", level: "info", timestamp: 1, message: secret, data: { body: secret } },
+      ],
+      exception: {
+        values: [
+          { type: "Error", value: secret },
+          { type: "Error", value: "ai_failed" },
+        ],
+      },
       contexts: { runtime: { name: "node" }, state: { doc: secret } },
     });
     const json = JSON.stringify(event);

@@ -6,12 +6,21 @@ import type { CreditStore, PlanReader } from "./ports";
 
 function setup(planId: string, ent: Partial<Entitlements>, available: number, holdId: string | null = "h") {
   const plans: PlanReader = {
-    myPlan: async () => ok({ planId, entitlements: Entitlements.parse({ credits: 24, ...ent }), emailVerified: true }),
+    myPlan: async () =>
+      ok({ planId, entitlements: Entitlements.parse({ credits: 24, ...ent }), emailVerified: true }),
     listPlans: async () => ok([]),
   };
   const credits: CreditStore = {
     balance: async () =>
-      ok({ planId, planCredits: available, packCredits: 0, planTotal: 24, periodEnd: null, lowNudged: false, emailVerified: true }),
+      ok({
+        planId,
+        planCredits: available,
+        packCredits: 0,
+        planTotal: 24,
+        periodEnd: null,
+        lowNudged: false,
+        emailVerified: true,
+      }),
     reserve: vi.fn(async () => ok({ holdId, available })),
     settle: vi.fn(async () => {}),
     release: vi.fn(async () => {}),
@@ -49,7 +58,15 @@ describe("EntitlementService", () => {
   });
 
   it("nudges at 20% left, once per period", () => {
-    const b = { planId: "free", planCredits: 4, packCredits: 0, planTotal: 24, periodEnd: null, lowNudged: false, emailVerified: true };
+    const b = {
+      planId: "free",
+      planCredits: 4,
+      packCredits: 0,
+      planTotal: 24,
+      periodEnd: null,
+      lowNudged: false,
+      emailVerified: true,
+    };
     expect(shouldNudge(b)).toBe(true);
     expect(shouldNudge({ ...b, lowNudged: true })).toBe(false);
     expect(shouldNudge({ ...b, planCredits: 10 })).toBe(false);

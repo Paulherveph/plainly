@@ -38,7 +38,11 @@ export function classifyFailure(s: FailureSignal): FailureAction {
     message.includes("context window")
   )
     return "context_too_long";
-  if (s.name === "AI_NoObjectGeneratedError" || s.name === "AI_TypeValidationError" || s.name === "AI_JSONParseError")
+  if (
+    s.name === "AI_NoObjectGeneratedError" ||
+    s.name === "AI_TypeValidationError" ||
+    s.name === "AI_JSONParseError"
+  )
     return "repair";
   return "next_model";
 }

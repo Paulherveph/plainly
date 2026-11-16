@@ -8,7 +8,11 @@ import { FIXTURES } from "./fake-fixtures";
 export function fakeAnalysisPartials(draft: AnalysisDraft): PartialAnalysis[] {
   const out: PartialAnalysis[] = [];
   const words = draft.summary.split(/(?<=\s)/);
-  const current: PartialAnalysis = { documentType: draft.documentType, language: draft.language, summary: "" };
+  const current: PartialAnalysis = {
+    documentType: draft.documentType,
+    language: draft.language,
+    summary: "",
+  };
   for (let i = 0; i < words.length; i += 3) {
     current.summary = words.slice(0, i + 3).join("");
     out.push(structuredClone(current));

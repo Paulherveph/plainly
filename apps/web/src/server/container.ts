@@ -1,5 +1,9 @@
 import "server-only";
-import { makeDeleteAccount, makeExportData, makeUpdateProfile } from "@/modules/accounts/application/use-cases";
+import {
+  makeDeleteAccount,
+  makeExportData,
+  makeUpdateProfile,
+} from "@/modules/accounts/application/use-cases";
 import { fflateZipper } from "@/modules/accounts/infrastructure/fflate-zipper";
 import { SupabaseAccountAdmin } from "@/modules/accounts/infrastructure/supabase-account-admin";
 import { SupabaseAccountData } from "@/modules/accounts/infrastructure/supabase-account-data";
@@ -10,6 +14,11 @@ import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analy
 import { SupabaseAnalysisCache } from "@/modules/analysis/infrastructure/supabase-analysis-cache";
 import { SupabaseAnalysisRepository } from "@/modules/analysis/infrastructure/supabase-analysis-repository";
 import { SupabaseJobStore } from "@/modules/analysis/infrastructure/supabase-job-store";
+import { makeCancelForDeletion, makeStartCheckout } from "@/modules/billing/application/billing";
+import { makeEntitlements } from "@/modules/billing/application/entitlement-service";
+import { CREDIT_COSTS } from "@/modules/billing/domain/credits.config";
+import { SupabaseCreditStore } from "@/modules/billing/infrastructure/supabase-credit-store";
+import { SupabasePlanRepository } from "@/modules/billing/infrastructure/supabase-plan-repository";
 import { makeAnswerQuestion } from "@/modules/chat/application/answer-question";
 import { GatewayAnswerer } from "@/modules/chat/infrastructure/gateway-answerer";
 import { SupabaseMessageRepository } from "@/modules/chat/infrastructure/supabase-message-repository";
@@ -23,25 +32,24 @@ import {
 import { SupabaseDeadlineRepository } from "@/modules/deadlines/infrastructure/supabase-deadline-repository";
 import { makeDeleteDocument } from "@/modules/documents/application/delete-document";
 import { makeDeleteEverything } from "@/modules/documents/application/delete-everything";
-import { makeGetDocument, makeListDocuments, makeReadOriginal } from "@/modules/documents/application/queries";
+import {
+  makeGetDocument,
+  makeListDocuments,
+  makeReadOriginal,
+} from "@/modules/documents/application/queries";
 import { makeUploadDocument } from "@/modules/documents/application/upload-document";
 import { FsSampleLibrary } from "@/modules/documents/infrastructure/fs-sample-library";
 import { SupabaseDocumentRepository } from "@/modules/documents/infrastructure/supabase-document-repository";
 import { SupabaseFileStore } from "@/modules/documents/infrastructure/supabase-file-store";
 import { UnpdfTextExtractor } from "@/modules/documents/infrastructure/unpdf-text-extractor";
-import { makeCancelForDeletion, makeStartCheckout } from "@/modules/billing/application/billing";
-import { makeEntitlements } from "@/modules/billing/application/entitlement-service";
-import { CREDIT_COSTS } from "@/modules/billing/domain/credits.config";
-import { SupabaseCreditStore } from "@/modules/billing/infrastructure/supabase-credit-store";
-import { SupabasePlanRepository } from "@/modules/billing/infrastructure/supabase-plan-repository";
+import { serverEnv } from "@/shared/config/env";
 import { sha256Hex, webHasher } from "@/shared/lib/hash";
 import { ok } from "@/shared/lib/result";
-import { serverEnv } from "@/shared/config/env";
 import { admission, aiGateway, profileVersion } from "./ai";
 import { billingProvider, billingStore } from "./billing";
 import { ResendMailer } from "./resend-mailer";
-import { createSupabaseAdmin } from "./supabase-admin";
 import { createSupabase, getSessionUser } from "./supabase";
+import { createSupabaseAdmin } from "./supabase-admin";
 
 /**
  * Composition root: wires adapters to ports for one request.
@@ -67,9 +75,12 @@ export async function container() {
   const store = billingStore();
   const profiles = new SupabaseProfileRepository(supabase);
   const env = serverEnv();
-  const mailer = env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null;
+  const mailer =
+    env.RESEND_API_KEY && env.EMAIL_FROM ? new ResendMailer(env.RESEND_API_KEY, env.EMAIL_FROM) : null;
   const adminClient = createSupabaseAdmin();
-  const accountAdmin = adminClient ? new SupabaseAccountAdmin(adminClient, new SupabaseFileStore(adminClient)) : null;
+  const accountAdmin = adminClient
+    ? new SupabaseAccountAdmin(adminClient, new SupabaseFileStore(adminClient))
+    : null;
 
   return {
     currentUser,
@@ -123,7 +134,10 @@ export async function container() {
     listMessages: messages.list.bind(messages),
     listDeadlines: makeListDeadlines({ deadlines }),
     setDeadlineDone: makeSetDeadlineDone({ deadlines }),
-    addDeadlineFromAction: makeAddDeadlineFromAction({ deadlines, findAnalysis: analyses.find.bind(analyses) }),
+    addDeadlineFromAction: makeAddDeadlineFromAction({
+      deadlines,
+      findAnalysis: analyses.find.bind(analyses),
+    }),
     exportDeadlines: makeExportDeadlines({ deadlines, now: () => new Date() }),
     getProfile: profiles.get.bind(profiles),
     /** Linked sign-in methods for the Security tab (no tokens, provider names only). */

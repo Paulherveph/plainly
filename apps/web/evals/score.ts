@@ -108,9 +108,13 @@ export function failures(s: Summary, relaxedSchema = false): string[] {
   const out: string[] = [];
   const schema = relaxedSchema ? THRESHOLDS.schemaFirstTryRelaxed : THRESHOLDS.schemaFirstTry;
   if (s.schemaFirstTry < schema) out.push(`schema valid on first try ${s.schemaFirstTry}% < ${schema}%`);
-  if (s.quotePassRate < THRESHOLDS.quotePassRate) out.push(`quote pass rate ${s.quotePassRate}% < ${THRESHOLDS.quotePassRate}%`);
-  if (s.deadlineRecall < THRESHOLDS.deadlineRecall) out.push(`deadline recall ${s.deadlineRecall}% < ${THRESHOLDS.deadlineRecall}%`);
-  if (s.inventedDeadlines > THRESHOLDS.inventedDeadlines) out.push(`invented deadlines ${s.inventedDeadlines} > 0`);
-  if (s.correctRefusals < THRESHOLDS.correctRefusals) out.push(`correct refusals ${s.correctRefusals}% < ${THRESHOLDS.correctRefusals}%`);
+  if (s.quotePassRate < THRESHOLDS.quotePassRate)
+    out.push(`quote pass rate ${s.quotePassRate}% < ${THRESHOLDS.quotePassRate}%`);
+  if (s.deadlineRecall < THRESHOLDS.deadlineRecall)
+    out.push(`deadline recall ${s.deadlineRecall}% < ${THRESHOLDS.deadlineRecall}%`);
+  if (s.inventedDeadlines > THRESHOLDS.inventedDeadlines)
+    out.push(`invented deadlines ${s.inventedDeadlines} > 0`);
+  if (s.correctRefusals < THRESHOLDS.correctRefusals)
+    out.push(`correct refusals ${s.correctRefusals}% < ${THRESHOLDS.correctRefusals}%`);
   return out;
 }

@@ -36,10 +36,13 @@ export async function POST(request: Request) {
   const line = (obj: unknown) => encoder.encode(`${JSON.stringify(obj)}\n`);
 
   if (!outcome.ok) {
-    return new Response(line({ type: "error", error: outcome.error.kind, detail: errorDetail(outcome.error) }), {
-      status: httpStatus(outcome.error.kind),
-      headers: ndjsonHeaders,
-    });
+    return new Response(
+      line({ type: "error", error: outcome.error.kind, detail: errorDetail(outcome.error) }),
+      {
+        status: httpStatus(outcome.error.kind),
+        headers: ndjsonHeaders,
+      },
+    );
   }
 
   const value = outcome.value;

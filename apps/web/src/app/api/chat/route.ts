@@ -49,7 +49,8 @@ export async function POST(request: Request) {
     retry: body.data.trigger === "regenerate-message",
     signal: request.signal,
   });
-  if (!outcome.ok) return Response.json({ error: outcome.error.kind }, { status: httpStatus(outcome.error.kind) });
+  if (!outcome.ok)
+    return Response.json({ error: outcome.error.kind }, { status: httpStatus(outcome.error.kind) });
 
   const value = outcome.value;
   const stream = createUIMessageStream<ChatUIMessage>({
@@ -60,7 +61,8 @@ export async function POST(request: Request) {
 
       if (value.kind === "stored") {
         // C09: same question as before, answered from storage for 0 credits.
-        if (value.answer.kind === "answer") writer.write({ type: "text-delta", id, delta: value.answer.text });
+        if (value.answer.kind === "answer")
+          writer.write({ type: "text-delta", id, delta: value.answer.text });
         writer.write({ type: "text-end", id });
         writer.write({
           type: "data-citations",

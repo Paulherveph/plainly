@@ -44,7 +44,13 @@ export class SupabaseAnalysisRepository implements AnalysisRepository {
     const analysis = Analysis.safeParse(data.result);
     const locale = LOCALES.find((l) => l === data.locale);
     if (!analysis.success || !locale) return ok(null);
-    return ok({ documentId, locale, analysis: analysis.data, dropped: data.dropped_claims, model: data.model });
+    return ok({
+      documentId,
+      locale,
+      analysis: analysis.data,
+      dropped: data.dropped_claims,
+      model: data.model,
+    });
   }
 
   async save(userId: string, a: StoredAnalysis): Promise<Result<null, AppError>> {

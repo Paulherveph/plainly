@@ -28,5 +28,8 @@ export async function POST(request: NextRequest) {
   });
   log("document.shared", { ok: created.ok });
   if (!created.ok) return NextResponse.redirect(fallback, 303);
-  return NextResponse.redirect(new URL(`/${locale}/documents/${created.value.id}`, request.nextUrl.origin), 303);
+  return NextResponse.redirect(
+    new URL(`/${locale}/documents/${created.value.id}`, request.nextUrl.origin),
+    303,
+  );
 }

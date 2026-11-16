@@ -22,7 +22,12 @@ export class FakeAiGateway implements AiGateway {
 
   constructor(
     private readonly respond: FakeResponder,
-    private readonly opts: { usage?: UsageRecorder; stepMs?: number; script?: FakeScript; models?: string[] } = {},
+    private readonly opts: {
+      usage?: UsageRecorder;
+      stepMs?: number;
+      script?: FakeScript;
+      models?: string[];
+    } = {},
   ) {}
 
   streamObject<T>(call: AiCall & { schema: z.ZodType<T> }): AiStream<T> {
@@ -75,7 +80,12 @@ export class FakeAiGateway implements AiGateway {
     return err({ kind: "unavailable" });
   }
 
-  private async record(call: AiCall, model: string, status: "ok" | "failed" | "aborted", errorKind: string | null) {
+  private async record(
+    call: AiCall,
+    model: string,
+    status: "ok" | "failed" | "aborted",
+    errorKind: string | null,
+  ) {
     await this.opts.usage?.record({
       ...ZERO_USAGE,
       userId: call.userId,

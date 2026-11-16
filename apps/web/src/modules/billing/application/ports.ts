@@ -20,7 +20,10 @@ export type LedgerEntry = { delta: number; bucket: "plan" | "pack"; reason: stri
 /** The session user's credits. All writes go through SQL functions with idempotency keys. */
 export interface CreditStore {
   balance(): Promise<Result<CreditBalance, AppError>>;
-  reserve(amount: number, key: string): Promise<Result<{ holdId: string | null; available: number }, AppError>>;
+  reserve(
+    amount: number,
+    key: string,
+  ): Promise<Result<{ holdId: string | null; available: number }, AppError>>;
   settle(holdId: string, amount: number): Promise<void>;
   release(holdId: string): Promise<void>;
   ledger(limit: number): Promise<Result<LedgerEntry[], AppError>>;
@@ -55,9 +58,11 @@ export interface BillingProvider {
     locale: "en" | "fr" | "zh";
     returnUrl: string;
   }): Promise<Result<{ url: string }, BillingError>>;
-  createPortalSession(input: { userId: string; locale: "en" | "fr" | "zh"; returnUrl: string }): Promise<
-    Result<{ url: string }, BillingError>
-  >;
+  createPortalSession(input: {
+    userId: string;
+    locale: "en" | "fr" | "zh";
+    returnUrl: string;
+  }): Promise<Result<{ url: string }, BillingError>>;
   /** Verifies the signature, then parses the provider payload into our event type. */
   parseWebhook(req: Request): Promise<Result<{ event: BillingEvent; raw: unknown }, BillingError>>;
   cancelSubscription(subscriptionId: string): Promise<Result<null, BillingError>>;
@@ -70,12 +75,20 @@ export interface BillingStore {
   /** Inserts the event by provider id; false when it was already recorded (duplicate delivery). */
   recordEvent(provider: string, event: BillingEvent, raw: unknown): Promise<Result<boolean, AppError>>;
   markProcessed(provider: string, eventId: string): Promise<void>;
-  findSubscription(provider: string, subscriptionId: string): Promise<Result<StoredSubscription | null, AppError>>;
+  findSubscription(
+    provider: string,
+    subscriptionId: string,
+  ): Promise<Result<StoredSubscription | null, AppError>>;
   saveSubscription(
     provider: string,
     input: { userId: string | null; subscriptionId: string; customerId: string | null; state: Subscription },
   ): Promise<Result<null, AppError>>;
   activeSubscriptionIds(userId: string): Promise<Result<string[], AppError>>;
   grantPack(userId: string, credits: number, key: string): Promise<Result<boolean, AppError>>;
-  reverse(userId: string, bucket: "plan" | "pack", credits: number, key: string): Promise<Result<number, AppError>>;
+  reverse(
+    userId: string,
+    bucket: "plan" | "pack",
+    credits: number,
+    key: string,
+  ): Promise<Result<number, AppError>>;
 }

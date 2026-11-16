@@ -1,5 +1,5 @@
-import { DocumentInputSkeleton, LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { CreditSkeleton } from "@/modules/billing/ui/credit-skeleton";
+import { DocumentInputSkeleton, LibrarySkeleton } from "@/modules/documents/ui/library-skeleton";
 import { PageHeadSkeleton, SkeletonRegion } from "@/shared/ui/skeleton";
 
 export default function Loading() {

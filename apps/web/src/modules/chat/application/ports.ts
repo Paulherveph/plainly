@@ -40,7 +40,11 @@ export interface DocumentAnswerer {
     ctx: AiContext;
   }): AnswerRun;
   /** Rolling summary of older turns with the fast profile. */
-  summarize(input: { turns: readonly ChatTurn[]; previous: string | null; ctx: AiContext }): Promise<Result<string, AppError>>;
+  summarize(input: {
+    turns: readonly ChatTurn[];
+    previous: string | null;
+    ctx: AiContext;
+  }): Promise<Result<string, AppError>>;
 }
 
 export interface MessageRepository {
@@ -48,7 +52,13 @@ export interface MessageRepository {
   append(
     userId: string,
     documentId: string,
-    message: { role: "user" | "assistant"; text: string; citations: Cite[]; refused: boolean; questionHash?: string },
+    message: {
+      role: "user" | "assistant";
+      text: string;
+      citations: Cite[];
+      refused: boolean;
+      questionHash?: string;
+    },
   ): Promise<Result<null, AppError>>;
   /** The stored assistant answer to the same normalized question, if any. */
   findAnswer(documentId: string, questionHash: string): Promise<StoredMessage | null>;

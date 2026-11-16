@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { CheckoutStatus } from "@/modules/billing/ui/checkout-status";
 
-export async function generateMetadata({ params }: PageProps<"/[locale]/billing/success">): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps<"/[locale]/billing/success">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Billing" });
   return { title: t("successTitle"), robots: { index: false } };

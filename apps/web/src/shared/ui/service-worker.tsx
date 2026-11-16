@@ -31,7 +31,8 @@ export function ServiceWorker() {
     >
       <WifiOffIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <p>
-        <span className="font-medium">{t("title")}.</span> <span className="text-muted-foreground">{t("body")}</span>
+        <span className="font-medium">{t("title")}.</span>{" "}
+        <span className="text-muted-foreground">{t("body")}</span>
       </p>
     </div>
   );

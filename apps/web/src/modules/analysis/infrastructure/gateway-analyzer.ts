@@ -31,7 +31,9 @@ const TranscriptSchema = z.object({
 /** Input caps per call (characters). Rejected before any provider call. */
 const MAX_INPUT = { analysis: 420_000, classify: 4_000, transcribe: 4_000, translate: 40_000 } as const;
 
-const base = (ctx: AiContext): Pick<AiCall, "requestId" | "userId" | "documentId" | "signal" | "degraded"> => ({
+const base = (
+  ctx: AiContext,
+): Pick<AiCall, "requestId" | "userId" | "documentId" | "signal" | "degraded"> => ({
   requestId: ctx.requestId,
   userId: ctx.userId,
   documentId: ctx.documentId,
@@ -122,7 +124,11 @@ export class GatewayAnalyzer implements DocumentAnalyzer {
     return hasText ? ok(out) : err({ kind: "invalid_input", reason: "unreadable" });
   }
 
-  async translate(input: { analysis: Analysis; to: OutputLocale; ctx: AiContext }): Promise<Result<Analysis, AppError>> {
+  async translate(input: {
+    analysis: Analysis;
+    to: OutputLocale;
+    ctx: AiContext;
+  }): Promise<Result<Analysis, AppError>> {
     const res = await this.ai.generateObject({
       ...base(input.ctx),
       profile: "translate",

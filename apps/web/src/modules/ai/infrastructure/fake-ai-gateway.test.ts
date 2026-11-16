@@ -37,7 +37,10 @@ describe("FakeAiGateway (fallback drill shape)", () => {
   });
 
   it("returns unavailable when every model fails", async () => {
-    const gw = new FakeAiGateway(() => ({ value: 1 }), { models: ["a", "b"], script: { failModels: new Set(["a", "b"]) } });
+    const gw = new FakeAiGateway(() => ({ value: 1 }), {
+      models: ["a", "b"],
+      script: { failModels: new Set(["a", "b"]) },
+    });
     const res = await gw.generateText(call());
     expect(res).toEqual({ ok: false, error: { kind: "unavailable" } });
   });
@@ -47,7 +50,10 @@ describe("FakeAiGateway (fallback drill shape)", () => {
     const controller = new AbortController();
     controller.abort();
     const gw = new FakeAiGateway(() => ({ value: { a: 1 }, partials: [{}, { a: 1 }] }), { usage });
-    const run = gw.streamObject({ ...call({ signal: controller.signal }), schema: z.object({ a: z.number() }) });
+    const run = gw.streamObject({
+      ...call({ signal: controller.signal }),
+      schema: z.object({ a: z.number() }),
+    });
     const res = await run.final;
     expect(res).toEqual({ ok: false, error: { kind: "aborted" } });
     expect(usage.rows[0]?.status).toBe("aborted");

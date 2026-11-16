@@ -2,10 +2,10 @@ import { writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { FakeAiGateway } from "@/modules/ai/infrastructure/fake-ai-gateway";
-import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analyzer";
 import { draftFor, fakeAnalysisPartials } from "@/modules/analysis/infrastructure/fake-analyzer";
-import { fakeChatDraft } from "@/modules/chat/infrastructure/fake-answerer";
+import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analyzer";
 import { groundAnswer } from "@/modules/chat/domain/grounding";
+import { fakeChatDraft } from "@/modules/chat/infrastructure/fake-answerer";
 import { EVAL_DIR, loadEvalDocs, loadUnanswerable, scoreDoc, summarize } from "./score";
 
 /**
@@ -32,7 +32,15 @@ describe("analysis evals (fake gateway)", () => {
       const final = await run.final;
       expect(final.ok).toBe(true);
       if (!final.ok) continue;
-      scores.push(scoreDoc({ doc, draft: final.value.draft, attempts: final.value.usage.attempts, costMicros: 0, latencyMs: 0 }));
+      scores.push(
+        scoreDoc({
+          doc,
+          draft: final.value.draft,
+          attempts: final.value.usage.attempts,
+          costMicros: 0,
+          latencyMs: 0,
+        }),
+      );
     }
     const docsByName = new Map(docs.map((d) => [d.name, d]));
     const questions = loadUnanswerable();

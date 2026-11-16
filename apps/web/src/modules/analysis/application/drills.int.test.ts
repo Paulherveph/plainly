@@ -29,7 +29,9 @@ if (existsSync(envFile)) process.loadEnvFile(envFile);
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "http://127.0.0.1:54325";
 const ANON = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 const SERVICE = process.env.SUPABASE_SECRET_KEY ?? "";
-const PAGES = ["The Tenant shall pay a security deposit of €1,700 no later than 20 November 2026. ".repeat(3)];
+const PAGES = [
+  "The Tenant shall pay a security deposit of €1,700 no later than 20 November 2026. ".repeat(3),
+];
 
 describe("drills", () => {
   const admin = createClient<Database>(URL, SERVICE, { auth: { persistSession: false } });
@@ -72,9 +74,16 @@ describe("drills", () => {
         call.task === "classify"
           ? { value: { official: true, language: "en" } }
           : { value: draftFor(PAGES, "en") },
-      { usage, models: ["primary", "secondary"], script: failPrimary ? { failModels: new Set(["primary"]) } : undefined },
+      {
+        usage,
+        models: ["primary", "secondary"],
+        script: failPrimary ? { failModels: new Set(["primary"]) } : undefined,
+      },
     );
-    const entitlements = makeEntitlements({ plans: new SupabasePlanRepository(db), credits: new SupabaseCreditStore(db) });
+    const entitlements = makeEntitlements({
+      plans: new SupabasePlanRepository(db),
+      credits: new SupabaseCreditStore(db),
+    });
     const admission = makeAdmission({
       usage,
       activity: new SupabaseActivityReader(db),
@@ -119,7 +128,11 @@ describe("drills", () => {
       ["primary", "failed"],
       ["secondary", "ok"],
     ]);
-    const holds = await admin.from("credit_holds").select("status").eq("user_id", userId).eq("status", "settled");
+    const holds = await admin
+      .from("credit_holds")
+      .select("status")
+      .eq("user_id", userId)
+      .eq("status", "settled");
     expect(holds.data?.length).toBe(1);
   });
 
@@ -134,11 +147,20 @@ describe("drills", () => {
       cost_micros_usd: 2_000_000,
       status: "ok",
     });
-    const before = await admin.from("credit_holds").select("id", { count: "exact", head: true }).eq("user_id", userId);
+    const before = await admin
+      .from("credit_holds")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
     const documentId = await newDocument();
-    const outcome = await analyzer(1, false)({ userId, documentId, locale: "en", requestId: `drill-${crypto.randomUUID()}` });
+    const outcome = await analyzer(
+      1,
+      false,
+    )({ userId, documentId, locale: "en", requestId: `drill-${crypto.randomUUID()}` });
     expect(outcome).toEqual({ ok: false, error: { kind: "capacity" } });
-    const after = await admin.from("credit_holds").select("id", { count: "exact", head: true }).eq("user_id", userId);
+    const after = await admin
+      .from("credit_holds")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId);
     expect(after.count).toBe(before.count);
   });
 });

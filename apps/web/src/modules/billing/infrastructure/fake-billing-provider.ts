@@ -80,12 +80,24 @@ export class FakeBillingProvider implements BillingProvider {
     const productId = input.planId ?? input.packId;
     if (!productId) return err({ kind: "billing_failed" as const });
     const kind = input.packId ? "pack" : "plan";
-    return ok({ url: await this.sessionUrl(input.locale, { userId: input.userId, productId, kind, returnUrl: input.returnUrl }) });
+    return ok({
+      url: await this.sessionUrl(input.locale, {
+        userId: input.userId,
+        productId,
+        kind,
+        returnUrl: input.returnUrl,
+      }),
+    });
   }
 
   async createPortalSession(input: Parameters<BillingProvider["createPortalSession"]>[0]) {
     return ok({
-      url: await this.sessionUrl(input.locale, { userId: input.userId, productId: "", kind: "portal", returnUrl: input.returnUrl }),
+      url: await this.sessionUrl(input.locale, {
+        userId: input.userId,
+        productId: "",
+        kind: "portal",
+        returnUrl: input.returnUrl,
+      }),
     });
   }
 

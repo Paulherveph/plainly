@@ -14,7 +14,14 @@ export type AiPart =
 export type AiMessage = { role: "user" | "assistant"; content: string | AiPart[] };
 
 /** What the call is for. Lets fakes answer deterministically; never sent to a provider. */
-export type AiTask = "analyze" | "classify" | "transcribe" | "chat" | "summarize_history" | "translate" | "eval";
+export type AiTask =
+  | "analyze"
+  | "classify"
+  | "transcribe"
+  | "chat"
+  | "summarize_history"
+  | "translate"
+  | "eval";
 
 export type AiCall = {
   profile: Profile;

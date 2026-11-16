@@ -17,7 +17,11 @@ export class SupabasePlanRepository implements PlanReader {
     if (error || !data) return err({ kind: "db_failed" as const });
     const entitlements = Entitlements.safeParse(data.entitlements);
     if (!entitlements.success) return err({ kind: "db_failed" as const });
-    return ok({ planId: data.plan_id, entitlements: entitlements.data, emailVerified: data.email_verified === true });
+    return ok({
+      planId: data.plan_id,
+      entitlements: entitlements.data,
+      emailVerified: data.email_verified === true,
+    });
   }
 
   async listPlans(): Promise<Result<PlanRow[], AppError>> {

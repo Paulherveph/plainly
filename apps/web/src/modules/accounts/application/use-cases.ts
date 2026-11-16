@@ -3,7 +3,13 @@ import { log, logError } from "@/shared/lib/log";
 import type { Mailer } from "@/shared/lib/mailer";
 import { err, ok, type Result } from "@/shared/lib/result";
 import { confirmsDeletion, ProfilePatch, rehomePath } from "../domain/profile";
-import type { AccountAdmin, AccountDataReader, ProfileRepository, SubscriptionCanceller, Zipper } from "./ports";
+import type {
+  AccountAdmin,
+  AccountDataReader,
+  ProfileRepository,
+  SubscriptionCanceller,
+  Zipper,
+} from "./ports";
 
 export function makeUpdateProfile(deps: { profiles: ProfileRepository }) {
   return async (userId: string, input: unknown): Promise<Result<null, AppError>> => {
@@ -18,7 +24,10 @@ export function makeUpdateProfile(deps: { profiles: ProfileRepository }) {
  * then one SQL transaction moves every row and deletes the guest.
  */
 export function makeMergeGuest(deps: { admin: AccountAdmin }) {
-  return async (input: { guestId: string; userId: string }): Promise<Result<{ documents: number }, AppError>> => {
+  return async (input: {
+    guestId: string;
+    userId: string;
+  }): Promise<Result<{ documents: number }, AppError>> => {
     if (input.guestId === input.userId) return ok({ documents: 0 });
     if (!(await deps.admin.isGuest(input.guestId))) return err({ kind: "not_found" });
 
@@ -55,8 +64,16 @@ export function makeExportData(deps: { data: AccountDataReader; zipper: Zipper }
     if (!originals.ok) return originals;
     const json = (value: unknown) => new TextEncoder().encode(`${JSON.stringify(value, null, 2)}\n`);
     const entries = [
-      { path: "README.txt", bytes: new TextEncoder().encode("Your Plainly data: one JSON file per table, and your original files.\n") },
-      ...Object.entries(tables.value).map(([name, rows]) => ({ path: `data/${name}.json`, bytes: json(rows) })),
+      {
+        path: "README.txt",
+        bytes: new TextEncoder().encode(
+          "Your Plainly data: one JSON file per table, and your original files.\n",
+        ),
+      },
+      ...Object.entries(tables.value).map(([name, rows]) => ({
+        path: `data/${name}.json`,
+        bytes: json(rows),
+      })),
       ...originals.value.map((o) => ({ path: `originals/${o.path}`, bytes: o.bytes })),
     ];
     log("account.exported", { files: originals.value.length });

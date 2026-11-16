@@ -4,7 +4,6 @@ import { Trash2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { clearOfflineCache } from "./service-worker";
 import { deleteEverythingAction } from "@/server/actions/documents";
 import {
   AlertDialog,
@@ -18,6 +17,7 @@ import {
   AlertDialogTrigger,
 } from "./alert-dialog";
 import { Button } from "./button";
+import { clearOfflineCache } from "./service-worker";
 
 export function DeleteEverything() {
   const t = useTranslations("Privacy");
@@ -33,8 +33,7 @@ export function DeleteEverything() {
       if (res.ok) {
         clearOfflineCache();
         toast.success(t("deleted"));
-      }
-      else toast.error(t("deleteFailed"));
+      } else toast.error(t("deleteFailed"));
     });
   }
 

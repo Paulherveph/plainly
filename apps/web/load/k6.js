@@ -1,8 +1,9 @@
 // Load test (docs/SCALING.md section 8): 50 virtual users against a preview with USE_FAKE_AI=true.
 // Run: k6 run -e BASE_URL=https://<preview> apps/web/load/k6.js
 // Optional AI path: -e COOKIE='<sb-... cookie of a test user>' -e DOCUMENT_ID=<uuid> streams a (fake) analysis.
-import http from "k6/http";
+
 import { check, sleep } from "k6";
+import http from "k6/http";
 
 const BASE = __ENV.BASE_URL || "http://localhost:3000";
 
@@ -31,7 +32,11 @@ export default function () {
     const analysis = http.post(
       `${BASE}/api/analysis`,
       JSON.stringify({ documentId: __ENV.DOCUMENT_ID, locale: "en" }),
-      { headers: { "content-type": "application/json", cookie: __ENV.COOKIE }, tags: { kind: "analysis" }, timeout: "120s" },
+      {
+        headers: { "content-type": "application/json", cookie: __ENV.COOKIE },
+        tags: { kind: "analysis" },
+        timeout: "120s",
+      },
     );
     check(analysis, { "analysis streamed": (r) => r.status === 200 && r.body.includes('"type":"final"') });
   }

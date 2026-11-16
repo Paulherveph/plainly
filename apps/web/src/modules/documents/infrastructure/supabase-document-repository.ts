@@ -9,8 +9,8 @@ import {
   DOCUMENT_STATUSES,
   type Document,
   type DocumentSummary,
-  joinPages,
   detectVisionPages,
+  joinPages,
   MEDIA_TYPES,
   SAMPLE_IDS,
   splitPages,
@@ -99,7 +99,11 @@ export class SupabaseDocumentRepository implements DocumentRepository {
   }
 
   /** Replaces the page rows used by chat retrieval. */
-  private async writePages(documentId: string, userId: string, pages: readonly string[]): Promise<Result<null, AppError>> {
+  private async writePages(
+    documentId: string,
+    userId: string,
+    pages: readonly string[],
+  ): Promise<Result<null, AppError>> {
     const vision = new Set(detectVisionPages(pages));
     const { error } = await this.db.from("document_pages").upsert(
       pages.map((text, i) => ({

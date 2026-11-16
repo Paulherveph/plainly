@@ -25,14 +25,20 @@ export function PlanPanel({ balance, ledger }: { balance: CreditBalance; ledger:
         <Stat label={t("creditsLabel")} value={String(balance.planCredits + balance.packCredits)} />
         <Stat
           label={t("resetLabel")}
-          value={balance.periodEnd ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" }) : "—"}
+          value={
+            balance.periodEnd ? format.dateTime(new Date(balance.periodEnd), { dateStyle: "medium" }) : "—"
+          }
         />
         {!balance.emailVerified && balance.planId === "free" ? (
           <p className="text-caution text-sm sm:col-span-3">{t("verifyEmail")}</p>
         ) : null}
         <div className="flex flex-wrap gap-2 sm:col-span-3">
           {paid ? (
-            <Button variant="outline" disabled={pending} onClick={() => start(async () => void (await portalAction({ locale })))}>
+            <Button
+              variant="outline"
+              disabled={pending}
+              onClick={() => start(async () => void (await portalAction({ locale })))}
+            >
               <CreditCardIcon />
               {t("manageBilling")}
             </Button>
@@ -71,7 +77,8 @@ export function PlanPanel({ balance, ledger }: { balance: CreditBalance; ledger:
             {ledger.slice(0, 30).map((e, i) => (
               <li key={i} className="flex items-center justify-between gap-3 py-2">
                 <span className="text-muted-foreground">
-                  {t(`reason_${e.reason}`)} · {format.dateTime(new Date(e.createdAt), { dateStyle: "short", timeStyle: "short" })}
+                  {t(`reason_${e.reason}`)} ·{" "}
+                  {format.dateTime(new Date(e.createdAt), { dateStyle: "short", timeStyle: "short" })}
                 </span>
                 <span className={`font-mono tabular-nums ${e.delta < 0 ? "" : "text-ok"}`}>
                   {e.delta > 0 ? `+${e.delta}` : e.delta}

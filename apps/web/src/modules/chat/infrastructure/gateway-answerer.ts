@@ -3,8 +3,8 @@ import type { AiGateway, AiMessage, AiPart } from "@/modules/ai/application/port
 import { toAppError } from "@/modules/ai/domain/errors";
 import type { AiContext } from "@/modules/analysis/application/ports";
 import type { OutputLocale } from "@/modules/analysis/domain/analysis";
-import type { PageHit } from "@/modules/documents/application/ports";
 import { documentText, LANGUAGE_NAMES } from "@/modules/analysis/domain/document-text";
+import type { PageHit } from "@/modules/documents/application/ports";
 import type { AppError } from "@/shared/lib/errors";
 import { err, ok, type Result } from "@/shared/lib/result";
 import type { AnswerRun, ChatContext, ChatTurn, DocumentAnswerer } from "../application/ports";

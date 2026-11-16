@@ -34,7 +34,14 @@ const doc = (pages: string[], chatSummary: string | null = null): Document => ({
   chatSummary,
 });
 
-function setup(opts: { pages?: string[]; history?: StoredMessage[]; previous?: StoredMessage | null; abort?: boolean } = {}) {
+function setup(
+  opts: {
+    pages?: string[];
+    history?: StoredMessage[];
+    previous?: StoredMessage | null;
+    abort?: boolean;
+  } = {},
+) {
   const pages = opts.pages ?? PAGES;
   const gateway = new FakeAiGateway((call: AiCall) => {
     if (call.task === "summarize_history") return { value: "Earlier: rent questions." };
@@ -76,7 +83,14 @@ function setup(opts: { pages?: string[]; history?: StoredMessage[]; previous?: S
   const controller = new AbortController();
   if (opts.abort) controller.abort();
   const ask = async (question: string) => {
-    const res = await answer({ userId: "u1", documentId: "d1", question, locale: "en", requestId: "r", signal: controller.signal });
+    const res = await answer({
+      userId: "u1",
+      documentId: "d1",
+      question,
+      locale: "en",
+      requestId: "r",
+      signal: controller.signal,
+    });
     if (!res.ok || res.value.kind === "stored") return res;
     for await (const _ of res.value.partials) {
       // drain
@@ -123,7 +137,9 @@ describe("answerQuestion", () => {
     await s.ask("What is the monthly rent?");
     expect(s.gateway.calls.map((c) => c.task)).toEqual(["summarize_history", "chat"]);
     const chat = s.gateway.calls[1];
-    const sentTurns = (chat?.messages ?? []).filter((m) => typeof m.content === "string" && m.content.startsWith("turn"));
+    const sentTurns = (chat?.messages ?? []).filter(
+      (m) => typeof m.content === "string" && m.content.startsWith("turn"),
+    );
     expect(sentTurns).toHaveLength(6);
   });
 

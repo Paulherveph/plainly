@@ -204,19 +204,21 @@ export function PricingPlans() {
                 <th scope="row" className="px-4 py-3 font-normal">
                   {t(`row_${r.key}`)}
                 </th>
-                {(["free", "pro", "max"] as const).map((col) => [col, r[col]] as const).map(([col, v]) => (
-                  <td key={col} className="px-4 py-3 tabular-nums">
-                    {typeof v === "boolean" ? (
-                      v ? (
-                        <CheckIcon className="size-4 text-ok" aria-label={t("yes")} />
+                {(["free", "pro", "max"] as const)
+                  .map((col) => [col, r[col]] as const)
+                  .map(([col, v]) => (
+                    <td key={col} className="px-4 py-3 tabular-nums">
+                      {typeof v === "boolean" ? (
+                        v ? (
+                          <CheckIcon className="size-4 text-ok" aria-label={t("yes")} />
+                        ) : (
+                          <MinusIcon className="size-4 text-faint" aria-label={t("no")} />
+                        )
                       ) : (
-                        <MinusIcon className="size-4 text-faint" aria-label={t("no")} />
-                      )
-                    ) : (
-                      v
-                    )}
-                  </td>
-                ))}
+                        v
+                      )}
+                    </td>
+                  ))}
               </tr>
             ))}
           </tbody>

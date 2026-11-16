@@ -25,7 +25,9 @@ describe("mergeGuest (E06)", () => {
 
   it("refuses when the source is not a guest", async () => {
     const a = admin({ isGuest: vi.fn(async () => false) });
-    expect(await makeMergeGuest({ admin: a })({ guestId: "g", userId: "u" })).toEqual(err({ kind: "not_found" }));
+    expect(await makeMergeGuest({ admin: a })({ guestId: "g", userId: "u" })).toEqual(
+      err({ kind: "not_found" }),
+    );
     expect(a.mergeGuest).not.toHaveBeenCalled();
   });
 
@@ -79,7 +81,11 @@ describe("deleteAccount (E12)", () => {
 
   it("does nothing without the confirmation word", async () => {
     const a = admin();
-    const res = await makeDeleteAccount({ admin: a, subscriptions: { cancelForDeletion: async () => ok(null) }, mailer: null })({
+    const res = await makeDeleteAccount({
+      admin: a,
+      subscriptions: { cancelForDeletion: async () => ok(null) },
+      mailer: null,
+    })({
       userId: "u",
       email: null,
       typed: "nope",

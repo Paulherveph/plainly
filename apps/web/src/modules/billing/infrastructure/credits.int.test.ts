@@ -35,19 +35,27 @@ describe("credit functions under concurrency (F04)", () => {
 
   it("50 parallel reservations of 1 credit on a balance of 10: exactly 10 succeed", async () => {
     const results = await Promise.all(
-      Array.from({ length: 50 }, (_, i) => user.rpc("reserve_credits", { p_amount: 1, p_key: `p-${userId}-${i}` }).single()),
+      Array.from({ length: 50 }, (_, i) =>
+        user.rpc("reserve_credits", { p_amount: 1, p_key: `p-${userId}-${i}` }).single(),
+      ),
     );
     const holds = results.filter((r) => r.data?.hold_id).length;
     expect(results.every((r) => r.error === null)).toBe(true);
     expect(holds).toBe(10);
-    const balance = await admin.from("credit_balances").select("plan_credits, pack_credits").eq("user_id", userId).single();
+    const balance = await admin
+      .from("credit_balances")
+      .select("plan_credits, pack_credits")
+      .eq("user_id", userId)
+      .single();
     expect((balance.data?.plan_credits ?? -1) + (balance.data?.pack_credits ?? -1)).toBe(0);
   });
 
   it("the same idempotency key from 20 parallel retries charges once", async () => {
     await admin.rpc("grant_pack_credits", { p_user: userId, p_credits: 5, p_key: `int-${userId}` });
     const results = await Promise.all(
-      Array.from({ length: 20 }, () => user.rpc("reserve_credits", { p_amount: 3, p_key: `same-${userId}` }).single()),
+      Array.from({ length: 20 }, () =>
+        user.rpc("reserve_credits", { p_amount: 3, p_key: `same-${userId}` }).single(),
+      ),
     );
     const ids = new Set(results.map((r) => r.data?.hold_id).filter(Boolean));
     expect(ids.size).toBe(1);
@@ -57,7 +65,11 @@ describe("credit functions under concurrency (F04)", () => {
 
   it("the ledger always sums to the balance", async () => {
     const ledger = await admin.from("credit_ledger").select("delta").eq("user_id", userId);
-    const balance = await admin.from("credit_balances").select("plan_credits, pack_credits").eq("user_id", userId).single();
+    const balance = await admin
+      .from("credit_balances")
+      .select("plan_credits, pack_credits")
+      .eq("user_id", userId)
+      .single();
     const sum = (ledger.data ?? []).reduce((n, r) => n + r.delta, 0);
     expect(sum).toBe((balance.data?.plan_credits ?? 0) + (balance.data?.pack_credits ?? 0));
   });

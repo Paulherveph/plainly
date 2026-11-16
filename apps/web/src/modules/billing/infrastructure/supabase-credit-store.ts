@@ -25,7 +25,9 @@ export class SupabaseCreditStore implements CreditStore {
   }
 
   async reserve(amount: number, key: string) {
-    const { data, error } = await this.db.rpc("reserve_credits", { p_amount: amount, p_key: key }).maybeSingle();
+    const { data, error } = await this.db
+      .rpc("reserve_credits", { p_amount: amount, p_key: key })
+      .maybeSingle();
     if (error || !data) {
       logError("credits.reserve_failed", { code: error?.code ?? "none" });
       return err({ kind: "db_failed" as const });

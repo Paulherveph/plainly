@@ -56,7 +56,12 @@ export type TokenUsage = {
   cacheWriteTokens: number;
 };
 
-export const ZERO_USAGE: TokenUsage = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0 };
+export const ZERO_USAGE: TokenUsage = {
+  inputTokens: 0,
+  outputTokens: 0,
+  cacheReadTokens: 0,
+  cacheWriteTokens: 0,
+};
 
 /**
  * Cost in micro-USD (1e-6 USD). A price "per million tokens" equals micro-USD per token.

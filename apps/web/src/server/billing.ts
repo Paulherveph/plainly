@@ -11,7 +11,8 @@ export function billingStore() {
   return admin ? new SupabaseBillingStore(admin) : null;
 }
 
-export function billingProvider(): BillingProvider & Partial<Pick<FakeBillingProvider, "sign" | "readSession">> {
+export function billingProvider(): BillingProvider &
+  Partial<Pick<FakeBillingProvider, "sign" | "readSession">> {
   const env = serverEnv();
   const secret = env.BILLING_WEBHOOK_SECRET ?? "local-fake-billing-secret-not-for-production";
   return new FakeBillingProvider(secret, publicEnv().NEXT_PUBLIC_SITE_URL, billingStore() ?? undefined);

@@ -37,7 +37,9 @@ export function RuleDate(props: {
   return (
     <div className="mt-2.5 grid gap-2 rounded-lg border border-dashed p-2.5">
       <p className="text-muted-foreground text-[13px]">
-        {props.ambiguous ? t("dateAmbiguous", { date: props.rule ?? "" }) : t("dueRule", { rule: props.rule ?? "" })}
+        {props.ambiguous
+          ? t("dateAmbiguous", { date: props.rule ?? "" })
+          : t("dueRule", { rule: props.rule ?? "" })}
       </p>
       {saved ? (
         <p className="inline-flex items-center gap-1.5 text-ok text-[13px]">

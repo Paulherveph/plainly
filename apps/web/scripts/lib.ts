@@ -9,8 +9,8 @@ import { createClient } from "@supabase/supabase-js";
 import type { Profile, UsageRecorder, UsageRow } from "@/modules/ai/application/ports";
 import { type ModelRef, parseModelRef, priceFor } from "@/modules/ai/domain/pricing";
 import { AiSdkGateway, createGatewayState } from "@/modules/ai/infrastructure/ai-sdk-gateway";
-import { SupabaseUsageRecorder } from "@/modules/ai/infrastructure/supabase-usage-recorder";
 import { noFlags } from "@/modules/ai/infrastructure/supabase-flag-store";
+import { SupabaseUsageRecorder } from "@/modules/ai/infrastructure/supabase-usage-recorder";
 import type { Database } from "@/shared/lib/db-types";
 
 const envFile = join(process.cwd(), ".env.local");

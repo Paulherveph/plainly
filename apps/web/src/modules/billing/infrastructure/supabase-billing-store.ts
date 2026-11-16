@@ -96,11 +96,17 @@ export class SupabaseBillingStore implements BillingStore {
       .select("provider_subscription_id")
       .eq("user_id", userId)
       .in("status", ["active", "trialing", "past_due"]);
-    return error ? err({ kind: "db_failed" as const }) : ok((data ?? []).map((r) => r.provider_subscription_id));
+    return error
+      ? err({ kind: "db_failed" as const })
+      : ok((data ?? []).map((r) => r.provider_subscription_id));
   }
 
   async grantPack(userId: string, credits: number, key: string) {
-    const { data, error } = await this.admin.rpc("grant_pack_credits", { p_user: userId, p_credits: credits, p_key: key });
+    const { data, error } = await this.admin.rpc("grant_pack_credits", {
+      p_user: userId,
+      p_credits: credits,
+      p_key: key,
+    });
     return error ? err({ kind: "db_failed" as const }) : ok(data === true);
   }
 
