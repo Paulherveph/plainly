@@ -349,7 +349,13 @@
     "savePassword": "Enregistrer et se connecter",
     "invalidPassword": "Utilisez au moins 8 caractères.",
     "invalidCredentials": "E-mail ou mot de passe incorrect.",
-    "emailExists": "Cet e-mail a déjà un compte. Connectez-vous plutôt."
+    "emailExists": "Cet e-mail a déjà un compte. Connectez-vous plutôt.",
+    "guestDisabled": "L'accès invité est désactivé ici. Connectez-vous ou créez un compte pour continuer.",
+    "demoCodeTitle": "Votre code",
+    "demoCodeBody": "Cette démo n'envoie pas d'e-mails. Voici le code qui vous aurait été envoyé.",
+    "demoCodeCopy": "Copier",
+    "demoCodeCopied": "Code copié. Collez-le dans les cases.",
+    "demoCodeSent": "Votre code à 6 chiffres pour <b>{email}</b> se trouve dans le message ci-dessous. Collez-le pour valider votre compte."
   },
   "Errors": {
     "title": "Une erreur est survenue",

@@ -10,6 +10,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Turnstile, turnstileSiteKey } from "./turnstile";
 
 type Gate = { ensure: () => Promise<boolean> };
+
+/** What a failed guest start tells the visitor. Anything else gets the generic message. */
+const GUEST_ERRORS: Record<string, string> = {
+  rate_limited: "rateLimited",
+  captcha_failed: "captchaFailed",
+  needs_captcha: "captchaFailed",
+  guest_disabled: "guestDisabled",
+};
 const GuestGateContext = createContext<Gate>({ ensure: async () => true });
 
 /**
@@ -52,7 +60,7 @@ export function GuestGateProvider({ children }: { children: React.ReactNode }) {
       res = await startGuestAction(token);
     }
     if (!res.ok) {
-      toast.error(res.error.kind === "rate_limited" ? t("rateLimited") : t("captchaFailed"));
+      toast.error(t(GUEST_ERRORS[res.error.kind] ?? "failed"));
       return false;
     }
     ready.current = true;

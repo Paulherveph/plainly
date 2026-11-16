@@ -18,6 +18,7 @@ import {
 import { safeNext } from "@/shared/lib/safe-next";
 import { Button } from "./button";
 import { CodeInput } from "./code-input";
+import { dismissDemoCode, showDemoCode } from "./demo-code-toast";
 import { Input } from "./input";
 import { Turnstile, turnstileSiteKey } from "./turnstile";
 
@@ -26,7 +27,7 @@ export type AuthMode = "signin" | "signup";
 type Step =
   | { kind: "credentials" }
   | { kind: "forgot" }
-  | { kind: "code"; email: string; purpose: CodePurpose }
+  | { kind: "code"; email: string; purpose: CodePurpose; demo?: boolean }
   | { kind: "done" };
 
 const ERRORS: Record<string, string> = {
@@ -201,8 +202,20 @@ export function SignInForm({
     return token;
   };
   const goTo = (to: Step) => {
+    dismissDemoCode();
     setStep(to);
     setError(null);
+  };
+  // Demo mode (docs/TEST_ACCOUNTS.md): the code arrives on screen, not by email, so a new one needs no wait.
+  const showCode = (demoCode: string | undefined) => {
+    if (demoCode)
+      showDemoCode(demoCode, {
+        title: t("demoCodeTitle"),
+        body: t("demoCodeBody"),
+        copy: t("demoCodeCopy"),
+        copied: t("demoCodeCopied"),
+      });
+    setResendAt(demoCode ? 0 : Date.now() + RESEND_S * 1000);
   };
   // The sign-in page returns to where the user came from (validated); the modal stays on the page.
   const target = () =>
@@ -211,6 +224,7 @@ export function SignInForm({
       : next;
 
   function finish(merged: number) {
+    dismissDemoCode();
     setStep({ kind: "done" });
     toast.success(merged > 0 ? t("merged", { count: merged }) : t("signedIn"));
     onDone?.();
@@ -222,9 +236,14 @@ export function SignInForm({
   function after(res: { ok: true; value: AuthStep } | { ok: false; error: { kind: string } }) {
     if (!res.ok) return fail(res.error.kind);
     if (res.value.next === "done") return finish(res.value.merged);
-    setStep({ kind: "code", email: email.trim().toLowerCase(), purpose: res.value.purpose });
+    setStep({
+      kind: "code",
+      email: email.trim().toLowerCase(),
+      purpose: res.value.purpose,
+      demo: Boolean(res.value.demoCode),
+    });
     setCode("");
-    setResendAt(Date.now() + RESEND_S * 1000);
+    showCode(res.value.demoCode);
   }
 
   function submitCredentials() {
@@ -274,9 +293,11 @@ export function SignInForm({
         email: step.email,
         purpose: step.purpose,
         captchaToken: takeCaptcha(),
+        // A demo sign-up code is re-issued only for the right password (never sent for a reset).
+        password: step.purpose === "signup" ? password : undefined,
       });
       if (!res.ok) return fail(res.error.kind);
-      setResendAt(Date.now() + RESEND_S * 1000);
+      showCode(res.value.demoCode);
     });
   }
 
@@ -342,6 +363,9 @@ export function SignInForm({
 
   if (step.kind === "code") {
     const recovery = step.purpose === "recovery";
+    let sentKey: "resetCodeSent" | "demoCodeSent" | "codeSent" = "codeSent";
+    if (recovery) sentKey = "resetCodeSent";
+    else if (step.demo) sentKey = "demoCodeSent";
     return (
       <form
         onSubmit={(e) => {
@@ -354,7 +378,7 @@ export function SignInForm({
         <div className="grid gap-1">
           <p className="font-medium">{t(recovery ? "resetTitle" : "confirmTitle")}</p>
           <p className="text-muted-foreground text-sm">
-            {t.rich(recovery ? "resetCodeSent" : "codeSent", {
+            {t.rich(sentKey, {
               email: step.email,
               b: (chunks) => <b className="text-foreground">{chunks}</b>,
             })}

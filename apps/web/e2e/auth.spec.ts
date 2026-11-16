@@ -51,6 +51,8 @@ async function signUp(page: Page, email: string, password = PASSWORD) {
   await fillCredentials(page, email, password);
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page.getByText("Confirm your email")).toBeVisible();
+  // Demo codes are off on this server: the code only comes by email.
+  await expect(page.getByTestId("demo-code")).toHaveCount(0);
   await page.getByLabel("Digit 1 of 6").fill(await latestCode(email));
 }
 

@@ -117,6 +117,8 @@ const ServerEnvSchema = PublicEnv.extend({
   AI_TIMEOUT_MS: optional(z.coerce.number().int().positive()),
   AI_ALLOW_UNVERIFIED_MODELS: bool,
   USE_FAKE_AI: bool,
+  /** Demo only: show the 6-digit sign-up code on screen instead of emailing it (docs/TEST_ACCOUNTS.md). */
+  DEMO_SHOW_CODES: bool,
   CRON_SECRET: optional(z.string().min(16)),
   RESEND_API_KEY: optional(z.string().min(1)),
   EMAIL_FROM: optional(z.string().min(3)),

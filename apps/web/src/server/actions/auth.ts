@@ -10,6 +10,7 @@ import { LEGAL_VERSIONS } from "@/shared/lib/legal";
 import { log } from "@/shared/lib/log";
 import { err, ok, type Result } from "@/shared/lib/result";
 import { safeNext } from "@/shared/lib/safe-next";
+import { demoCodesEnabled, issueDemoCode } from "../demo-codes";
 import { mergeRememberedGuest, rememberGuest } from "../guest-merge";
 import { captchaRequired, verifyTurnstile } from "../turnstile";
 
@@ -23,6 +24,7 @@ export type AuthError =
   | { kind: "rate_limited" }
   | { kind: "captcha_failed" }
   | { kind: "needs_captcha" }
+  | { kind: "guest_disabled" }
   | { kind: "failed" };
 
 const Locale = z.enum(routing.locales).catch("en");
@@ -57,6 +59,8 @@ function mapError(code: string | undefined): AuthError {
     case "email_exists":
     case "user_already_exists":
       return { kind: "email_exists" };
+    case "anonymous_provider_disabled":
+      return { kind: "guest_disabled" };
     default:
       return { kind: "failed" };
   }
@@ -74,7 +78,7 @@ export async function startGuestAction(captchaToken: string | null): Promise<Res
   const { error } = await supabase.auth.signInAnonymously({
     options: captchaToken ? { captchaToken } : undefined,
   });
-  log("auth.guest_created", { ok: !error });
+  log("auth.guest_created", { ok: !error, code: error?.code ?? "none" });
   return error ? err(mapError(error.code)) : ok(null);
 }
 
@@ -84,7 +88,32 @@ export async function startGuestAction(captchaToken: string | null): Promise<Res
  */
 export type CodePurpose = "signup" | "upgrade" | "recovery";
 
-export type AuthStep = { next: "code"; purpose: CodePurpose } | { next: "done"; merged: number };
+/** `demoCode` is set only in demo mode (DEMO_SHOW_CODES): the code is shown on screen instead of emailed. */
+export type AuthStep =
+  | { next: "code"; purpose: CodePurpose; demoCode?: string }
+  | { next: "done"; merged: number };
+
+/**
+ * demo-codes: the sign-up code goes back to the browser instead of by email (docs/TEST_ACCOUNTS.md).
+ * Supabase does not check a captcha on this path, so Turnstile is checked here, unless the caller just passed
+ * Supabase's own check (sign-in with a captcha token).
+ */
+async function demoSignupCode(input: {
+  email: string;
+  password: string;
+  locale: string;
+  captchaToken: string | null;
+  captchaChecked?: boolean;
+}): Promise<Result<AuthStep, AuthError>> {
+  if (!input.captchaChecked) {
+    if (captchaRequired() && !input.captchaToken) return err({ kind: "needs_captcha" });
+    if (!(await verifyTurnstile(input.captchaToken, await clientIp())))
+      return err({ kind: "captcha_failed" });
+  }
+  const res = await issueDemoCode({ email: input.email, password: input.password, locale: input.locale });
+  log("auth.demo_code", { ok: res.ok, error: res.ok ? "none" : res.error.kind });
+  return res.ok ? ok({ next: "code", purpose: "signup", demoCode: res.value.code }) : err(res.error);
+}
 
 /** After any successful sign-in: record the accepted Terms and Privacy versions (G08), then merge a remembered guest. */
 async function finishSignIn(
@@ -111,6 +140,12 @@ export async function signUpAction(input: {
   const supabase = await createSupabase();
   const user = await getSessionUser(supabase);
   const locale = Locale.parse(input.locale);
+
+  // demo-codes: a guest is remembered, signs up as a new account, and its documents are merged after the code.
+  if (demoCodesEnabled()) {
+    if (user?.isAnonymous) await rememberGuest(user.id);
+    return demoSignupCode({ ...input, email: email.data, locale });
+  }
 
   if (user?.isAnonymous) {
     // The password is set once the code proves the email (verifyCodeAction, purpose "upgrade").
@@ -157,6 +192,15 @@ export async function signInAction(input: {
   });
   log("auth.signin", { ok: !error, code: error?.code ?? "none" });
   if (error?.code === "email_not_confirmed") {
+    // demo-codes: the password was just proven, so the code can be shown instead of emailed.
+    if (demoCodesEnabled())
+      return demoSignupCode({
+        email: email.data,
+        password: input.password,
+        locale: "en",
+        captchaToken: null,
+        captchaChecked: true,
+      });
     const resent = await supabase.auth.resend({ type: "signup", email: email.data });
     return resent.error ? err(mapError(resent.error.code)) : ok({ next: "code", purpose: "signup" });
   }
@@ -179,14 +223,27 @@ export async function sendResetAction(input: {
   return error ? err(mapError(error.code)) : ok({ next: "code", purpose: "recovery" });
 }
 
-/** Sends the code for the current step again. */
+/** Sends the code for the current step again. In demo mode a sign-up code comes back instead (needs the password). */
 export async function resendCodeAction(input: {
   email: string;
   purpose: CodePurpose;
   captchaToken: string | null;
-}): Promise<Result<null, AuthError>> {
+  password?: string;
+}): Promise<Result<{ demoCode?: string }, AuthError>> {
   const email = Email.safeParse(input.email.trim().toLowerCase());
   if (!email.success) return err({ kind: "invalid_email" });
+  // demo-codes: never for a password reset, which keeps the email path.
+  if (input.purpose === "signup" && demoCodesEnabled()) {
+    if (!input.password) return err({ kind: "invalid_credentials" });
+    const res = await demoSignupCode({
+      email: email.data,
+      password: input.password,
+      locale: "en",
+      captchaToken: input.captchaToken,
+    });
+    if (!res.ok) return res;
+    return ok({ demoCode: res.value.next === "code" ? res.value.demoCode : undefined });
+  }
   const supabase = await createSupabase();
   const captchaToken = input.captchaToken ?? undefined;
   const { error } =
@@ -197,7 +254,7 @@ export async function resendCodeAction(input: {
           email: email.data,
           options: { captchaToken },
         });
-  return error ? err(mapError(error.code)) : ok(null);
+  return error ? err(mapError(error.code)) : ok({});
 }
 
 /**

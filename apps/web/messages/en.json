@@ -349,7 +349,13 @@
     "savePassword": "Save password and sign in",
     "invalidPassword": "Use at least 8 characters.",
     "invalidCredentials": "Email or password is wrong.",
-    "emailExists": "This email already has an account. Sign in instead."
+    "emailExists": "This email already has an account. Sign in instead.",
+    "guestDisabled": "Guest access is turned off here. Sign in or create an account to continue.",
+    "demoCodeTitle": "Your code",
+    "demoCodeBody": "This demo doesn't send emails, so here is the code we would have sent.",
+    "demoCodeCopy": "Copy",
+    "demoCodeCopied": "Code copied. Paste it into the boxes.",
+    "demoCodeSent": "Your 6-digit code for <b>{email}</b> is in the message below. Paste it to approve your account."
   },
   "Errors": {
     "title": "Something went wrong",

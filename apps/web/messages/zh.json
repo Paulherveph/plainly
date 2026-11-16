@@ -349,7 +349,13 @@
     "savePassword": "保存密码并登录",
     "invalidPassword": "请至少使用 8 个字符。",
     "invalidCredentials": "邮箱或密码错误。",
-    "emailExists": "该邮箱已有账户，请直接登录。"
+    "emailExists": "该邮箱已有账户，请直接登录。",
+    "guestDisabled": "此处已关闭访客模式。请登录或创建账户后继续。",
+    "demoCodeTitle": "你的验证码",
+    "demoCodeBody": "此演示不会发送邮件，这是本应发送给你的验证码。",
+    "demoCodeCopy": "复制",
+    "demoCodeCopied": "验证码已复制，请粘贴到输入框中。",
+    "demoCodeSent": "<b>{email}</b> 的 6 位验证码在下方消息中。粘贴即可验证你的账户。"
   },
   "Errors": {
     "title": "出了点问题",
