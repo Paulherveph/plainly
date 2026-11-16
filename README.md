@@ -119,12 +119,14 @@ pnpm dev            # http://localhost:3000
 ### 5. Sign in with a test account
 
 ```bash
-pnpm test-user create     # creates a local account; its email and password go to apps/web/.env.test-user
-pnpm test-user approve    # approves it, like entering the emailed code
-pnpm test-user status     # shows the email, approval, plan and credits
+pnpm test-user create       # creates a local account; its email and password go to apps/web/.env.test-user
+pnpm test-user approve      # confirms it, like entering the emailed code
+pnpm test-user plan pro     # free | pro | max
+pnpm test-user credits 500  # add credits to try more documents
+pnpm test-user status       # email, confirmed, plan, credits
 ```
 
-`apps/web/.env.test-user` is ignored by git. More in [Accounts](docs/AUTH.md#7-local-test-user).
+`apps/web/.env.test-user` is ignored by git. Everything about test accounts, including the live demo and hosted projects, is in **[Test accounts](docs/TEST_ACCOUNTS.md)**.
 
 ## AI modes
 
@@ -185,7 +187,7 @@ Run from the repository root.
 | `pnpm db:types` | Regenerate database types after a migration |
 | `pnpm ai:try --model <provider:model> --file <file>` | One analysis with one model: schema, quotes, tokens, time |
 | `pnpm ai:eval --model <provider:model>` | The eval set; tells you if a model is good enough for production |
-| `pnpm test-user create \| approve \| reset \| status` | Manage the local test account |
+| `pnpm test-user create \| approve \| status \| plan <p> \| credits <n> \| reset` | Manage the local test account ([guide](docs/TEST_ACCOUNTS.md)) |
 | `supabase start` / `supabase stop` | Start / stop the local database |
 | `supabase db reset` | Rebuild the local database from the migrations (deletes local data) |
 
@@ -239,6 +241,7 @@ Read [Architecture](docs/ARCHITECTURE.md) for the full picture and [Decisions](d
 | [AI providers](docs/AI_PROVIDERS.md) | Claude, Gemini, Grok, Ollama; profiles, fallbacks, promoting a model |
 | [Ollama](docs/OLLAMA.md) | Install, start, check and pick local models; Windows, macOS, Linux |
 | [Test documents](test-documents/README.md) | Five fictional documents and the answer key |
+| [Test accounts](docs/TEST_ACCOUNTS.md) | Local test user, plans and credits, demo codes, hosted accounts |
 | [Token economy](docs/TOKEN_ECONOMY.md) | How AI cost is kept low, budgets, usage records |
 | [Architecture](docs/ARCHITECTURE.md) | Layers, modules, folder structure |
 | [Accounts](docs/AUTH.md) | Sign-in methods, approval, the local test user |

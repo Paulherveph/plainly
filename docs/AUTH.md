@@ -54,6 +54,8 @@ A new email account must be **approved** before it can sign in: Supabase emails 
 All cases in `USE_CASES.md` group E pass. Auth E2E uses Supabase local with Mailpit for emails (code read from the local mailbox, http://127.0.0.1:54328).
 
 ## 7. Local test user
+Full guide, including plans, credits, the live demo and hosted accounts: **[Test accounts](TEST_ACCOUNTS.md)**.
+
 One shared account for manual and agent testing. Its credentials are in `apps/web/.env.test-user` (git-ignored, never committed, never in a migration).
 
 ```
@@ -61,6 +63,7 @@ pnpm test-user create            # creates it if missing (e.g. after `supabase d
 pnpm test-user approve           # approve it (same effect as entering the emailed code)
 pnpm test-user reset             # credits used up? delete it with its files, create it again, approve it
 pnpm test-user plan free|pro|max # switch plan (writes a "manual" row in subscriptions)
+pnpm test-user credits <n>       # add n credits (1-10000), kept until used
 pnpm test-user status            # approved?, plan, credits
 ```
 

@@ -19,7 +19,7 @@ Thanks for taking the time. Plainly is open source under the [MIT license](LICEN
 
 ## Set up
 
-Follow the [Quick start](README.md#quick-start) and the project rules in [AGENTS.md](AGENTS.md). The fake AI (`USE_FAKE_AI=true`) is enough for most work: it is free, offline and deterministic.
+Follow the [Quick start](README.md#quick-start) and the project rules in [AGENTS.md](AGENTS.md). For a ready account with any plan and credits, see [Test accounts](docs/TEST_ACCOUNTS.md). The fake AI (`USE_FAKE_AI=true`) is enough for most work: it is free, offline and deterministic.
 
 ```bash
 git clone https://github.com/<you>/plainly.git

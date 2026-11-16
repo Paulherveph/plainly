@@ -64,10 +64,21 @@ Apply these in the Supabase dashboard of the **production** project (and the pre
 | Authentication → Sign In / Providers → Google | Enabled | On, with the Google OAuth client id and secret |
 | | Skip nonce check | Off in production |
 | Authentication → Sign In / Providers → (top) | Allow manual linking | On (`linkIdentity` for guests) |
-| Authentication → Attack Protection → Captcha | Provider | Turnstile, secret = the Turnstile secret key |
+| Authentication → Attack Protection → Captcha | Provider | Turnstile, secret = the Turnstile secret key. **Only after** the Turnstile keys are in Vercel: see [Turn on captcha](#turn-on-captcha-turnstile) |
 | Authentication → Rate Limits | Emails sent per hour | 30 (with custom SMTP) |
 | | Sign-ups and sign-ins per 5 min per IP | 30 |
 | | Token verifications per 5 min per IP | 30 |
+| | Anonymous sign-ins per hour per IP | 30 (guests; the main guard while captcha is off) |
+
+If "Allow anonymous sign-ins" is off, every guest action fails with "Guest access is turned off here". Check it from a terminal: `curl -s "$NEXT_PUBLIC_SUPABASE_URL/auth/v1/settings" -H "apikey: $NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"` → `"anonymous_users": true`.
+
+### Turn on captcha (Turnstile)
+
+The order matters. Supabase captcha on without the keys in Vercel blocks every guest, sign-up and sign-in.
+
+1. Cloudflare dashboard → Turnstile → **Add widget** for your domain. Copy the site key and the secret key.
+2. Vercel → Environment Variables: `NEXT_PUBLIC_TURNSTILE_SITE_KEY` = site key, `TURNSTILE_SECRET_KEY` = secret key. **Redeploy**, then check that the sign-in page shows the Turnstile check.
+3. Only then: Supabase → Authentication → Attack Protection → enable captcha, provider **Turnstile**, the **same** secret key.
 | | Anonymous sign-ins per hour per IP | 30 |
 | Authentication → URL Configuration | Site URL | `https://<your domain>` |
 | | Redirect URLs | `https://<your domain>/auth/callback`, `https://*-<team>.vercel.app/auth/callback`, `http://localhost:3000/auth/callback` |
@@ -123,6 +134,7 @@ Apply the table in "Supabase Auth settings for production (S3)" above: anonymous
 | `AI_PROFILE_FAST` | P, V | `anthropic:claude-haiku-5-5` |
 | `AI_PROFILE_TRANSLATE` | P, V | `anthropic:claude-haiku-5-5` |
 | `AI_DAILY_BUDGET_USD` | P, V | Start at `5`, raise after `pnpm ai:report` |
+| `DEMO_SHOW_CODES` | P, V | `true` only for a public demo with no email set up: the sign-up code shows on screen ([Test accounts](TEST_ACCOUNTS.md#2-live-demo-codes-on-screen)). `false` once Resend SMTP works |
 | `AI_ALLOW_UNVERIFIED_MODELS` | P | `false` once `pnpm ai:eval` has passed and `evalPassedOn` is set in `pricing.ts`; until then `true` |
 | `USE_FAKE_AI` | P, V | `false` (`true` only for load tests on a preview) |
 | `RESEND_API_KEY` | P, V | Resend key |

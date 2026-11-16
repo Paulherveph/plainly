@@ -5,10 +5,11 @@
  *   pnpm test-user approve           approve the account (ticks profiles.approved, same as entering the emailed code)
  *   pnpm test-user reset             delete the user and its files, create it again and approve it (fresh credits)
  *   pnpm test-user plan free|pro|max switch the plan (writes a "manual" subscription row)
+ *   pnpm test-user credits <n>       add n credits (1-10000), kept until used, like a credit pack
  *   pnpm test-user status            approved?, plan, credits
  *
  * Credentials live in apps/web/.env.test-user, which git ignores (.env*). Never commit them or put them in a
- * migration. After `supabase db reset`, run `create` again.
+ * migration. After `supabase db reset`, run `create` again. Full guide: docs/TEST_ACCOUNTS.md.
  */
 import { randomBytes } from "node:crypto";
 import { existsSync, writeFileSync } from "node:fs";
@@ -173,6 +174,22 @@ async function setPlan(name: string | undefined) {
   await status();
 }
 
+/** Adds credits through the same function a purchased pack uses, so the ledger records them. */
+async function addCredits(value: string | undefined) {
+  const credits = Number(value);
+  if (!Number.isInteger(credits) || credits < 1 || credits > 10_000)
+    fail("Usage: pnpm test-user credits <n>  (a whole number from 1 to 10000)");
+  const user = await requireUser();
+  const { error } = await admin.rpc("grant_pack_credits", {
+    p_user: user.id,
+    p_credits: credits,
+    p_key: `test-user:${new Date().toISOString()}`,
+  });
+  if (error) fail(error.message);
+  console.log(`Added ${credits} credits.`);
+  await status();
+}
+
 const [command, value] = process.argv.slice(2);
 const commands: Record<string, () => Promise<void>> = {
   create,
@@ -180,7 +197,8 @@ const commands: Record<string, () => Promise<void>> = {
   reset,
   status,
   plan: () => setPlan(value),
+  credits: () => addCredits(value),
 };
 const run = command ? commands[command] : undefined;
-if (!run) fail("Usage: pnpm test-user create | approve | reset | plan free|pro|max | status");
+if (!run) fail("Usage: pnpm test-user create | approve | status | plan free|pro|max | credits <n> | reset");
 run().catch((e: unknown) => fail(e instanceof Error ? e.message : String(e)));
