@@ -1,5 +1,10 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "crons": [{ "path": "/api/cron/expire", "schedule": "17 3 * * *" }],
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../pnpm-lock.yaml ../../pnpm-workspace.yaml ../../package.json"
+  "crons": [
+    {
+      "path": "/api/cron/expire",
+      "schedule": "17 3 * * *"
+    }
+  ],
+  "ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ../../pnpm-lock.yaml ../../pnpm-workspace.yaml ../../package.json"
 }

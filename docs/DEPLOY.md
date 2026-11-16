@@ -13,21 +13,24 @@ One Vercel project. **Root Directory** = `apps/web`. "Include source files outsi
 `docs/`, `supabase/` and `assets/` are not workspaces, so Vercel's automatic skip counts them as global changes. `apps/web/vercel.json` sets an explicit rule:
 
 ```json
-"ignoreCommand": "git diff --quiet HEAD^ HEAD -- . ../../pnpm-lock.yaml ../../pnpm-workspace.yaml ../../package.json"
+"ignoreCommand": "[ -n \"$VERCEL_GIT_PREVIOUS_SHA\" ] && git diff --quiet \"$VERCEL_GIT_PREVIOUS_SHA\" HEAD -- . ../../pnpm-lock.yaml ../../pnpm-workspace.yaml ../../package.json"
 ```
 
-Exit 0 skips the build, exit 1 builds. It runs from `apps/web`. `package.json` at the root is included because it carries `packageManager`.
+Exit 0 skips the build, anything else builds. It runs from `apps/web`. `package.json` at the root is included because it carries `packageManager`.
 
-Dry run on 2026-11-14 (detached HEAD, five throwaway commits, `bash -c "<cmd>"` from `apps/web`):
+It compares against `VERCEL_GIT_PREVIOUS_SHA`, the commit of the last successful deployment, not against `HEAD^`. Comparing with only the last commit skipped the project's very first deploy (2026-11-16): that commit changed only CI, so nothing was ever built.
 
-| Commit touches | Expected | Result |
+Dry run on 2026-11-16 (`sh -c "<cmd>"` from `apps/web`):
+
+| Previous deployment | Expected | Result |
 |---|---|---|
-| `docs/` only | 0 (skip) | 0 (skip) |
-| `apps/web/` | 1 (build) | 1 (build) |
-| `pnpm-lock.yaml` | 1 (build) | 1 (build) |
-| `supabase/` or `assets/` only | 0 (skip) | 0 (skip) |
+| none (first deploy) | build | 1 (build) |
+| app files changed since | build | 1 (build) |
+| only docs, CI or `assets/` changed since | skip | 0 (skip) |
+| same commit | skip | 0 (skip) |
+| commit missing from Vercel's shallow clone | build | 128 (build) |
 
-If the clone is shallow and `HEAD^` is missing, the command fails and Vercel builds. That is the safe default.
+Every failure builds. That is the safe default.
 
 ## Environment variables
 Names and scope: `apps/web/.env.example` and `apps/web/src/shared/config/env.ts`. Preview and Production use different Supabase projects. Secrets are server-only. Only `NEXT_PUBLIC_*` reach the client.
