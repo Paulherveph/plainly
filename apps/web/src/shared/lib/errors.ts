@@ -7,6 +7,8 @@ export type AppError =
   | { kind: "ai_failed" }
   | { kind: "ai_refused" }
   | { kind: "ai_unavailable" }
+  /** The configured model can't read this input (images or scans on a text-only model). */
+  | { kind: "ai_unsupported_input" }
   | { kind: "aborted" }
   | { kind: "capacity" }
   | { kind: "rate_limited" }

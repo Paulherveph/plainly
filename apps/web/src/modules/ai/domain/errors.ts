@@ -7,7 +7,8 @@ export type AiError =
   | { kind: "invalid_output" }
   | { kind: "context_too_long" }
   | { kind: "aborted" }
-  | { kind: "capacity" };
+  | { kind: "capacity" }
+  | { kind: "unsupported_input" };
 
 /** What the gateway does after one failed attempt (docs/AI_PROVIDERS.md section 4). */
 export type FailureAction =
@@ -16,6 +17,7 @@ export type FailureAction =
   | "disable_provider" // 401, 402, 403: disable that provider on this instance, next model
   | "refused" // content refusal: stop, no fallback
   | "context_too_long" // stop, caller switches to retrieval or rejects
+  | "unsupported_input" // this model can't read the input (e.g. images on a text-only model): next model, no degrade
   | "aborted"; // the user stopped: stop, record as aborted
 
 export type FailureSignal = {
@@ -39,6 +41,12 @@ export function classifyFailure(s: FailureSignal): FailureAction {
   )
     return "context_too_long";
   if (
+    s.name === "AI_UnsupportedFunctionalityError" ||
+    message.includes("does not support multimodal") ||
+    message.includes("does not support image")
+  )
+    return "unsupported_input";
+  if (
     s.name === "AI_NoObjectGeneratedError" ||
     s.name === "AI_TypeValidationError" ||
     s.name === "AI_JSONParseError"
@@ -57,6 +65,8 @@ export function terminalError(action: FailureAction): AiError {
       return { kind: "aborted" };
     case "repair":
       return { kind: "invalid_output" };
+    case "unsupported_input":
+      return { kind: "unsupported_input" };
     default:
       return { kind: "unavailable" };
   }
@@ -77,5 +87,7 @@ export function toAppError(e: AiError): AppError {
       return { kind: "ai_failed" };
     case "unavailable":
       return { kind: "ai_unavailable" };
+    case "unsupported_input":
+      return { kind: "ai_unsupported_input" };
   }
 }

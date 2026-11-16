@@ -63,10 +63,14 @@ type Deps = {
   state: GatewayState;
   profiles: Record<Profile, ModelRef[]>;
   allowed: readonly ProviderName[];
-  keys: Partial<Record<ProviderName, string>>;
+  providers: Partial<Record<ProviderName, ProviderConnection>>;
+  /** Overrides the per-profile default timeouts (slow local models need more time). */
+  timeoutMs?: number;
   usage: UsageRecorder;
   flags: FlagReader;
 };
+
+type ProviderConnection = { apiKey?: string; baseURL?: string };
 
 type AttemptOutput<T> = { value: T; usage: LanguageModelUsage | null };
 type Attempt<T> = (
@@ -154,7 +158,7 @@ export class AiSdkGateway implements AiGateway {
     const candidates = await this.candidates(call);
     if (!Array.isArray(candidates)) return err(candidates);
 
-    const deadline = Date.now() + (call.timeoutMs ?? DEFAULT_TIMEOUT_MS[call.profile]);
+    const deadline = Date.now() + (call.timeoutMs ?? this.deps.timeoutMs ?? DEFAULT_TIMEOUT_MS[call.profile]);
     const base = toModelMessages(call.messages);
     let attempts = 0;
     let lastError: AiError = { kind: "unavailable" };
@@ -207,7 +211,11 @@ export class AiSdkGateway implements AiGateway {
       }
       if (attempts >= MAX_ATTEMPTS) break;
     }
-    return err(lastError.kind === "invalid_output" ? lastError : { kind: "unavailable" });
+    return err(
+      lastError.kind === "invalid_output" || lastError.kind === "unsupported_input"
+        ? lastError
+        : { kind: "unavailable" },
+    );
   }
 
   /** Profile list after flags, allow-list, disabled providers and the circuit breaker. */
@@ -256,7 +264,7 @@ export class AiSdkGateway implements AiGateway {
   private factory(provider: ProviderName): Promise<(id: string) => LanguageModel> {
     let f = this.factories.get(provider);
     if (!f) {
-      f = loadProvider(provider, this.deps.keys[provider]);
+      f = loadProvider(provider, this.deps.providers[provider] ?? {});
       this.factories.set(provider, f);
     }
     return f;
@@ -320,13 +328,26 @@ class RefusalSignal extends Error {
 /** Adding a provider: install its package, add a case here, a price row and an env key. */
 async function loadProvider(
   provider: ProviderName,
-  apiKey: string | undefined,
+  { apiKey, baseURL }: ProviderConnection,
 ): Promise<(id: string) => LanguageModel> {
   switch (provider) {
     case "anthropic": {
       const { createAnthropic } = await import("@ai-sdk/anthropic");
       const anthropic = createAnthropic({ apiKey });
       return (id) => anthropic(id);
+    }
+    case "ollama": {
+      // Ollama (local or Ollama Cloud) speaks the OpenAI-compatible API under /v1.
+      if (!baseURL) throw new Error("The ollama provider needs a baseURL (OLLAMA_BASE_URL).");
+      const { createOpenAICompatible } = await import("@ai-sdk/openai-compatible");
+      const ollama = createOpenAICompatible({
+        name: "ollama",
+        baseURL,
+        apiKey,
+        supportsStructuredOutputs: true,
+        includeUsage: true,
+      });
+      return (id) => ollama.chatModel(id);
     }
   }
 }

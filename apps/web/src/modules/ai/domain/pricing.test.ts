@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { costMicros, PRICES, parseModelRef, priceFor } from "./pricing";
+import { costMicros, OLLAMA_PRICE, PRICES, parseModelRef, priceFor } from "./pricing";
 
 describe("pricing", () => {
   it("parses provider:model references and rejects unknown providers", () => {
@@ -7,6 +7,7 @@ describe("pricing", () => {
       provider: "anthropic",
       model: "claude-haiku-5-5",
     });
+    expect(parseModelRef("ollama:qwen3:8b")).toEqual({ provider: "ollama", model: "qwen3:8b" });
     expect(parseModelRef("acme:model")).toBeNull();
     expect(parseModelRef("anthropic:")).toBeNull();
   });
@@ -43,5 +44,17 @@ describe("privacy provider list (G07)", () => {
     const { providerList } = await import("./pricing");
     expect(providerList(["anthropic"])).toBe("Anthropic (Claude)");
     expect(providerList([])).toBe("");
+  });
+
+  it("prices every Ollama model at zero and leaves it unverified", () => {
+    const price = priceFor({ provider: "ollama", model: "any-model:latest" });
+    expect(price).toBe(OLLAMA_PRICE);
+    expect(price?.evalPassedOn).toBeNull();
+    expect(
+      costMicros(
+        { inputTokens: 5000, outputTokens: 900, cacheReadTokens: 0, cacheWriteTokens: 0 },
+        OLLAMA_PRICE,
+      ),
+    ).toBe(0);
   });
 });

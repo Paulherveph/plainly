@@ -3,7 +3,7 @@
  * Fill only from the provider's pricing page (never from memory) and update `verifiedOn`.
  * A model without a row is rejected by the env validator, so cost is never recorded as zero.
  */
-export const SUPPORTED_PROVIDERS = ["anthropic"] as const;
+export const SUPPORTED_PROVIDERS = ["anthropic", "ollama"] as const;
 export type ProviderName = (typeof SUPPORTED_PROVIDERS)[number];
 
 export type ModelRef = { provider: ProviderName; model: string };
@@ -37,11 +37,26 @@ export const PRICES: Readonly<Record<string, Price>> = {
 
 export const modelKey = (ref: ModelRef): string => `${ref.provider}:${ref.model}`;
 
+/**
+ * Ollama has no per-token price: local models run on your hardware, Ollama Cloud is a flat plan.
+ * One zero price covers every Ollama model, so any `ollama:<model>` works without a table row.
+ * It has no eval date, so production still refuses it until `pnpm ai:eval` passes.
+ */
+export const OLLAMA_PRICE: Price = {
+  inputPerM: 0,
+  outputPerM: 0,
+  cacheWritePerM: 0,
+  cacheReadPerM: 0,
+  verifiedOn: "2026-11-16",
+  evalPassedOn: null,
+};
+
 export function priceFor(ref: ModelRef): Price | null {
+  if (ref.provider === "ollama") return OLLAMA_PRICE;
   return PRICES[modelKey(ref)] ?? null;
 }
 
-/** Parses "anthropic:claude-haiku-5-5". Returns null for unknown providers or empty models. */
+/** Parses "anthropic:claude-haiku-5-5" or "ollama:qwen3:8b" (the model keeps its own colons). Returns null for unknown providers or empty models. */
 export function parseModelRef(value: string): ModelRef | null {
   const [provider, ...rest] = value.trim().split(":");
   const model = rest.join(":");
@@ -83,6 +98,7 @@ export const estimateTokens = (chars: number): number => Math.ceil(chars / 4);
 /** Public names for the privacy page. It lists exactly the enabled providers (G07). */
 export const PROVIDER_LABELS: Record<ProviderName, string> = {
   anthropic: "Anthropic (Claude)",
+  ollama: "Ollama (self-hosted or Ollama Cloud)",
 };
 
 export function providerList(allowed: readonly ProviderName[]): string {

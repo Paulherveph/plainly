@@ -25,7 +25,7 @@ Never stored anywhere: prompts, model answers outside `messages`, document text 
 |---|---|---|
 | Supabase | Database, storage, authentication | Everything in the data map |
 | Vercel | Hosting, cron | Requests, logs (no content) |
-| AI providers in `AI_PROVIDERS_ALLOWED` (now: Anthropic) | Analysis, chat, translation | Document text and questions, per request. Business API terms: no training on customer data. Check each provider's retention terms before enabling it |
+| AI providers in `AI_PROVIDERS_ALLOWED` (supported: Anthropic, Ollama) | Analysis, chat, translation | Document text and questions, per request. Business API terms: no training on customer data. Check each provider's retention terms before enabling it. Local Ollama sends nothing to a third party; Ollama Cloud makes Ollama Inc. a processor |
 | Cloudflare Turnstile | Bot check before a guest is created | Browser signals, IP |
 | Resend | Sign-in codes, account and alert emails | Email address, email text (no document content) |
 | Billing provider (S5, not chosen yet) | Payments, tax, invoices | Email, country, payment details (never seen by Plainly) |

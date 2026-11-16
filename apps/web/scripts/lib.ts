@@ -11,6 +11,7 @@ import { type ModelRef, parseModelRef, priceFor } from "@/modules/ai/domain/pric
 import { AiSdkGateway, createGatewayState } from "@/modules/ai/infrastructure/ai-sdk-gateway";
 import { noFlags } from "@/modules/ai/infrastructure/supabase-flag-store";
 import { SupabaseUsageRecorder } from "@/modules/ai/infrastructure/supabase-usage-recorder";
+import { OLLAMA_LOCAL_URL, providerSettings } from "@/shared/config/env";
 import type { Database } from "@/shared/lib/db-types";
 
 const envFile = join(process.cwd(), ".env.local");
@@ -68,7 +69,12 @@ export function gatewayFor(model: ModelRef, usage: UsageRecorder) {
     state: createGatewayState(),
     profiles,
     allowed: [model.provider],
-    keys: { anthropic: process.env.ANTHROPIC_API_KEY },
+    providers: providerSettings({
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || OLLAMA_LOCAL_URL,
+      OLLAMA_API_KEY: process.env.OLLAMA_API_KEY || undefined,
+    }),
+    timeoutMs: Number(process.env.AI_TIMEOUT_MS) || undefined,
     usage,
     flags: noFlags as never,
   });

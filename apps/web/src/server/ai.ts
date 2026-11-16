@@ -8,7 +8,7 @@ import { FakeAiGateway } from "@/modules/ai/infrastructure/fake-ai-gateway";
 import { SupabaseActivityReader } from "@/modules/ai/infrastructure/supabase-activity-reader";
 import { SupabaseFlagStore } from "@/modules/ai/infrastructure/supabase-flag-store";
 import { SupabaseUsageRecorder } from "@/modules/ai/infrastructure/supabase-usage-recorder";
-import { serverEnv } from "@/shared/config/env";
+import { providerSettings, serverEnv } from "@/shared/config/env";
 import type { Database } from "@/shared/lib/db-types";
 import { fakeResponder } from "./fake-ai";
 import { ResendMailer } from "./resend-mailer";
@@ -47,7 +47,8 @@ export function aiGateway(session: SupabaseClient<Database>): AiGateway {
     state,
     profiles: aiProfiles(),
     allowed: env.AI_PROVIDERS_ALLOWED,
-    keys: { anthropic: env.ANTHROPIC_API_KEY },
+    providers: providerSettings(env),
+    timeoutMs: env.AI_TIMEOUT_MS,
     usage,
     flags: flagStore(),
   });

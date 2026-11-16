@@ -16,6 +16,8 @@ export function httpStatus(kind: AppError["kind"]): number {
       return 413;
     case "invalid_input":
       return 400;
+    case "ai_unsupported_input":
+      return 422;
     case "quota_exceeded":
     case "rate_limited":
     case "concurrency":

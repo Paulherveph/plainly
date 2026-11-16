@@ -23,6 +23,26 @@ AI_PROFILE_TRANSLATE=anthropic:claude-haiku-5-5,google:<model>
 - Replace `<model>` with real IDs from each provider's documentation. Do not guess IDs. The env validator rejects unknown providers and any model without a price entry in `ai/pricing.ts`.
 - `AI_ALLOW_UNVERIFIED_MODELS=false` in production blocks any model that has no recorded eval run (see section 6).
 
+### Ollama (local or cloud)
+One provider id, `ollama`, for both. Ollama serves an OpenAI-compatible API, wired through `@ai-sdk/openai-compatible`. Model ids keep their own colons: `ollama:qwen3:8b`.
+
+| | Local | Ollama Cloud |
+|---|---|---|
+| `OLLAMA_BASE_URL` | `http://localhost:11434/v1` (default) | `https://ollama.com/v1` |
+| `OLLAMA_API_KEY` | not needed | required (the env check fails without it) |
+
+```
+USE_FAKE_AI=false
+AI_MODEL=ollama:llama3.2:3b   # any name from `ollama list`; fills every AI_PROFILE_* left unset
+AI_TIMEOUT_MS=600000          # local models are slow; overrides the per-profile timeouts
+```
+Switch models: `ollama pull <name>`, change `AI_MODEL`, restart `pnpm dev`. `AI_PROVIDERS_ALLOWED` defaults to the providers the profiles use; set it to make an explicit allow-list.
+- **Cost:** one zero price (`OLLAMA_PRICE`) covers every Ollama model, so no table row per model. `ai_usage` still records tokens. Production refuses it like any model without an eval, unless `AI_ALLOW_UNVERIFIED_MODELS=true`.
+- **Context length:** Ollama cuts long prompts without warning when its context window is small. Raise it once: `sudo systemctl edit ollama`, add `[Service]` + `Environment="OLLAMA_CONTEXT_LENGTH=16384"`, then `sudo systemctl restart ollama`. Size it to your memory: more context uses more VRAM/RAM.
+- **Scanned PDFs** need a vision model that accepts PDF/image input. With a text-only model, transcription fails with the normal "unavailable" error. Text PDFs and office files work.
+- **Mixing with a paid key later:** `AI_PROVIDERS_ALLOWED=anthropic,ollama` and `AI_PROFILE_ANALYSIS=anthropic:claude-sonnet-5-5,ollama:<model>` keeps Ollama as the fallback.
+- Smoke test: `pnpm ai:try --model ollama:<model> --file samples/lease.pdf`.
+
 ## 4. Fallback behavior
 
 | Error kind | Action |

@@ -13,6 +13,15 @@ describe("classifyFailure (AI_PROVIDERS section 4)", () => {
     [{ aborted: false, name: "AI_NoObjectGeneratedError" }, "repair"],
     [{ aborted: false, finishReason: "content-filter" }, "refused"],
     [{ aborted: true, status: 500 }, "aborted"],
+    [
+      {
+        aborted: false,
+        status: 400,
+        message: "Multimodal data provided, but model does not support multimodal requests.",
+      },
+      "unsupported_input",
+    ],
+    [{ aborted: false, name: "AI_UnsupportedFunctionalityError" }, "unsupported_input"],
   ] as const)("%o -> %s", (signal, action) => {
     expect(classifyFailure(signal)).toBe(action);
   });
