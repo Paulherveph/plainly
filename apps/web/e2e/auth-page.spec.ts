@@ -56,14 +56,14 @@ test("A01: the toggle switches sign in and sign up without losing the typed emai
   const errors = collectErrors(page);
   await page.goto("/en/sign-in?next=/en/deadlines", { waitUntil: "networkidle" }); // typed text before hydration is reset
   await expect(page.getByRole("heading", { level: 1, name: "Welcome back" })).toBeVisible();
-  await page.getByPlaceholder("Email").fill("ada@example.com");
+  await page.getByPlaceholder("Email").filter({ visible: true }).fill("ada@example.com");
 
   await expect(page.getByRole("button", { name: "Sign in", exact: true })).toBeVisible();
   await page.getByRole("main").getByRole("link", { name: "Create an account" }).click();
   await expect(page).toHaveURL(/mode=signup/);
   await expect(page).toHaveURL(/next=%2Fen%2Fdeadlines|next=\/en\/deadlines/);
   await expect(page.getByRole("heading", { level: 1, name: "Create your account" })).toBeVisible();
-  await expect(page.getByPlaceholder("Email")).toHaveValue("ada@example.com");
+  await expect(page.getByPlaceholder("Email").filter({ visible: true })).toHaveValue("ada@example.com");
   await expect(page.getByTestId("auth-scene")).toHaveAttribute("data-variant", "signup");
   await expect(page.getByRole("button", { name: "Create account" })).toBeVisible();
 
@@ -96,7 +96,7 @@ test("A03: reduced motion shows the poster and draws nothing", async ({ page }) 
 
 test("A04: the scene is never the LCP element", async ({ page }) => {
   await page.goto("/en/sign-in");
-  await page.getByPlaceholder("Email").click(); // input ends LCP observation
+  await page.getByPlaceholder("Email").filter({ visible: true }).click(); // input ends LCP observation
   const inScene = await page.evaluate(
     () =>
       new Promise<boolean | null>((resolve) => {

@@ -34,8 +34,8 @@ async function open(page: Page, url: string) {
 }
 
 async function fillCredentials(page: Page, email: string, password: string) {
-  const emailField = page.getByPlaceholder("Email");
-  const passwordField = page.getByPlaceholder("Password", { exact: true });
+  const emailField = page.getByPlaceholder("Email").filter({ visible: true });
+  const passwordField = page.getByPlaceholder("Password", { exact: true }).filter({ visible: true });
   // A fill that lands just before hydration can be wiped: retry until both values stick.
   await expect(async () => {
     await emailField.fill(email);
@@ -106,7 +106,7 @@ test("E04: a wrong password is refused; the right one signs in", async ({ page, 
   await fillCredentials(other, email, "not-the-password");
   await other.getByRole("button", { name: "Sign in", exact: true }).click();
   await expect(other.getByRole("main").getByRole("alert")).toContainText("Email or password is wrong.");
-  await other.getByPlaceholder("Password", { exact: true }).fill(PASSWORD);
+  await other.getByPlaceholder("Password", { exact: true }).filter({ visible: true }).fill(PASSWORD);
   await other.getByRole("button", { name: "Sign in", exact: true }).click();
   await other.waitForURL(/\/en\/documents/);
 });
@@ -140,7 +140,7 @@ test("E15: forgot password sends a code, saves the new password and signs in", a
   const other = await (await browser.newContext()).newPage();
   await open(other, "/en/sign-in");
   await other.getByRole("button", { name: "Forgot password?" }).click();
-  await other.getByPlaceholder("Email").fill(email);
+  await other.getByPlaceholder("Email").filter({ visible: true }).fill(email);
   await other.getByRole("button", { name: "Send code" }).click();
   await expect(other.getByText("Reset your password")).toBeVisible();
   await other.getByLabel("Digit 1 of 6").fill(await latestCode(email, 2));

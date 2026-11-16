@@ -34,8 +34,8 @@ test("F01: a guest who runs out of credits gets a soft paywall, never a dead end
 test("F07: fake checkout activates Pro once", async ({ page }) => {
   const email = `billing-${Date.now()}@test.local`;
   await page.goto("/en/sign-in?mode=signup", { waitUntil: "networkidle" });
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Password", { exact: true }).fill("plainly-e2e-pass");
+  await page.getByPlaceholder("Email").filter({ visible: true }).fill(email);
+  await page.getByPlaceholder("Password", { exact: true }).filter({ visible: true }).fill("plainly-e2e-pass");
   await page.getByRole("button", { name: "Create account" }).click();
   await page.getByText("Confirm your email").waitFor();
   const res = await fetch(`http://127.0.0.1:54328/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`);
@@ -50,7 +50,7 @@ test("F07: fake checkout activates Pro once", async ({ page }) => {
   await page.getByRole("button", { name: "Pay (success)" }).click();
   await expect(page.getByRole("heading", { name: "You're all set" })).toBeVisible({ timeout: 30_000 });
   await page.goto("/en/account?tab=plan");
-  await expect(page.getByText("Pro (monthly)")).toBeVisible();
+  await expect(page.getByText("Pro (monthly)").filter({ visible: true })).toBeVisible();
 });
 
 test("the billing simulator is never public without fake billing", async ({ request }) => {
