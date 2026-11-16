@@ -67,11 +67,13 @@ export class FakeAiGateway implements AiGateway {
         return err({ kind: this.opts.script.error });
       }
       try {
+        // Like a real provider: a request stopped before it starts rejects at once.
+        call.signal?.throwIfAborted();
         const value = await produce(await this.respond(call));
         await this.record(call, model, "ok", null);
         const usage: AiUsage = { ...ZERO_USAGE, costMicros: 0, provider: "fake", model, attempts };
         return ok({ value, usage });
-      } catch (error) {
+      } catch {
         const aborted = call.signal?.aborted === true;
         await this.record(call, model, aborted ? "aborted" : "failed", aborted ? "aborted" : "repair");
         return err({ kind: aborted ? "aborted" : "invalid_output" });
