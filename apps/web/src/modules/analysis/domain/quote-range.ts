@@ -1,21 +1,17 @@
-const LINE_BREAK_HYPHEN = "(?:-\\s*\\n\\s*)?";
-
-function charPattern(char: string): string {
-  if (char === "'" || char === "’") return "['’]";
-  return char.replace(/[.*+?^${}()|[\]-]/g, "\\$&");
-}
+import { indexedKey } from "./verify-citations";
 
 /**
- * Finds a quote in the original page text for highlighting. Tolerates the same
- * differences as verification, for display: case, runs of whitespace,
- * hyphenated line breaks and typographic apostrophes.
+ * Finds a quote in the original page text for highlighting. Uses the same comparison
+ * key as verification, so every verified quote can be highlighted. No RegExp is built
+ * from the quote, so no character in it can break the search.
  */
 export function findQuoteRange(page: string, quote: string): { start: number; end: number } | null {
-  const words = quote.trim().split(/\s+/).filter(Boolean);
-  if (words.length === 0) return null;
-  const pattern = words.map((w) => [...w].map(charPattern).join(LINE_BREAK_HYPHEN)).join("\\s+");
-  const match = new RegExp(pattern, "iu").exec(page);
-  return match ? { start: match.index, end: match.index + match[0].length } : null;
+  const needle = indexedKey(quote).key;
+  if (needle.length === 0) return null;
+  const hay = indexedKey(page);
+  const at = hay.key.indexOf(needle);
+  if (at === -1) return null;
+  return { start: hay.start[at] ?? 0, end: hay.end[at + needle.length - 1] ?? page.length };
 }
 
 /**

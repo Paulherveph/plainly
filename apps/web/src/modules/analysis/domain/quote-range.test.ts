@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { findQuoteRange, reflowPage } from "./quote-range";
+import { locateQuote } from "./verify-citations";
 
 const PAGE =
   "§9 Pets. No animals may be kept without the prior written consent of\nthe Land-\nlord. Tenant’s duties.";
@@ -23,6 +24,44 @@ describe("findQuoteRange", () => {
     expect(slice("Price (€850) per month", "(€850)")).toBe("(€850)");
     expect(findQuoteRange(PAGE, "parking included")).toBeNull();
     expect(findQuoteRange(PAGE, "   ")).toBeNull();
+  });
+});
+
+describe("findQuoteRange: anything that verifies can be highlighted", () => {
+  it.each([
+    // The crash from the field: a hyphen became an invalid escape under the `u` flag.
+    ["for a twelve-month period", "Runs for a twelve-month period.", "for a twelve-month period"],
+    ["03/04/2027 — submit", "Deadline: 03/04/2027 — submit materials", "03/04/2027 — submit"],
+    ['the "Service"', "called the “Service” here", "the “Service”"],
+    [
+      "Frais de tenue de compte : 4,50 EUR",
+      "1. **Frais de tenue de compte** : 4,50 EUR par mois",
+      "Frais de tenue de compte** : 4,50 EUR",
+    ],
+    ["4,50EUR", "un montant de 4,50 EUR sera prélevé", "4,50 EUR"],
+    ["Rent: 850", "Ｒｅｎｔ: 850 per month", "Ｒｅｎｔ: 850"],
+    ["(a) [b] {c} ^$ |?*+.", "x (a) [b] {c} ^$ |?*+. y", "(a) [b] {c} ^$ |?*+."],
+  ])("%j", (quote, page, expected) => {
+    expect(slice(page, quote)).toBe(expected);
+  });
+
+  it("highlights every quote that verifyCitations would keep", () => {
+    const pages = [
+      PAGE,
+      "第三条 租金每月850欧元，于每月5日前支付。",
+      "Pay by: 25/11/2026 — no later than 20 November 2026.",
+    ];
+    const quotes = [
+      "prior written consent of the Landlord",
+      "租金每月850欧元",
+      "25/11/2026 — no later",
+      "Tenant's duties",
+    ];
+    for (const quote of quotes) {
+      const page = locateQuote(quote, pages);
+      expect(page, quote).not.toBeNull();
+      expect(findQuoteRange(pages[(page ?? 1) - 1] ?? "", quote), quote).not.toBeNull();
+    }
   });
 });
 

@@ -4,21 +4,61 @@ import { quoteSupportsDate } from "./due-date";
 /** Shorter quotes match almost anything, so they can't prove a claim. */
 export const MIN_QUOTE_KEY_LENGTH = 6;
 
-/**
- * Comparison key: Unicode-normalised (NFKC), lower case, typographic quotes unified,
- * line-break hyphenation removed, Markdown emphasis (* _ `) removed, all whitespace removed.
- */
-export function matchKey(text: string): string {
-  return text
+/** A hyphen (any dash, incl. full-width) that ends a line: PDF line-break hyphenation. */
+const LINE_BREAK_HYPHEN = /[-\u2010-\u2015\u2212\uFE63\uFF0D]\s*\n\s*/g;
+
+/** One character of the comparison key (may be empty or longer than one unit). */
+function keyChar(ch: string): string {
+  const code = ch.charCodeAt(0);
+  if (code < 128) return /[\s*_`]/.test(ch) ? "" : ch.toLowerCase();
+  return ch
     .normalize("NFKC")
-    .replace(/[‘’‚ʼ′]/g, "'")
-    .replace(/[“”„«»]/g, '"')
-    .replace(/[‐-―−]/g, "-")
-    .replace(/­/g, "")
-    .replace(/-\s*\n\s*/g, "")
-    .replace(/[*_`]/g, "")
-    .replace(/\s+/g, "")
+    .replace(/[\u2018\u2019\u201A\u02BC\u2032]/g, "'")
+    .replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g, '"')
+    .replace(/[\u2010-\u2015\u2212]/g, "-")
+    .replace(/[\u00AD\s*_`]/g, "")
     .toLowerCase();
+}
+
+export type IndexedKey = {
+  /** The comparison key. */
+  key: string;
+  /** For each key unit, where its source character starts and ends in the text. */
+  start: number[];
+  end: number[];
+};
+
+/**
+ * Comparison key with a map back to the source text: Unicode-normalised (NFKC), lower case,
+ * typographic quotes and dashes unified, line-break hyphenation, soft hyphens, Markdown
+ * emphasis (* _ `) and all whitespace removed. Verification and highlighting both use it,
+ * so any quote that verifies can also be shown on the page.
+ */
+export function indexedKey(text: string): IndexedKey {
+  const skip = new Uint8Array(text.length);
+  for (const m of text.matchAll(LINE_BREAK_HYPHEN)) skip.fill(1, m.index, m.index + m[0].length);
+  let key = "";
+  const start: number[] = [];
+  const end: number[] = [];
+  for (let i = 0; i < text.length; ) {
+    const ch = String.fromCodePoint(text.codePointAt(i) ?? 0);
+    const next = i + ch.length;
+    if (!skip[i]) {
+      const k = keyChar(ch);
+      key += k;
+      for (let u = 0; u < k.length; u++) {
+        start.push(i);
+        end.push(next);
+      }
+    }
+    i = next;
+  }
+  return { key, start, end };
+}
+
+/** The comparison key alone (see indexedKey). */
+export function matchKey(text: string): string {
+  return indexedKey(text).key;
 }
 
 /** Returns the 1-based page where the quote appears, or null. */
