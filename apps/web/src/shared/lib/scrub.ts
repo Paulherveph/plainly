@@ -14,7 +14,7 @@ type ScrubbableEvent = {
     headers?: unknown;
     query_string?: unknown;
   };
-  user?: { id?: string } & Record<string, unknown>;
+  user?: { id?: string | number } & Record<string, unknown>;
   extra?: unknown;
   breadcrumbs?: {
     category?: string;
@@ -26,6 +26,24 @@ type ScrubbableEvent = {
   exception?: { values?: { type?: string; value?: string; stacktrace?: { frames?: Frame[] } }[] };
   contexts?: Record<string, unknown>;
   tags?: Record<string, unknown>;
+};
+
+/**
+ * Sentry `dataCollection`: collect nothing beyond errors and stack frames. Sentry 11 replaced
+ * `sendDefaultPii` with this, and its defaults collect bodies, headers and AI inputs/outputs.
+ */
+export const SENTRY_DATA_COLLECTION = {
+  userInfo: false,
+  cookies: false,
+  httpHeaders: false,
+  httpBodies: [],
+  urlQueryParams: false,
+  graphQL: { document: false, variables: false },
+  genAI: { inputs: false, outputs: false },
+  mcp: { inputs: false, outputs: false },
+  databaseQueryData: false,
+  queues: false,
+  stackFrameVariables: false,
 };
 
 const SAFE_VALUE = /^[a-z_]{2,40}$/;
