@@ -167,3 +167,31 @@ eval       vitest run evals
 e2e        playwright test
 db:types   supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts
 ```
+
+### Keeping types in sync
+
+`apps/web/src/shared/lib/db-types.ts` is generated from the local database. Never edit it by hand. Biome ignores it on purpose.
+
+**After every migration**, in the same commit:
+
+```bash
+supabase migration up      # or `supabase db reset` for a clean slate
+pnpm db:types
+pnpm check
+```
+
+If you skip this, the type check fails with errors like `Argument of type '"is_admin"' is not assignable to parameter of type '"consume_quota" | ...'` or `Property 'x' does not exist on type 'never'`: the code calls a function or column the stale file does not know. The fix is to regenerate, not to add casts.
+
+The Supabase workflow regenerates the file and fails on any diff. When it fails, run the three commands above and commit the result. CI pins the Supabase CLI version, because `gen types` output can change between versions. When you upgrade the local CLI (`supabase --version`), bump `version:` in `.github/workflows/supabase.yml` in the same commit.
+
+**A wall of type errors after a dependency upgrade.** Regenerate the database types first: stale DB types produce most of the noise and hide the real errors. Then fix what is left at its source, checking the installed library types (`node_modules/<pkg>/**/*.d.ts`) or Context7. Never use `any` or `@ts-expect-error`. Breaking changes seen so far:
+
+| Upgrade | Symptom | Fix |
+|---|---|---|
+| Sentry 11 | `sendDefaultPii` does not exist | Replaced by `dataCollection`, whose defaults collect bodies, headers and AI inputs. We pass `SENTRY_DATA_COLLECTION` from `shared/lib/scrub.ts`, which turns every category off. Never drop it. |
+| Sentry 11 | `User.id` is `string \| number` | The `ScrubbableEvent` type in `scrub.ts` follows Sentry's shape. |
+| Zod 4 | `ZodEmail`/`ZodURL` not assignable to `ZodString` | Helpers take `z.ZodType`, not `z.ZodString`. |
+| TypeScript 5.7+ | `Uint8Array<ArrayBufferLike>` not assignable to `BodyInit` | Type the bytes as `Uint8Array<ArrayBuffer>` where they are produced (ports included). Don't copy them. |
+| unpdf 2 / pdf.js 5 | `isEvalSupported` unknown | Removed upstream, since pdf.js no longer uses `eval`. Drop the option. |
+
+Add a row whenever an upgrade breaks something new.

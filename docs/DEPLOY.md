@@ -137,7 +137,7 @@ Apply the table in "Supabase Auth settings for production (S3)" above: anonymous
 | `NEXT_PUBLIC_OPERATOR` | P | Company or sole-proprietor name and country (footer and Terms). Required before charging |
 
 ### 5. Before the first deploy (Claude Code, on request)
-- [ ] `supabase db reset && pnpm db:types`: regenerates `apps/web/src/shared/lib/db-types.ts` for the new tables.
+- [ ] `supabase db reset && pnpm db:types`: regenerates `apps/web/src/shared/lib/db-types.ts` for the new tables. Do this after every migration (see `docs/ARCHITECTURE.md`, "Keeping types in sync"). CI fails if the file is stale.
 - [ ] `pnpm check`, `pnpm test:db`, `pnpm test:int`, `pnpm e2e` all green.
 - [ ] `pnpm ai:samples --model anthropic:claude-sonnet-5-5`, then commit `apps/web/samples/analyses/*.json` (samples then cost 0 tokens).
 - [ ] `pnpm ai:eval --model anthropic:claude-sonnet-5-5` and `--model anthropic:claude-haiku-5-5 --profile chat`: thresholds met, `evalPassedOn` set.
