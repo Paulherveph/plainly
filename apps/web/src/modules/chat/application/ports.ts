@@ -5,8 +5,9 @@ import type { PageHit } from "@/modules/documents/application/ports";
 import type { AppError } from "@/shared/lib/errors";
 import type { Result } from "@/shared/lib/result";
 import type { ChatDraft } from "../domain/grounding";
+import type { ChatTurn } from "../domain/history";
 
-export type ChatTurn = { role: "user" | "assistant"; text: string };
+export type { ChatTurn };
 
 export type StoredMessage = {
   id: string;

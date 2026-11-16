@@ -58,7 +58,7 @@ export function makeMergeGuest(deps: { admin: AccountAdmin }) {
 
 /** E11: a zip of JSON (all rows the user owns) plus the original files. */
 export function makeExportData(deps: { data: AccountDataReader; zipper: Zipper }) {
-  return async (userId: string): Promise<Result<Uint8Array, AppError>> => {
+  return async (userId: string): Promise<Result<Uint8Array<ArrayBuffer>, AppError>> => {
     const [tables, originals] = await Promise.all([deps.data.tables(userId), deps.data.originals(userId)]);
     if (!tables.ok) return tables;
     if (!originals.ok) return originals;

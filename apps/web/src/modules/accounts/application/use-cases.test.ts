@@ -40,7 +40,7 @@ describe("mergeGuest (E06)", () => {
 
 describe("exportData (E11)", () => {
   it("zips one JSON file per table and the originals", async () => {
-    const zip = vi.fn(() => new Uint8Array([1]));
+    const zip = vi.fn((_entries: { path: string; bytes: Uint8Array }[]) => new Uint8Array([1]));
     const run = makeExportData({
       data: {
         tables: async () => ok({ documents: [{ id: "d1" }], messages: [] }),
@@ -49,7 +49,7 @@ describe("exportData (E11)", () => {
       zipper: { zip },
     });
     expect((await run("u")).ok).toBe(true);
-    expect(zip.mock.calls[0]?.[0].map((e: { path: string }) => e.path)).toEqual([
+    expect(zip.mock.calls[0]?.[0].map((e) => e.path)).toEqual([
       "README.txt",
       "data/documents.json",
       "data/messages.json",

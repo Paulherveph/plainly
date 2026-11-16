@@ -1,4 +1,4 @@
-import type { ChatTurn } from "../application/ports";
+export type ChatTurn = { role: "user" | "assistant"; text: string };
 
 /** TOKEN_ECONOMY technique 11: keep the last 6 turns, summarize older ones above 10. */
 export const KEEP_TURNS = 6;

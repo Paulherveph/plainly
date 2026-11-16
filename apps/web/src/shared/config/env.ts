@@ -12,7 +12,8 @@ const bool = z
   .transform((v) => v === "true" || v === "1");
 
 /** Empty strings (e.g. `KEY=` in .env or an exported blank variable) count as unset. */
-const optional = (schema: z.ZodString) => z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
+const optional = <T extends z.ZodType>(schema: T) =>
+  z.preprocess((v) => (v === "" ? undefined : v), schema.optional());
 
 /** "anthropic:claude-sonnet-5-5,anthropic:claude-haiku-5-5" -> ordered fallback list. */
 const profile = (fallback: string) =>

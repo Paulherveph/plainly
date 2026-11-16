@@ -38,7 +38,7 @@ export class UnpdfTextExtractor implements TextExtractor {
 async function extractPdf(bytes: Uint8Array): Promise<Result<Extracted, InvalidInputReason>> {
   try {
     // unpdf may detach the buffer it receives, so give it a copy.
-    const pdf = await getDocumentProxy(bytes.slice(), { isEvalSupported: false });
+    const pdf = await getDocumentProxy(bytes.slice());
     if (pdf.numPages > MAX_PAGES) return err("too_many_pages");
     const { totalPages, text } = await extractText(pdf, { mergePages: false });
     const pages = Array.isArray(text) ? text : [text];

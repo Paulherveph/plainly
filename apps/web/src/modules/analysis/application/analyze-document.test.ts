@@ -219,7 +219,7 @@ describe("analyzeDocument", () => {
   it("B10: the primary model fails and the fallback answers", async () => {
     const s = setup({ models: ["primary", "fallback"], script: { failModels: new Set(["primary"]) } });
     const done = await finish(await s.run());
-    expect(done.ok && done.value.model).toBe("fallback");
+    expect(done.ok && "model" in done.value && done.value.model).toBe("fallback");
   });
 
   it("B11: all providers down means a typed error and released credits", async () => {

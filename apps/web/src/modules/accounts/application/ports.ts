@@ -25,7 +25,7 @@ export interface AccountDataReader {
 }
 
 export interface Zipper {
-  zip(entries: { path: string; bytes: Uint8Array }[]): Uint8Array;
+  zip(entries: { path: string; bytes: Uint8Array }[]): Uint8Array<ArrayBuffer>;
 }
 
 /** Cancels any paid subscription before an account is deleted (billing implements it in S4). */
