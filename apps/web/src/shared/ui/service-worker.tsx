@@ -25,16 +25,13 @@ export function ServiceWorker() {
 
   if (!offline) return null;
   return (
-    <div
-      role="status"
-      className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-start gap-3 rounded-xl border bg-surface p-3.5 text-sm shadow-lg print:hidden"
-    >
+    <output className="fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-md items-start gap-3 rounded-xl border bg-surface p-3.5 text-sm shadow-lg print:hidden">
       <WifiOffIcon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
       <p>
         <span className="font-medium">{t("title")}.</span>{" "}
         <span className="text-muted-foreground">{t("body")}</span>
       </p>
-    </div>
+    </output>
   );
 }
 

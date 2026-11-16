@@ -16,6 +16,7 @@
       "!assets/mockup",
       "!supabase/.temp",
       "!supabase/.branches",
+      "!supabase/templates",
       "!apps/web/src/shared/lib/db-types.ts",
       "!**/playwright-report",
       "!**/test-results",

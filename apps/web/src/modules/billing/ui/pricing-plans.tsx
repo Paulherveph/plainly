@@ -62,10 +62,9 @@ export function PricingPlans() {
   return (
     <>
       <div className="mt-10 flex justify-center">
-        <div
-          role="group"
+        <fieldset
           aria-label={t("billingPeriod")}
-          className="inline-flex rounded-full border bg-surface p-1"
+          className="m-0 inline-flex min-w-0 rounded-full border bg-surface p-1"
         >
           {[false, true].map((y) => (
             <button
@@ -83,7 +82,7 @@ export function PricingPlans() {
               ) : null}
             </button>
           ))}
-        </div>
+        </fieldset>
       </div>
 
       <div className="mx-auto mt-8 grid max-w-[520px] gap-4 lg:max-w-none lg:grid-cols-3">

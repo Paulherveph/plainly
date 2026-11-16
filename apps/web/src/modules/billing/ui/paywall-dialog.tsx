@@ -49,7 +49,16 @@ export function PaywallDialog({
     });
 
   if (signIn)
-    return <SignInDialog open onOpenChange={(o) => !o && (setSignIn(false), onOpenChange(false))} />;
+    return (
+      <SignInDialog
+        open
+        onOpenChange={(o) => {
+          if (o) return;
+          setSignIn(false);
+          onOpenChange(false);
+        }}
+      />
+    );
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

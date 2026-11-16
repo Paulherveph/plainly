@@ -454,6 +454,7 @@
   }
 }
 
+/* biome-ignore-start lint/complexity/noImportantStyles: print styles must override every screen style */
 @media print {
   @page {
     margin: 16mm;
@@ -494,3 +495,4 @@
     color: #333 !important;
   }
 }
+/* biome-ignore-end lint/complexity/noImportantStyles: print block ends */

@@ -74,8 +74,11 @@ export function PlanPanel({ balance, ledger }: { balance: CreditBalance; ledger:
           <p className="mt-2 text-muted-foreground text-sm">{t("ledgerEmpty")}</p>
         ) : (
           <ul className="mt-3 divide-y text-sm">
-            {ledger.slice(0, 30).map((e, i) => (
-              <li key={i} className="flex items-center justify-between gap-3 py-2">
+            {ledger.slice(0, 30).map((e) => (
+              <li
+                key={`${e.createdAt}-${e.bucket}-${e.reason}-${e.delta}`}
+                className="flex items-center justify-between gap-3 py-2"
+              >
                 <span className="text-muted-foreground">
                   {t(`reason_${e.reason}`)} ·{" "}
                   {format.dateTime(new Date(e.createdAt), { dateStyle: "short", timeStyle: "short" })}

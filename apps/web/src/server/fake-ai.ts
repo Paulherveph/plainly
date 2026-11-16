@@ -3,6 +3,8 @@ import type { AiCall, AiMessage } from "@/modules/ai/application/ports";
 import type { FakeReply } from "@/modules/ai/infrastructure/fake-ai-gateway";
 import { LOCALES, type OutputLocale } from "@/modules/analysis/domain/analysis";
 import { draftFor, fakeAnalysisPartials } from "@/modules/analysis/infrastructure/fake-analyzer";
+import { FIXTURES } from "@/modules/analysis/infrastructure/fake-fixtures";
+import { LANGUAGE_NAMES } from "@/modules/analysis/infrastructure/prompts";
 import { fakeChatDraft, fakeChatPartials } from "@/modules/chat/infrastructure/fake-answerer";
 
 /** Deterministic replies for the fake gateway, built from the call's own messages. */
@@ -22,8 +24,12 @@ export function fakeResponder(call: AiCall): FakeReply {
       };
     }
     case "translate": {
-      const json = text.slice(text.indexOf("{"));
-      return { value: JSON.parse(json) };
+      // A sample's summary comes back in the target language; any other text is returned as is.
+      const value = JSON.parse(text.slice(text.indexOf("{"))) as { summary: string };
+      const to = LOCALES.find((l) => text.includes(`Translate into ${LANGUAGE_NAMES[l]}:`));
+      const fixture = FIXTURES.find((f) => Object.values(f.summary).includes(value.summary));
+      if (to && fixture) value.summary = fixture.summary[to];
+      return { value };
     }
     case "summarize_history":
       return { value: "Earlier questions about this document." };

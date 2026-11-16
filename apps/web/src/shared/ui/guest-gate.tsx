@@ -37,13 +37,12 @@ export function GuestGateProvider({ children }: { children: React.ReactNode }) {
     }
   }, [t]);
 
-  const askToken = () =>
-    new Promise<string | null>((resolve) => {
-      waiter.current = resolve;
-      setOpen(true);
-    });
-
   const ensure = useCallback(async () => {
+    const askToken = () =>
+      new Promise<string | null>((resolve) => {
+        waiter.current = resolve;
+        setOpen(true);
+      });
     if (ready.current) return true;
     let res = await startGuestAction(null);
     if (!res.ok && res.error.kind === "needs_captcha") {

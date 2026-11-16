@@ -8,7 +8,7 @@ export const DEFAULT_NEXT = "/en/documents";
 export function safeNext(value: string | null | undefined, fallback = DEFAULT_NEXT): string {
   if (!value || value.length > 512) return fallback;
   if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return fallback;
-  if (/[\u0000-\u001f\\]/.test(value)) return fallback;
+  if (hasControlOrBackslash(value)) return fallback;
   try {
     const url = new URL(value, "https://plainly.invalid");
     if (url.origin !== "https://plainly.invalid") return fallback;
@@ -16,4 +16,10 @@ export function safeNext(value: string | null | undefined, fallback = DEFAULT_NE
   } catch {
     return fallback;
   }
+}
+
+/** True for any character below U+0020 (tabs, newlines, NUL...) or a backslash. */
+function hasControlOrBackslash(value: string): boolean {
+  for (const ch of value) if (ch.charCodeAt(0) < 0x20 || ch === "\\") return true;
+  return false;
 }
