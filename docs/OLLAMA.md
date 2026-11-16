@@ -78,7 +78,21 @@ Pick a model your memory can hold. As a rough guide for the common 4-bit downloa
 
 Bigger models give better results but run slower. If `ollama ps` shows `100% CPU`, your GPU isn't being used: answers will take minutes, not seconds.
 
-Plainly reads images and scanned PDFs only with a model whose `ollama show` lists **vision**. Text PDFs, Word, Excel and text files work with any model.
+### Images and scans
+
+Most Ollama models read **text only**, including `llama3.2:3b`. With them, a photo or a scanned PDF fails with "The current AI model can't read images or scans". Text PDFs, Word, Excel and text files work with any model.
+
+Some models do read images. `ollama show <name>` lists **vision** for them. Checked on ollama.com on 2026-11-16:
+
+| Where it runs | Model (`AI_MODEL=ollama:…`) | Memory | Notes |
+|---|---|---|---|
+| Local | `gemma3:4b` | ~4 GB | Smallest that reads images (`gemma3:1b` and `270m` are text only) |
+| Local | `qwen3-vl:4b` / `qwen3-vl:8b` | ~4 / ~8 GB | Strong on printed documents |
+| Local | `gemma3:12b` / `gemma3:27b` | ~10 / ~20 GB | Better, needs a big GPU |
+| Ollama Cloud | `qwen3-vl:235b-cloud` | none (runs on Ollama's servers) | Large vision model, needs `OLLAMA_API_KEY` |
+| Ollama Cloud | other models tagged both *cloud* and *vision* on [ollama.com/search?c=vision](https://ollama.com/search?c=vision) | none | e.g. `gemma4` cloud tags |
+
+So: **local works** if you pull a vision model and have the memory, and **cloud works** with a vision-tagged cloud model. Small local vision models still misread small print. For reliable results on photos and scans, use Claude, Gemini or Grok ([AI providers](AI_PROVIDERS.md#ready-to-use-claude-gemini-grok)): all three read images.
 
 ## 5. Connect Plainly
 
@@ -149,6 +163,8 @@ When you have an Anthropic API key:
 ANTHROPIC_API_KEY=<your key>
 AI_MODEL=anthropic:claude-sonnet-5-5
 ```
+
+Gemini (`GEMINI_API_KEY`, `AI_MODEL=google:gemini-3.8-flash`) and Grok (`XAI_API_KEY`, `AI_MODEL=xai:grok-4.7`) work the same way.
 
 To keep Ollama as a fallback when Claude is down, list both: `AI_PROFILE_ANALYSIS=anthropic:claude-sonnet-5-5,ollama:llama3.2:3b`. See [AI providers](AI_PROVIDERS.md) for profiles and fallbacks.
 

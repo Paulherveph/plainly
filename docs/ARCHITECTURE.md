@@ -72,7 +72,9 @@ assets/                          # Design sources, not shipped code
    ├─ screenshots/               # WebP shots committed; PNG masters in raw/ (gitignored)
    ├─ videos/                    # One HTML file per video, driven by seek(t) (lib/engine.js)
    ├─ render.mjs                 # Frame-by-frame render → apps/web/public/videos/ (site) or out/ (social)
+   ├─ walkthrough.ts             # Records the README walkthrough from the real app → walkthrough/ (mp4 + webp)
    └─ icons.mjs                  # Favicon / PWA icons from apps/web/src/app/icon.svg
+test-documents/                  # Fictional real-world documents + answer key, for manual testing with a real AI
 docs/
 ```
 
