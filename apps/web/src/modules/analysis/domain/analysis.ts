@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { dateAsWritten } from "./due-date";
 
 export const LOCALES = ["en", "fr", "zh"] as const;
 export type OutputLocale = (typeof LOCALES)[number];
@@ -111,6 +112,21 @@ function clamp(text: string, max: number): string {
   return t.length <= max ? t : `${t.slice(0, max - 1).trimEnd()}…`;
 }
 
+const capitalize = (s: string): string => s.charAt(0).toLocaleUpperCase() + s.slice(1);
+
+/** The rule shown when no date is stored: the model's rule, else (ambiguous) the date as written. */
+function dueRuleOf(
+  rule: string | null,
+  ambiguous: boolean,
+  quote: string,
+  dueOn: string | null,
+): string | null {
+  if (rule) return clamp(rule, 200);
+  if (!ambiguous) return null;
+  const written = dateAsWritten(quote) ?? dueOn;
+  return written ? clamp(written, 200) : null;
+}
+
 function isoDateOrNull(value: string | null): string | null {
   if (!value) return null;
   return z.iso.date().safeParse(value).success ? value : null;
@@ -123,7 +139,8 @@ export function toAnalysis(draft: AnalysisDraft): Analysis {
     quote: c.quote.trim().slice(0, 240),
   });
   return Analysis.parse({
-    documentType: clamp(draft.documentType, 60),
+    // "admission notice" and "Notification" should look alike in the library filter.
+    documentType: capitalize(clamp(draft.documentType, 60)),
     language: draft.language,
     summary: clamp(draft.summary, 600),
     keyFacts: draft.keyFacts.slice(0, CAPS.keyFacts).map((f) => ({
@@ -139,7 +156,7 @@ export function toAnalysis(draft: AnalysisDraft): Analysis {
         detail: a.detail.trim(),
         // B04: an ambiguous date is never guessed. B03: a relative rule is kept as written.
         dueOn: ambiguous ? null : isoDateOrNull(a.dueOn),
-        dueRule: rule ? clamp(rule, 200) : ambiguous && a.dueOn ? clamp(a.dueOn, 200) : null,
+        dueRule: dueRuleOf(rule, ambiguous, a.cite.quote, a.dueOn),
         dateAmbiguous: ambiguous,
         cite: cite(a.cite),
       };

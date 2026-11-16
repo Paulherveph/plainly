@@ -74,6 +74,7 @@ export function AnalysisScreen({
 }: AnalysisScreenProps) {
   const t = useTranslations("Analysis");
   const tc = useTranslations("Common");
+  const td = useTranslations("Documents");
   const [confirmed, setConfirmed] = useState(confirmCost === null);
   const { state, retry, continueAsGeneral, rerun } = useAnalysisStream(doc.id, locale, initial, confirmed);
   const [sheetCite, setSheetCite] = useState<Cite | null>(null);
@@ -115,7 +116,7 @@ export function AnalysisScreen({
             {data?.documentType || doc.kind ? <Chip>{data?.documentType ?? doc.kind}</Chip> : null}
             <Chip mono>
               {languageLabel(doc.sourceLang ?? data?.language)}
-              {doc.pageCount} p
+              {td("pages", { count: doc.pageCount })}
             </Chip>
             <StatusLine state={state} />
           </div>
@@ -364,6 +365,7 @@ function StatusLine({ state }: { state: AnalysisState }) {
 const ERROR_KEYS: Record<string, string> = {
   capacity: "errorCapacity",
   ai_unavailable: "errorUnavailable",
+  ai_unsupported_input: "errorUnsupportedInput",
   ai_refused: "errorRefused",
   rate_limited: "errorRateLimited",
   concurrency: "errorConcurrency",
@@ -388,7 +390,7 @@ function FailedCard({
       <p className="mt-1.5 text-muted-foreground text-sm">
         {key ? t(`Analysis.${key}`) : t("Analysis.failedBody")} {t("Analysis.notCharged")}
       </p>
-      {error !== "ai_refused" ? (
+      {error !== "ai_refused" && error !== "ai_unsupported_input" ? (
         <Button variant="outline" className="mt-4" onClick={onRetry}>
           <RefreshCwIcon />
           {incomplete ? t("Analysis.resume") : t("Common.retry")}

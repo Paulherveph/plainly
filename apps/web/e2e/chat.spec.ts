@@ -25,9 +25,12 @@ test("chat answers from the document with a quote, and refuses what isn't there"
 
   await input.fill("Is a parking space included?");
   await input.press("Enter");
-  await expect(page.getByTestId("chat-refusal")).toHaveText("I can't find that in this document.", {
-    timeout: 15_000,
-  });
+  await expect(page.getByTestId("chat-refusal")).toHaveText(
+    "I couldn't find a quote in this document that answers this, so I won't guess. Try asking it another way.",
+    {
+      timeout: 15_000,
+    },
+  );
 
   // history is restored from the database
   await page.reload();

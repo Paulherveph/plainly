@@ -37,6 +37,11 @@ describe("locateQuote", () => {
   it("matches curly vs straight apostrophes", () => {
     expect(locateQuote("at least 24 hours' notice", PAGES)).toBe(2);
   });
+  it("ignores Markdown emphasis in text files", () => {
+    expect(
+      locateQuote("Frais de tenue de compte : 4,50 EUR", ["1. **Frais de tenue de compte** : 4,50 EUR"]),
+    ).toBe(1);
+  });
   it("works with Chinese text", () => {
     expect(locateQuote("租金每月850欧元", PAGES)).toBe(3);
   });
@@ -123,5 +128,32 @@ describe("verifyCitations", () => {
     const copy = structuredClone(analysis);
     verifyCitations(analysis, PAGES);
     expect(analysis).toEqual(copy);
+  });
+
+  it("B03: turns a due date its quote doesn't show into the quoted rule", () => {
+    const rule = "within 30 days of your arrival in China";
+    const { analysis: verified, dropped } = verifyCitations(
+      {
+        ...analysis,
+        actions: [
+          {
+            title: "Register",
+            detail: "d",
+            dueOn: "2026-11-30",
+            dueRule: null,
+            dateAmbiguous: false,
+            cite: { page: 1, quote: rule },
+          },
+        ],
+      },
+      [`You must register ${rule}.`],
+    );
+    expect(dropped).toBe(analysis.keyFacts.length + analysis.watchOuts.length);
+    expect(verified.actions[0]).toMatchObject({ dueOn: null, dueRule: rule });
+  });
+
+  it("keeps a due date its quote shows", () => {
+    const { analysis: verified } = verifyCitations(analysis, PAGES);
+    expect(verified.actions[0]?.dueOn).toBe("2026-11-20");
   });
 });

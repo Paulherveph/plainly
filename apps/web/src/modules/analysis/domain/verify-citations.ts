@@ -1,11 +1,12 @@
 import type { Analysis, Cite } from "./analysis";
+import { quoteSupportsDate } from "./due-date";
 
 /** Shorter quotes match almost anything, so they can't prove a claim. */
 export const MIN_QUOTE_KEY_LENGTH = 6;
 
 /**
  * Comparison key: Unicode-normalised (NFKC), lower case, typographic quotes unified,
- * line-break hyphenation removed, all whitespace removed.
+ * line-break hyphenation removed, Markdown emphasis (* _ `) removed, all whitespace removed.
  */
 export function matchKey(text: string): string {
   return text
@@ -15,6 +16,7 @@ export function matchKey(text: string): string {
     .replace(/[‐-―−]/g, "-")
     .replace(/­/g, "")
     .replace(/-\s*\n\s*/g, "")
+    .replace(/[*_`]/g, "")
     .replace(/\s+/g, "")
     .toLowerCase();
 }
@@ -39,6 +41,8 @@ export function verifyCite(cite: Cite, pages: readonly string[]): Cite | null {
 
 /**
  * Keeps only facts, actions and watch-outs whose quote exists in the document text.
+ * An action keeps its due date only if its quote shows that date; otherwise the quote
+ * becomes the rule ("within 30 days of arrival") and the reader picks the date.
  * Returns a new analysis and the number of dropped claims (logged, never the content).
  */
 export function verifyCitations(
@@ -58,7 +62,11 @@ export function verifyCitations(
   const verified: Analysis = {
     ...analysis,
     keyFacts: keep(analysis.keyFacts),
-    actions: keep(analysis.actions),
+    actions: keep(analysis.actions).map((a) =>
+      a.dueOn && !quoteSupportsDate(a.dueOn, a.cite.quote)
+        ? { ...a, dueOn: null, dueRule: a.dueRule ?? a.cite.quote.slice(0, 200) }
+        : a,
+    ),
     watchOuts: keep(analysis.watchOuts),
   };
   return { analysis: verified, dropped };

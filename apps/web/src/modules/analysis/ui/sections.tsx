@@ -129,7 +129,12 @@ export function FactsSection({ data, verified, onCite }: View) {
   );
 }
 
-function DateTile({ dueOn, overdue }: { dueOn: string | null | undefined; overdue: boolean }) {
+/** A complete YYYY-MM-DD date, or null (a streamed partial like "2026-1" is not a date yet). */
+function fullDate(value: string | null | undefined): string | null {
+  return value && /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) ? value : null;
+}
+
+function DateTile({ dueOn, overdue }: { dueOn: string | null; overdue: boolean }) {
   const t = useTranslations("Analysis");
   const format = useFormatter();
   if (!dueOn) {
@@ -182,13 +187,14 @@ export function ActionsSection({
       ) : (
         <ul className="grid gap-2.5">
           {actions.map((a, i) => {
-            const overdue = Boolean(a?.dueOn && a.dueOn < today);
+            const dueOn = fullDate(a?.dueOn);
+            const overdue = Boolean(dueOn && dueOn < today);
             return (
               <li
                 key={i}
                 className="grid grid-cols-[auto_1fr] gap-3.5 rounded-[10px] border bg-background p-3.5 dark:bg-background"
               >
-                <DateTile dueOn={a?.dueOn} overdue={overdue} />
+                <DateTile dueOn={dueOn} overdue={overdue} />
                 <div className="min-w-0">
                   <h3 className="font-semibold text-[15px] tracking-tight">{a?.title}</h3>
                   {a?.detail ? <p className="mt-0.5 text-muted-foreground text-sm">{a.detail}</p> : null}
@@ -201,9 +207,9 @@ export function ActionsSection({
                         </span>
                       ) : null}
                       {a?.cite ? <CitationChip cite={a.cite as Cite} onOpen={onCite} /> : null}
-                      {a?.dueOn && documentId ? (
+                      {dueOn && documentId ? (
                         <a
-                          href={`/api/deadlines/ics?documentId=${documentId}&dueOn=${a.dueOn}`}
+                          href={`/api/deadlines/ics?documentId=${documentId}&dueOn=${dueOn}`}
                           download
                           className="inline-flex h-7 items-center gap-1.5 rounded-full px-2.5 text-muted-foreground text-xs transition-colors hover:bg-surface-2 hover:text-foreground"
                         >

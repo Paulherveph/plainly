@@ -74,6 +74,23 @@ describe("deadline rules and caps", () => {
     expect(a.actions[0]).toMatchObject({ dueOn: null, dateAmbiguous: true, dueRule: "03/04/2026" });
   });
 
+  it("B04: with no rule, an ambiguous date is shown as the document writes it", () => {
+    const a = toAnalysis({
+      ...base,
+      actions: [
+        {
+          title: "Submit",
+          detail: "d",
+          dueOn: "2027-03-04",
+          dateAmbiguous: true,
+          dueRule: null,
+          cite: { page: 2, quote: "Submit residence permit materials 03/04/2027" },
+        },
+      ],
+    });
+    expect(a.actions[0]).toMatchObject({ dueOn: null, dueRule: "03/04/2027" });
+  });
+
   it("caps the lists (output is the expensive side)", () => {
     const fact = { label: "l", value: "v", cite: { page: 1, quote: "q" } };
     const a = toAnalysis({ ...base, keyFacts: Array.from({ length: 12 }, () => fact) });
