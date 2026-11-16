@@ -12,6 +12,7 @@ Drop in a lease, a visa letter, a job offer or a contract. Plainly explains what
 ![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20RLS-3ecf8e?logo=supabase&logoColor=white)
 ![AI](https://img.shields.io/badge/AI-Claude%20%C2%B7%20Gemini%20%C2%B7%20Grok%20%C2%B7%20Ollama-7c5cff)
 ![i18n](https://img.shields.io/badge/i18n-EN%20%C2%B7%20FR%20%C2%B7%20%E4%B8%AD%E6%96%87-555)
+[![CI](https://github.com/paulherveph/plainly/actions/workflows/ci.yml/badge.svg)](https://github.com/paulherveph/plainly/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [Quick start](#quick-start) · [AI modes](#ai-modes) · [Try real documents](#try-it-with-real-documents) · [Commands](#commands) · [Docs](#documentation) · [Contributing](#contributing)

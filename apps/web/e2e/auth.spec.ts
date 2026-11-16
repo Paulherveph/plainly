@@ -54,12 +54,17 @@ test("E01: opening the app stores nothing; the first action creates the guest", 
   expect((await context.cookies()).some((c) => c.name.startsWith("sb-"))).toBe(true);
 });
 
-test("E03 + guest upgrade: a password and the emailed code keep the guest's documents", async ({ page }) => {
+test("E03 + guest upgrade: a password and the emailed code keep the guest's documents", async ({
+  page,
+  isMobile,
+}) => {
   await open(page, "/en/documents");
   await page.getByTestId("sample-visa").click();
   await expect(page).toHaveURL(/\/en\/documents\/[0-9a-f-]{36}/, { timeout: 30_000 });
   const docUrl = page.url();
 
+  // On a phone the account actions live in the menu.
+  if (isMobile) await page.getByRole("button", { name: "Open menu" }).click();
   await page.getByRole("button", { name: "Save your work" }).first().click();
   await signUp(page, unique());
   await expect(page.getByText("You're signed in.")).toBeVisible();

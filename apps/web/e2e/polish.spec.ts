@@ -66,10 +66,16 @@ test("navigating shows the page skeleton before the data arrives", async ({ page
     }
     await route.continue().catch(() => {});
   });
-  await page.goto("/en/privacy");
+  // Header links never prefetch (a prefetch would create a guest per link), so the page shell comes
+  // from an earlier visit: open Deadlines once, leave with a client navigation, then come back.
+  const nav = page.locator("header nav");
+  await page.goto("/en/deadlines");
+  await expect(page.getByRole("heading", { name: "Deadlines", level: 1 })).toBeVisible();
+  await nav.getByRole("link", { name: "Privacy" }).click();
+  await page.waitForURL(/\/en\/privacy$/);
   await page.waitForLoadState("networkidle");
   stall = true;
-  await page.locator("header nav").getByRole("link", { name: "Deadlines" }).click();
+  await nav.getByRole("link", { name: "Deadlines" }).click();
   await expect(page.getByTestId("skeleton").first()).toBeVisible();
   stall = false;
   await expect(page.getByRole("heading", { name: "Deadlines", level: 1 })).toBeVisible();

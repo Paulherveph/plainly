@@ -13,6 +13,9 @@ on:
       - "apps/web/src/shared/lib/db-types.ts"
       - ".github/workflows/supabase.yml"
 
+permissions:
+  contents: read
+
 concurrency:
   group: supabase-${{ github.ref }}
   cancel-in-progress: true

@@ -12,18 +12,23 @@ test("F18: pricing page shows Free, Pro and Max in every locale", async ({ page 
 
 test("F01: a guest who runs out of credits gets a soft paywall, never a dead end", async ({ page }) => {
   await page.goto("/en/documents");
-  // 8 guest credits: samples are free, so paste a text twice to spend real credits.
+  const paywall = page.getByTestId("paywall");
+  const ready = page
+    .getByTestId("analysis-status")
+    .filter({ visible: true })
+    .filter({ hasText: "Analysis ready" });
+  // 8 guest credits: samples are free, so paste texts to spend real credits. Each analysis runs to the
+  // end (or the paywall opens) before the next one, so the credits are really spent.
   for (let i = 0; i < 3; i++) {
+    await page.goto("/en/documents");
     await page.getByRole("tab", { name: "Paste text" }).click();
     await page
       .getByLabel("Document text")
       .fill(`Notice ${i}. ${"The tenant must pay the rent before the fifth day of each month. ".repeat(8)}`);
     await page.getByRole("button", { name: "Explain this text" }).click();
     await page.waitForURL(/\/en\/documents\/[0-9a-f-]{36}/, { timeout: 30_000 });
-    await page.goto("/en/documents");
+    await expect(paywall.or(ready)).toBeVisible({ timeout: 30_000 });
   }
-  const paywall = page.getByTestId("paywall");
-  await expect(paywall.or(page.getByText("Analysis ready").first())).toBeVisible({ timeout: 30_000 });
 });
 
 test("F07: fake checkout activates Pro once", async ({ page }) => {
