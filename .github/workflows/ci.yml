@@ -54,8 +54,10 @@ jobs:
           version: 2.109.1 # same as the db job; bump both with the local CLI
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - name: Export local Supabase env
+        # `status -o env` prints KEY="value"; $GITHUB_ENV keeps quotes literally, so strip them.
         run: |
-          supabase status -o env --override-name api.url=NEXT_PUBLIC_SUPABASE_URL --override-name auth.publishable_key=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --override-name auth.secret_key=SUPABASE_SECRET_KEY >> "$GITHUB_ENV"
+          supabase status -o env --override-name api.url=NEXT_PUBLIC_SUPABASE_URL --override-name auth.publishable_key=NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY --override-name auth.secret_key=SUPABASE_SECRET_KEY \
+            | sed -E 's/^([A-Z0-9_]+)="(.*)"$/\1=\2/' >> "$GITHUB_ENV"
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @plainly/web exec playwright install --with-deps chromium
       - run: pnpm e2e
