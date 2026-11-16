@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
         with:
           version: 2.109.1 # same as the db job; bump both with the local CLI
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
@@ -69,7 +69,7 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
-      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+      - uses: supabase/setup-cli@689adcfb80d947100a1eab127289b97d1fb07b13 # v3.2.0
         with:
           # Pinned: `gen types` output can change between CLI versions. Bump with the local CLI.
           version: 2.109.1
