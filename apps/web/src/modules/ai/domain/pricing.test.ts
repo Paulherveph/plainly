@@ -37,6 +37,13 @@ describe("pricing", () => {
     }
     expect(priceFor({ provider: "anthropic", model: "unknown" })).toBeNull();
   });
+
+  it("prices Grok and Gemini models from their table rows only", () => {
+    expect(priceFor({ provider: "xai", model: "grok-4.7" })?.inputPerM).toBe(2);
+    expect(priceFor({ provider: "google", model: "gemini-3.8-flash" })?.outputPerM).toBe(7.5);
+    expect(priceFor({ provider: "xai", model: "grok-unknown" })).toBeNull();
+    expect(priceFor({ provider: "google", model: "gemini-unknown" })).toBeNull();
+  });
 });
 
 describe("privacy provider list (G07)", () => {

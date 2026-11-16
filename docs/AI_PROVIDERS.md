@@ -23,6 +23,18 @@ AI_PROFILE_TRANSLATE=anthropic:claude-haiku-5-5,google:<model>
 - Replace `<model>` with real IDs from each provider's documentation. Do not guess IDs. The env validator rejects unknown providers and any model without a price entry in `ai/pricing.ts`.
 - `AI_ALLOW_UNVERIFIED_MODELS=false` in production blocks any model that has no recorded eval run (see section 6).
 
+### Ready to use: Claude, Gemini, Grok
+
+Put one key and one `AI_MODEL` line in `apps/web/.env.local`, set `USE_FAKE_AI=false`, restart `pnpm dev`.
+
+| Provider | Key (where to get it) | `AI_MODEL` | Also | Reads images |
+|---|---|---|---|---|
+| **Claude** (recommended) | `ANTHROPIC_API_KEY` ([console.anthropic.com](https://console.anthropic.com)) | `anthropic:claude-sonnet-5-5` | `anthropic:claude-haiku-5-5`, `anthropic:claude-opus-5-5` | Yes |
+| **Gemini** | `GEMINI_API_KEY` ([aistudio.google.com](https://aistudio.google.com/apikey)) | `google:gemini-3.8-flash` | `google:gemini-3.5-flash-lite` | Yes |
+| **Grok** | `XAI_API_KEY` ([console.x.ai](https://console.x.ai)) | `xai:grok-4.7` | `xai:grok-4.3` | Yes |
+
+Claude is the default because the analysis, chat and grounding prompts were tuned and evaluated on it. Gemini and Grok work through the same gateway, but no `pnpm ai:eval` run has passed for them yet, so production refuses them until one does (or `AI_ALLOW_UNVERIFIED_MODELS=true`). Prices in `pricing.ts` come from each provider's pricing page (checked 2026-11-16). To use another model ID, add a row there first.
+
 ### Ollama (local or cloud)
 One provider id, `ollama`, for both, wired through `@ai-sdk/openai-compatible`. Model ids keep their own colons: `ollama:llama3.2:3b`. Local needs no key; Ollama Cloud needs `OLLAMA_BASE_URL=https://ollama.com/v1` and `OLLAMA_API_KEY`. Every Ollama model is priced at zero (`OLLAMA_PRICE`) and stays unverified until `pnpm ai:eval` passes.
 

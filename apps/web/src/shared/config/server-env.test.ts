@@ -42,6 +42,14 @@ describe("server env: AI providers", () => {
     expect(issuePaths({ USE_FAKE_AI: "true" })).toEqual([]);
   });
 
+  it("requires the Grok and Gemini keys only for their own models", () => {
+    expect(issuePaths({ AI_MODEL: "xai:grok-4.7" })).toEqual(["XAI_API_KEY"]);
+    expect(issuePaths({ AI_MODEL: "xai:grok-4.7", XAI_API_KEY: "k" })).toEqual([]);
+    expect(issuePaths({ AI_MODEL: "google:gemini-3.8-flash" })).toEqual(["GEMINI_API_KEY"]);
+    expect(issuePaths({ AI_MODEL: "google:gemini-3.8-flash", GEMINI_API_KEY: "k" })).toEqual([]);
+    expect(issuePaths({ AI_MODEL: "xai:grok-unknown", XAI_API_KEY: "k" }).length).toBeGreaterThan(0);
+  });
+
   it("parses the timeout override", () => {
     const parsed = ServerEnv.safeParse({ ...BASE, ...OLLAMA_ONLY, AI_TIMEOUT_MS: "600000" });
     expect(parsed.data?.AI_TIMEOUT_MS).toBe(600_000);

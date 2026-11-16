@@ -3,7 +3,7 @@
  * Fill only from the provider's pricing page (never from memory) and update `verifiedOn`.
  * A model without a row is rejected by the env validator, so cost is never recorded as zero.
  */
-export const SUPPORTED_PROVIDERS = ["anthropic", "ollama"] as const;
+export const SUPPORTED_PROVIDERS = ["anthropic", "google", "ollama", "xai"] as const;
 export type ProviderName = (typeof SUPPORTED_PROVIDERS)[number];
 
 export type ModelRef = { provider: ProviderName; model: string };
@@ -28,11 +28,28 @@ const anthropic = (input: number, output: number, cacheRead: number, verifiedOn:
   evalPassedOn: null,
 });
 
+/** Providers with no cache-write fee: a cache write costs the normal input price. */
+const noWriteFee = (input: number, output: number, cacheRead: number, verifiedOn: string): Price => ({
+  inputPerM: input,
+  outputPerM: output,
+  cacheWritePerM: input,
+  cacheReadPerM: cacheRead,
+  verifiedOn,
+  evalPassedOn: null,
+});
+
 export const PRICES: Readonly<Record<string, Price>> = {
   // Source: Anthropic model table (claude-api reference, cached 2026-11-03).
   "anthropic:claude-opus-5-5": anthropic(4, 20, 0.2, "2026-11-03"),
   "anthropic:claude-sonnet-5-5": anthropic(2, 10, 0.1, "2026-11-03"),
   "anthropic:claude-haiku-5-5": anthropic(0.1, 0.5, 0.01, "2026-11-03"),
+  // Source: docs.x.ai/docs/models, prompts under 200k tokens (Plainly's input budgets stay far below).
+  "xai:grok-4.7": noWriteFee(2, 6, 0.5, "2026-11-16"),
+  "xai:grok-4.3": noWriteFee(1.25, 2.5, 0.2, "2026-11-16"),
+  // Source: aistudio.google.com/docs/pricing, paid tier. 3.8 Flash uses the standard rate that starts
+  // 2027-01-01 (the launch rate until then is half), so recorded cost never runs low.
+  "google:gemini-3.8-flash": noWriteFee(1.5, 7.5, 0.15, "2026-11-16"),
+  "google:gemini-3.5-flash-lite": noWriteFee(0.3, 2.5, 0.03, "2026-11-16"),
 };
 
 export const modelKey = (ref: ModelRef): string => `${ref.provider}:${ref.model}`;
@@ -98,7 +115,9 @@ export const estimateTokens = (chars: number): number => Math.ceil(chars / 4);
 /** Public names for the privacy page. It lists exactly the enabled providers (G07). */
 export const PROVIDER_LABELS: Record<ProviderName, string> = {
   anthropic: "Anthropic (Claude)",
+  google: "Google (Gemini API)",
   ollama: "Ollama (self-hosted or Ollama Cloud)",
+  xai: "xAI (Grok)",
 };
 
 export function providerList(allowed: readonly ProviderName[]): string {

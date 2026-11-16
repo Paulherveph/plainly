@@ -336,6 +336,16 @@ async function loadProvider(
       const anthropic = createAnthropic({ apiKey });
       return (id) => anthropic(id);
     }
+    case "google": {
+      const { createGoogle } = await import("@ai-sdk/google");
+      const google = createGoogle({ apiKey });
+      return (id) => google(id);
+    }
+    case "xai": {
+      const { createXai } = await import("@ai-sdk/xai");
+      const xai = createXai({ apiKey });
+      return (id) => xai(id);
+    }
     case "ollama": {
       // Ollama (local or Ollama Cloud) speaks the OpenAI-compatible API under /v1.
       if (!baseURL) throw new Error("The ollama provider needs a baseURL (OLLAMA_BASE_URL).");

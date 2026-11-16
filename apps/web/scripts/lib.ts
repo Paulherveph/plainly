@@ -71,6 +71,8 @@ export function gatewayFor(model: ModelRef, usage: UsageRecorder) {
     allowed: [model.provider],
     providers: providerSettings({
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY,
+      GEMINI_API_KEY: process.env.GEMINI_API_KEY,
+      XAI_API_KEY: process.env.XAI_API_KEY,
       OLLAMA_BASE_URL: process.env.OLLAMA_BASE_URL || OLLAMA_LOCAL_URL,
       OLLAMA_API_KEY: process.env.OLLAMA_API_KEY || undefined,
     }),

@@ -88,6 +88,10 @@ function withAiModel(input: unknown): unknown {
 const ServerEnvSchema = PublicEnv.extend({
   SUPABASE_SECRET_KEY: optional(z.string().min(1)),
   ANTHROPIC_API_KEY: optional(z.string().min(1)),
+  /** Gemini API key from Google AI Studio. */
+  GEMINI_API_KEY: optional(z.string().min(1)),
+  /** Grok API key from the xAI console. */
+  XAI_API_KEY: optional(z.string().min(1)),
   /** Local Ollama by default. Ollama Cloud: https://ollama.com/v1 plus OLLAMA_API_KEY. */
   OLLAMA_BASE_URL: z.preprocess((v) => (v === "" ? undefined : v), z.url().default(OLLAMA_LOCAL_URL)),
   OLLAMA_API_KEY: optional(z.string().min(1)),
@@ -157,13 +161,23 @@ const ServerEnvSchema = PublicEnv.extend({
 
 export const ServerEnv = z.preprocess(withAiModel, ServerEnvSchema);
 
-type ProviderEnv = { ANTHROPIC_API_KEY?: string; OLLAMA_BASE_URL: string; OLLAMA_API_KEY?: string };
+type ProviderEnv = {
+  ANTHROPIC_API_KEY?: string;
+  GEMINI_API_KEY?: string;
+  XAI_API_KEY?: string;
+  OLLAMA_BASE_URL: string;
+  OLLAMA_API_KEY?: string;
+};
 
 /** The env variable a provider still needs, or null when it is ready. */
 function missingCredential(provider: ProviderName, e: ProviderEnv): string | null {
   switch (provider) {
     case "anthropic":
       return e.ANTHROPIC_API_KEY ? null : "ANTHROPIC_API_KEY";
+    case "google":
+      return e.GEMINI_API_KEY ? null : "GEMINI_API_KEY";
+    case "xai":
+      return e.XAI_API_KEY ? null : "XAI_API_KEY";
     case "ollama":
       // Local Ollama needs no key; Ollama Cloud does.
       return new URL(e.OLLAMA_BASE_URL).hostname.endsWith("ollama.com") && !e.OLLAMA_API_KEY
@@ -178,6 +192,8 @@ export type ProviderSettings = Partial<Record<ProviderName, { apiKey?: string; b
 export function providerSettings(e: ProviderEnv): ProviderSettings {
   return {
     anthropic: { apiKey: e.ANTHROPIC_API_KEY },
+    google: { apiKey: e.GEMINI_API_KEY },
+    xai: { apiKey: e.XAI_API_KEY },
     ollama: { baseURL: e.OLLAMA_BASE_URL, apiKey: e.OLLAMA_API_KEY },
   };
 }
