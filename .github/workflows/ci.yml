@@ -1,7 +1,9 @@
 name: CI
 
-# Runs on every PR (no path filter): `check` and `e2e` are required by the main ruleset,
-# and a required check that never starts would block docs-only PRs.
+# One workflow, every push to main and every pull request. The ruleset on main requires only
+# `ci-gate`, which passes when no other job failed or was cancelled (a skipped job is fine).
+# Third-party actions are pinned to a full commit SHA; Dependabot keeps the pins current.
+# No secrets: fake AI, a throwaway local Supabase, captcha off (empty Turnstile keys).
 on:
   push:
     branches: [main]
@@ -12,19 +14,22 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   check:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
       NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54325
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: placeholder
       USE_FAKE_AI: "true"
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
@@ -34,16 +39,19 @@ jobs:
   e2e:
     runs-on: ubuntu-latest
     needs: check
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
           cache: pnpm
-      - uses: supabase/setup-cli@v1
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
         with:
-          version: 2.109.1 # same as supabase.yml; bump both with the local CLI
+          version: 2.109.1 # same as the db job; bump both with the local CLI
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - name: Export local Supabase env
         run: |
@@ -53,3 +61,52 @@ jobs:
       - run: pnpm e2e
         env:
           USE_FAKE_AI: "true"
+
+  db:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: supabase/setup-cli@1dedf2c611547ede7232d26866dd3c56ab903bbb # v1.7.3
+        with:
+          # Pinned: `gen types` output can change between CLI versions. Bump with the local CLI.
+          version: 2.109.1
+      - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
+      - name: Migration lint
+        run: supabase db lint --fail-on error
+      - name: RLS and SQL tests
+        run: supabase test db
+      - name: Database types are up to date
+        run: |
+          supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts
+          git diff --exit-code apps/web/src/shared/lib/db-types.ts \
+            || { echo "::error::db-types.ts is stale. Run 'pnpm db:types' and commit it (docs/ARCHITECTURE.md, Keeping types in sync)."; exit 1; }
+
+  dependency-review:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/dependency-review-action@2031cfc080254a8a887f58cffee85186f0e49e48 # v4.9.0
+        with:
+          fail-on-severity: high
+
+  ci-gate:
+    if: always()
+    needs: [check, e2e, db, dependency-review]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Every job passed or was skipped
+        env:
+          RESULTS: ${{ join(needs.*.result, ' ') }}
+        run: |
+          echo "Job results: $RESULTS"
+          for r in $RESULTS; do
+            if [ "$r" = "failure" ] || [ "$r" = "cancelled" ]; then exit 1; fi
+          done

@@ -66,7 +66,7 @@ apps/web/
 supabase/migrations/             # SQL, applied with the Supabase CLI
 assets/                          # Design sources, not shipped code
 ├─ mockup/                       # Clickable HTML mockup made before implementation
-├─ images-mockup/                # Reference images
+├─ images-mockup/                # Third-party reference images: local only, git-ignored (no redistribution license)
 └─ media/                        # Marketing assets, built from the real app
    ├─ capture.ts                 # Screenshots of every screen (desktop/mobile, dark/light)
    ├─ screenshots/               # WebP shots committed; PNG masters in raw/ (gitignored)
@@ -184,7 +184,7 @@ pnpm check
 
 If you skip this, the type check fails with errors like `Argument of type '"is_admin"' is not assignable to parameter of type '"consume_quota" | ...'` or `Property 'x' does not exist on type 'never'`: the code calls a function or column the stale file does not know. The fix is to regenerate, not to add casts.
 
-The Supabase workflow regenerates the file and fails on any diff. When it fails, run the three commands above and commit the result. CI pins the Supabase CLI version, because `gen types` output can change between versions. When you upgrade the local CLI (`supabase --version`), bump `version:` in `.github/workflows/supabase.yml` in the same commit.
+The `db` job in CI regenerates the file and fails on any diff. When it fails, run the three commands above and commit the result. CI pins the Supabase CLI version, because `gen types` output can change between versions. When you upgrade the local CLI (`supabase --version`), bump both `version:` lines in `.github/workflows/ci.yml` in the same commit.
 
 **A wall of type errors after a dependency upgrade.** Regenerate the database types first: stale DB types produce most of the noise and hide the real errors. Then fix what is left at its source, checking the installed library types (`node_modules/<pkg>/**/*.d.ts`) or Context7. Never use `any` or `@ts-expect-error`. Breaking changes seen so far:
 

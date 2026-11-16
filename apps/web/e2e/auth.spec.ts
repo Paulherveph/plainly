@@ -34,8 +34,16 @@ async function open(page: Page, url: string) {
 }
 
 async function fillCredentials(page: Page, email: string, password: string) {
-  await page.getByPlaceholder("Email").fill(email);
-  await page.getByPlaceholder("Password", { exact: true }).fill(password);
+  const emailField = page.getByPlaceholder("Email");
+  const passwordField = page.getByPlaceholder("Password", { exact: true });
+  // A fill that lands just before hydration can be wiped: retry until both values stick.
+  await expect(async () => {
+    await emailField.fill(email);
+    await passwordField.fill(password);
+    await page.waitForTimeout(300);
+    await expect(emailField).toHaveValue(email, { timeout: 100 });
+    await expect(passwordField).toHaveValue(password, { timeout: 100 });
+  }).toPass({ timeout: 15_000 });
 }
 
 /** Creates an account and approves it with the emailed code (a full code typed into box 1 fills all six and submits). */

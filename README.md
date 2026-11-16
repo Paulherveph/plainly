@@ -140,7 +140,7 @@ Set in `apps/web/.env.local`, then restart `pnpm dev`. Each real mode needs `USE
 
 **Which one?** If you have an Anthropic API key, use Claude: it gives the most complete analyses and the most reliable quotes. Gemini and Grok are good alternatives if those are the keys you have. Ollama is free and private, but small local models miss deadlines and are slow on a CPU. Use it to try the flow, not to judge quality.
 
-API keys come from each provider's developer console ([Anthropic](https://console.anthropic.com), [Google AI Studio](https://aistudio.google.com/apikey), [xAI](https://console.x.ai)). A chat subscription (claude.ai, Gemini app, Grok app) doesn't include API access.
+With a real AI, you use your own API keys and pay the provider for what you run. API keys come from each provider's developer console ([Anthropic](https://console.anthropic.com), [Google AI Studio](https://aistudio.google.com/apikey), [xAI](https://console.x.ai)). A chat subscription (claude.ai, Gemini app, Grok app) doesn't include API access.
 
 `AI_MODEL` sets one model for everything. To tune each task (analysis, chat, translation) or add fallbacks, use the `AI_PROFILE_*` lines described in [AI providers](docs/AI_PROVIDERS.md#3-configuration).
 
@@ -272,6 +272,20 @@ Contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md): fork, branch
 - Found a security problem? Report it privately ([security policy](.github/SECURITY.md)).
 - Please follow the [code of conduct](.github/CODE_OF_CONDUCT.md).
 
+## Fork checklist
+
+Running your own copy? Change these before anyone else uses it:
+
+1. **Your identity.** Set `NEXT_PUBLIC_OPERATOR` (shown in the footer and the Terms) and `EMAIL_FROM`. Nothing personal is hard-coded.
+2. **Your own keys.** New Supabase project, AI provider keys, `GUEST_MERGE_SECRET`, `CRON_SECRET`, `BILLING_WEBHOOK_SECRET`. Never reuse the examples.
+3. **Your name and logo.** Rename the product and replace the logo and icons (see [Trademark](#trademark-and-branding)).
+4. **Legal pages.** Read the Terms and Privacy copy in `apps/web/messages/` and adapt it to where you operate.
+5. **Third-party code.** Check [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The hero's WebGL orb is not MIT.
+
+## Trademark and branding
+
+The code is MIT. The name "Plainly" and its logo are not licensed for use as the name or brand of another product or service. Forks are welcome under their own name.
+
 ## License
 
-[MIT](LICENSE). Use it, copy it, learn from it, build on it. Keep the copyright notice.
+[MIT](LICENSE). Use it, copy it, learn from it, build on it. Keep the copyright notice. Third-party parts keep their own licenses: see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

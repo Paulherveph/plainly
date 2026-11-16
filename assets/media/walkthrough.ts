@@ -195,12 +195,12 @@ ff([
   "-i",
   webm,
   "-vf",
-  // Small enough to load inline on GitHub; the MP4 is the full-quality version.
-  "fps=8,scale=800:-2:flags=lanczos",
+  // Under 5 MB so it loads inline on GitHub; the MP4 is the full-quality version.
+  "fps=6,scale=760:-2:flags=lanczos",
   "-c:v",
   "libwebp",
   "-quality",
-  "55",
+  "50",
   "-compression_level",
   "4",
   "-loop",

@@ -12,13 +12,15 @@ Please include:
 - the steps to reproduce it,
 - what an attacker could do with it.
 
-You'll get a reply within 7 days. Once a fix ships, you're credited in the advisory unless you'd rather stay anonymous.
+You'll get a reply within 5 days. Once a fix ships, you're credited in the advisory unless you'd rather stay anonymous.
 
 ## Scope
 
 In scope: this repository's code, database policies (RLS), and the handling of uploaded documents and AI output.
 
-Out of scope: third-party services (Supabase, AI providers, Vercel), and findings that need a compromised device or leaked keys.
+Out of scope: other people's deployments of this code, third-party services (Supabase, AI providers, Vercel), and findings that need a compromised device or leaked keys.
+
+Please don't test against real users' data, don't run denial-of-service or load attacks, and don't use automated scanners against a live site. There is no bug bounty: reports are credited, not paid.
 
 ## Supported versions
 

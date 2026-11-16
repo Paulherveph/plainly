@@ -19,7 +19,7 @@ Thanks for taking the time. Plainly is open source under the [MIT license](LICEN
 
 ## Set up
 
-Follow the [Quick start](README.md#quick-start). The fake AI (`USE_FAKE_AI=true`) is enough for most work: it is free, offline and deterministic.
+Follow the [Quick start](README.md#quick-start) and the project rules in [AGENTS.md](AGENTS.md). The fake AI (`USE_FAKE_AI=true`) is enough for most work: it is free, offline and deterministic.
 
 ```bash
 git clone https://github.com/<you>/plainly.git
@@ -41,7 +41,8 @@ Then check this list:
 - [ ] Domain logic has a test. No test was weakened or skipped.
 - [ ] User-facing text lives in `apps/web/messages/{en,fr,zh}.json`, in all three files.
 - [ ] No document content in logs, URLs or error messages.
-- [ ] No secrets, keys or `.env*` files.
+- [ ] No secrets, keys or `.env*` files, and no real documents (`pnpm check` fails on a PDF, image or Office file outside the fixture folders).
+- [ ] No new dependency without a one-line reason in the PR.
 - [ ] UI changes include screenshots at 375, 768 and 1440 px.
 
 ## Commit messages

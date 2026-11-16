@@ -14,7 +14,7 @@
     "typecheck": "pnpm --filter @plainly/web typecheck",
     "test": "pnpm --filter @plainly/web test",
     "arch": "pnpm --filter @plainly/web arch",
-    "check": "biome check . && pnpm --filter @plainly/web check",
+    "check": "node scripts/check-files.mjs && biome check . && pnpm --filter @plainly/web check",
     "eval": "pnpm --filter @plainly/web eval",
     "e2e": "pnpm --filter @plainly/web e2e",
     "db:test": "DO_NOT_TRACK=1 supabase test db",
@@ -27,7 +27,8 @@
     "ai:samples": "pnpm --filter @plainly/web ai:samples",
     "test:int": "pnpm --filter @plainly/web test:int",
     "smoke": "node scripts/smoke.mjs",
-    "test-user": "pnpm --filter @plainly/web test-user"
+    "test-user": "pnpm --filter @plainly/web test-user",
+    "check:files": "node scripts/check-files.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.2",

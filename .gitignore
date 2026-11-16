@@ -48,6 +48,20 @@ playwright-report/
 test-results/
 blob-report/
 
+# real documents used for local testing (never committed; scripts/check-files.mjs also guards this)
+private-docs/
+local-test-docs/
+
+# third-party reference images (mood board, no redistribution license): kept locally only
+assets/images-mockup/
+
+# Supabase Studio saved queries (local only)
+supabase/snippets/
+
+# local tool settings
+.claude/settings.local.json
+*.local
+
 # personal notes (never committed)
 z.md
 z-*.md
