@@ -7,7 +7,7 @@ One Vercel project. **Root Directory** = `apps/web`. "Include source files outsi
 
 ## Project settings
 - Framework: Next.js. Install: `pnpm install --frozen-lockfile`. Build: `pnpm build`. Node 22.
-- Region: the one closest to the Supabase project region.
+- Region: the one closest to the Supabase project region. `apps/web/vercel.json` sets `"regions": ["fra1"]` (Frankfurt) to match the production database in `eu-central-1`. Change both together.
 
 ## Skip unchanged builds
 `docs/`, `supabase/` and `assets/` are not workspaces, so Vercel's automatic skip counts them as global changes. `apps/web/vercel.json` sets an explicit rule:
