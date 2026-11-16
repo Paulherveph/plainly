@@ -28,7 +28,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast",
+          // A modal dialog sets pointer-events: none on the page; toasts must stay clickable above it.
+          toast: "cn-toast pointer-events-auto",
         },
       }}
       {...props}

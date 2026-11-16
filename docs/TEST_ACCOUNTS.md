@@ -57,6 +57,8 @@ After sign-up, the code appears in a small message with a **Copy** button:
 - Password resets never show a code; they always go by email.
 - Turnstile still applies when it's configured.
 
+**The code shows but "doesn't match"?** Your Supabase project issues codes longer than 6 digits. Set Supabase → Authentication → Sign In / Providers → Email → **Email OTP Length = 6** (local `supabase/config.toml` already uses 6).
+
 **What they do change:** anyone can create an account with an address they don't own, because nothing proves the inbox exists. That's fine for a demo. For a real product, set up email instead (Resend SMTP, [Deploy](DEPLOY.md)) and turn demo codes off.
 
 ## 3. Hosted Supabase: manage any account

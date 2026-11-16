@@ -58,7 +58,7 @@ Apply these in the Supabase dashboard of the **production** project (and the pre
 | Authentication → Sign In / Providers → Email | Enable email provider | On |
 | | Confirm email | On (the emailed code approves a new account; it also gates monthly credits) |
 | | Minimum password length | 8 |
-| | Email OTP length | 6 |
+| | Email OTP length | **6**. New projects can default to 8. Plainly's code boxes take 6 digits, so an 8-digit code is always rejected as "doesn't match" |
 | | Email OTP expiration | 3600 seconds |
 | | Secure email change | Off (a guest has no previous address to confirm) |
 | Authentication → Sign In / Providers → Google | Enabled | On, with the Google OAuth client id and secret |

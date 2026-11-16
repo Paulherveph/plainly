@@ -93,7 +93,7 @@ test("D4: no code for an email that is already confirmed, or for the wrong passw
   await stranger.close();
 });
 
-test("D5: a guest who signs up keeps the document they opened", async ({ page }) => {
+test("D5: a guest signs up in the dialog with Copy and paste, and keeps the document", async ({ page }) => {
   await page.goto("/en/documents");
   await page.getByTestId("sample-lease").click();
   await expect(page).toHaveURL(/\/en\/documents\/[0-9a-f-]{36}/, { timeout: 30_000 });
@@ -101,7 +101,13 @@ test("D5: a guest who signs up keeps the document they opened", async ({ page })
   await page.getByRole("button", { name: "Save your work" }).first().click();
   await fillCredentials(page, unique(), PASSWORD);
   await page.getByRole("button", { name: "Create account" }).click();
-  await page.getByLabel("Digit 1 of 6").fill(await readCode(page));
+  await readCode(page);
+  // The toast sits outside the modal: clicking Copy must work and must not close the dialog.
+  await page.getByRole("button", { name: "Copy" }).click();
+  await expect(codeInToast(page)).toHaveCount(0);
+  await expect(page.getByRole("dialog", { name: "Save your work" })).toBeVisible();
+  await page.getByLabel("Digit 1 of 6").focus();
+  await page.keyboard.press("ControlOrMeta+V");
   await expect(page.getByText("We added your document to your account.")).toBeVisible();
   const res = await page.goto(docUrl);
   expect(res?.status()).toBe(200);
