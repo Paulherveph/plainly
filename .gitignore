@@ -48,8 +48,9 @@ playwright-report/
 test-results/
 blob-report/
 
-# personal notes
+# personal notes (never committed)
 z.md
+z-*.md
 
 # eval output (timestamped)
 apps/web/evals/results-*.json
@@ -57,3 +58,4 @@ apps/web/evals/results-*.json
 # Screenshot PNG masters (webp copies are committed)
 assets/media/screenshots/raw/
 assets/media/out/
+assets/media/walkthrough/raw/

@@ -1,0 +1,40 @@
+name: Bug report
+description: Something doesn't work as expected.
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: "Never attach a real personal document. Use a file from `test-documents/` or a made-up one."
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Upload test-documents/02_bank_update.md
+        2. Ask "What fees apply?"
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: ai
+    attributes:
+      label: AI mode
+      placeholder: "Fake / ollama:llama3.2:3b / anthropic:claude-sonnet-5-5 / ..."
+  - type: input
+    id: env
+    attributes:
+      label: OS and browser
+      placeholder: "macOS 16, Chrome 142"
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error or logs
+      description: Remove anything that comes from a document.
+      render: text
