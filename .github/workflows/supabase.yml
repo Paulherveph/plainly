@@ -5,10 +5,12 @@ on:
     branches: [main]
     paths:
       - "supabase/**"
+      - "apps/web/src/shared/lib/db-types.ts"
       - ".github/workflows/supabase.yml"
   pull_request:
     paths:
       - "supabase/**"
+      - "apps/web/src/shared/lib/db-types.ts"
       - ".github/workflows/supabase.yml"
 
 concurrency:
@@ -22,9 +24,15 @@ jobs:
       - uses: actions/checkout@v4
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          # Pinned: `gen types` output can change between CLI versions. Bump with the local CLI.
+          version: 2.109.1
       - run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,supavisor
       - name: Migration lint
         run: supabase db lint --fail-on error
       - name: RLS and SQL tests
         run: supabase test db
+      - name: Database types are up to date
+        run: |
+          supabase gen types typescript --local > apps/web/src/shared/lib/db-types.ts
+          git diff --exit-code apps/web/src/shared/lib/db-types.ts \
+            || { echo "::error::db-types.ts is stale. Run 'pnpm db:types' and commit it (docs/ARCHITECTURE.md, Keeping types in sync)."; exit 1; }
