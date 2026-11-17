@@ -1,6 +1,5 @@
 "use client";
 
-import { UserRoundIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/shared/i18n/navigation";
 import { Button } from "./button";
@@ -17,16 +16,22 @@ export function AccountButton({ email, isGuest }: { email: string | null; isGues
       <Link
         href="/account"
         prefetch={false}
-        className="inline-flex h-8 items-center gap-2 rounded-full border bg-surface px-3 text-muted-foreground text-xs hover:text-foreground focus-visible:outline-2 focus-visible:outline-brand"
+        data-member=""
+        className="inline-flex h-8 items-center gap-2 rounded-full border bg-surface pr-3 pl-1 text-muted-foreground text-xs hover:text-foreground focus-visible:outline-2 focus-visible:outline-brand"
       >
-        <UserRoundIcon className="size-3.5" aria-hidden="true" />
+        <span
+          aria-hidden="true"
+          className="grid size-6 place-items-center rounded-full bg-gradient-to-br from-brand to-brand/60 font-semibold text-[11px] text-white"
+        >
+          {email[0]?.toUpperCase()}
+        </span>
         <span className="sr-only">{t("account")}: </span>
         <span className="max-w-40 truncate">{email}</span>
       </Link>
     );
   }
   const signIn = (
-    <Button asChild variant={isGuest ? "ghost" : "outline"} size="sm">
+    <Button asChild variant="outline" size="sm">
       <Link href="/sign-in" prefetch={false}>
         {t("signIn")}
       </Link>

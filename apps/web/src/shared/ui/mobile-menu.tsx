@@ -40,8 +40,9 @@ function MenuGlyph({ arrow }: { arrow: boolean }) {
       <span
         className={cn(
           BAR,
-          "origin-left",
-          arrow ? "translate-y-0 rotate-45 scale-x-[0.6]" : "translate-y-[3px]",
+          // The lower bar is shorter, and keeps that length as one side of the arrow.
+          "origin-left scale-x-[0.6]",
+          arrow ? "translate-y-0 rotate-45" : "translate-y-[3px]",
         )}
       />
     </span>
@@ -129,9 +130,12 @@ function Drawer(props: {
 
         <div className="mt-auto border-t p-3">
           {full ? (
-            <div className="grid gap-3">
-              <LocaleSwitch className="w-fit" />
-              <div className="min-w-0 [&_a]:max-w-full [&_button]:max-w-full [&>*]:flex [&>*]:min-w-0 [&>*]:flex-wrap">{props.account}</div>
+            // Members change language on their profile, so the switch is for visitors and guests only.
+            <div className="group grid gap-3">
+              <LocaleSwitch className="w-fit group-has-[[data-member]]:hidden" />
+              <div className="min-w-0 [&_a]:max-w-full [&_button]:max-w-full [&>*]:flex [&>*]:min-w-0 [&>*]:flex-wrap">
+                {props.account}
+              </div>
             </div>
           ) : (
             <Link
