@@ -40,7 +40,12 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
       alternateLocale: Object.values(ogLocales).filter((l) => l !== ogLocales[locale]),
       images: [image],
     },
-    twitter: { card: "summary_large_image", title: meta("title"), description: meta("description"), images: [image] },
+    twitter: {
+      card: "summary_large_image",
+      title: meta("title"),
+      description: meta("description"),
+      images: [image],
+    },
   };
 }
 
