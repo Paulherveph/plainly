@@ -718,5 +718,11 @@
     "letterAction": "list what to do",
     "sampleAria": "{name}: open a sample",
     "uploadAria": "{name}: upload yours"
+  },
+  "meta": {
+    "siteName": "Plainly",
+    "title": "Plainly: paperwork, in plain language",
+    "description": "Got a lease, visa letter or contract you can't make sense of? Drop it in and see what it says, what to do, and by when. Every point shows its source.",
+    "imageAlt": "Illustration of a smiling person in a black cap beside a laptop, signed Paulherveph"
   }
 }

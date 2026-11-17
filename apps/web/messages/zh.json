@@ -718,5 +718,11 @@
     "letterAction": "列出待办",
     "sampleAria": "{name}：打开示例",
     "uploadAria": "{name}：上传你的文件"
+  },
+  "meta": {
+    "siteName": "Plainly",
+    "title": "Plainly：让文件说人话",
+    "description": "租房合同、签证通知、录用信看不懂？上传就行：它写了什么、你要做什么、最晚什么时候做，一目了然，每一条都附上原文出处。",
+    "imageAlt": "插画：一位戴黑色鸭舌帽、面带微笑的人坐在笔记本电脑旁，署名 Paulherveph"
   }
 }

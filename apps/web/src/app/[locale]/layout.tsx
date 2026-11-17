@@ -23,11 +23,24 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "Metadata" });
+  const meta = await getTranslations({ locale, namespace: "meta" });
+  const image = { url: "/og/og-plainly.jpg", width: 1024, height: 1024, alt: meta("imageAlt") };
+  const ogLocales = { en: "en_US", fr: "fr_FR", zh: "zh_CN" } as Record<string, string>;
   return {
     metadataBase: new URL(publicEnv().NEXT_PUBLIC_SITE_URL),
     title: { default: t("title"), template: "%s · Plainly" },
     description: t("description"),
-    openGraph: { title: t("title"), description: t("description"), siteName: "Plainly", type: "website" },
+    // No og:url here: it would point every page at the home page. The home page adds its own.
+    openGraph: {
+      type: "website",
+      siteName: meta("siteName"),
+      title: meta("title"),
+      description: meta("description"),
+      locale: ogLocales[locale],
+      alternateLocale: Object.values(ogLocales).filter((l) => l !== ogLocales[locale]),
+      images: [image],
+    },
+    twitter: { card: "summary_large_image", title: meta("title"), description: meta("description"), images: [image] },
   };
 }
 

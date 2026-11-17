@@ -718,5 +718,11 @@
     "letterAction": "lister quoi faire",
     "sampleAria": "{name} : ouvrir un exemple",
     "uploadAria": "{name} : importer le vôtre"
+  },
+  "meta": {
+    "siteName": "Plainly",
+    "title": "Plainly : vos papiers, en langage clair",
+    "description": "Un bail, une lettre de visa ou un contrat obscur ? Déposez-le et voyez ce qu'il dit, ce que vous devez faire et pour quand. Chaque point cite sa source.",
+    "imageAlt": "Illustration : une personne souriante en casquette noire près d'un portable, signée Paulherveph"
   }
 }
