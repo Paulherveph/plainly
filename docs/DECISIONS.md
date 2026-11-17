@@ -95,7 +95,8 @@ Short ADRs for choices a reviewer might question. Newest last.
 
 ## ADR 15: Fake billing until the owner picks a provider (2026-11-14, S4)
 **Decision.** `BillingProvider` has one adapter for now, `FakeBillingProvider`. Its checkout and portal open a dev-only simulator, which posts HMAC-signed events to the real webhook route. Signature check, idempotent event storage, the state machine (with out-of-order protection) and credit grants all run exactly as they will in production. S5 adds one real adapter behind the same port.
-**Consequences.** The simulator returns 404 unless `BILLING_PROVIDER=fake`, and in production builds it also needs `ALLOW_FAKE_BILLING=true`, which only E2E sets.
+**Consequences.** The simulator returns 404 unless `BILLING_PROVIDER=fake`, and in production builds it also needs `ALLOW_FAKE_BILLING=true`.
+**Update (2026-11-17).** The checkout became a demo card form at `/[locale]/checkout` (test cards only, card data stays in the browser), with a success summary and a PDF receipt built from our records. `ALLOW_FAKE_BILLING=true` is now also the **public-demo switch**: the open-source demo sets it so visitors can try Pro and Max for free. That is only safe while production runs the fake AI (`USE_FAKE_AI=true`); turn it off before adding real AI keys, or anyone could get paid credits for nothing.
 
 ## ADR 16: Free, Pro and Max on the pricing page; Guest is a trial (2026-11-14, S7)
 **Context.** Four cards (Guest, Free, Pro) read as three ways to get nothing, and there was no tier for heavy users.

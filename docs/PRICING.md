@@ -82,7 +82,16 @@ interface BillingProvider {
   parseWebhook(req: Request): Promise<Result<BillingEvent, BillingError>>; // verifies signature
 }
 ```
-Adapters: `FakeBillingProvider` (S4: local page that simulates success, failure, past due, cancel, refund), and one real adapter in S5.
+Adapters: `FakeBillingProvider` and one real adapter in S5. The fake checkout (`/[locale]/checkout`) is a demo card form: the card preview fills in as you type, turns over for the CVC, and eye buttons hide one field or all of them. Card details are checked in the browser and never sent. Only two test cards work:
+
+| Card | Result |
+|------|--------|
+| `4242 4242 4242 4242` | Pays: the plan or pack is granted through the signed webhook |
+| `4000 0000 0000 0002` | Declined, nothing changes |
+
+Any other number is refused ("only the test cards work"), so nobody can type a real card into the public demo. The fake portal keeps the simple event buttons (renew, payment fails, cancel, refund).
+
+After the webhook lands, `/billing/success` shows a payment summary and a **PDF receipt** (`/api/billing/receipt`). Both are built from our own records (the user's subscription row or pack ledger entry, plus the `plans` table), never from the browser, so they stay the same when a real provider replaces the fake one. Fake-billing receipts say "Demo payment: no card was charged". Chinese receipts print in English because the built-in PDF fonts are Latin-1 only.
 
 Webhook rules: verify signature, store in `billing_events` by provider event id (unique), process idempotently, respond fast, never trust the browser return URL to grant anything. The success page polls the subscription status until the webhook lands (show "Confirming your payment").
 

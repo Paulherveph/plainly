@@ -359,6 +359,50 @@
   }
 }
 
+/* Demo checkout card: turns to its back while the CVC field has focus (240 ms). */
+.pay-card {
+  perspective: 1200px;
+}
+.pay-card-inner {
+  transform-style: preserve-3d;
+  transition: transform 240ms var(--ease-out);
+}
+.pay-card-inner[data-flipped="true"] {
+  transform: rotateY(180deg);
+}
+.pay-card-face {
+  backface-visibility: hidden;
+}
+.pay-card-back {
+  transform: rotateY(180deg);
+}
+.pay-card-shake {
+  animation: card-shake 240ms var(--ease-out);
+}
+@keyframes card-shake {
+  25% {
+    translate: -6px 0;
+  }
+  50% {
+    translate: 5px 0;
+  }
+  75% {
+    translate: -3px 0;
+  }
+}
+
+/* Activity graph: each week column fades in, 4 ms apart (53 columns, about 210 ms in all). */
+.activity-week {
+  animation: activity-in 200ms var(--ease-out) both;
+  animation-delay: calc(var(--i, 0) * 4ms);
+}
+@keyframes activity-in {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+}
+
 /* Lists: rows rise in with a 40 ms stagger (max 8), set --i on each row. */
 .stagger > * {
   animation: var(--animate-rise);
@@ -367,8 +411,24 @@
 
 @media (prefers-reduced-motion: reduce) {
   .reveal,
-  .site-header {
+  .site-header,
+  .activity-week,
+  .pay-card-shake {
     animation: none;
+  }
+  /* No 3D turn: the faces cross-fade instead. */
+  .pay-card-inner,
+  .pay-card-inner[data-flipped="true"],
+  .pay-card-back {
+    transform: none;
+    transition: none;
+  }
+  .pay-card-face {
+    transition: opacity 150ms linear;
+  }
+  .pay-card-inner[data-flipped="true"] .pay-card-front,
+  .pay-card-inner:not([data-flipped="true"]) .pay-card-back {
+    opacity: 0;
   }
   ::view-transition-old(*),
   ::view-transition-new(*),

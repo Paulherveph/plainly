@@ -13,7 +13,7 @@ export async function generateMetadata({
 /** F08: calm confirmation that waits for the webhook, never trusts this return URL. */
 export default function SuccessPage() {
   return (
-    <section className="mx-auto max-w-md px-5 pt-16 pb-24">
+    <section className="mx-auto max-w-4xl px-5 pt-16 pb-24 md:px-8">
       <CheckoutStatus />
     </section>
   );

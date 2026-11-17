@@ -1,8 +1,9 @@
 import type { AppError } from "@/shared/lib/errors";
 import { log, logError } from "@/shared/lib/log";
 import { err, ok, type Result } from "@/shared/lib/result";
+import { buildReceipt, type Receipt } from "../domain/receipt";
 import { applyEvent } from "../domain/subscription";
-import type { BillingError, BillingProvider, BillingStore, PlanReader } from "./ports";
+import type { BillingError, BillingProvider, BillingStore, PlanReader, PurchaseReader } from "./ports";
 
 /** Starts a checkout for a plan or a pack. Paid plans need an account (not a guest). */
 export function makeStartCheckout(deps: { provider: BillingProvider; plans: PlanReader }) {
@@ -98,5 +99,17 @@ export function makeCancelForDeletion(deps: { provider: BillingProvider; store: 
       if (!res.ok) return err({ kind: "db_failed" });
     }
     return ok(null);
+  };
+}
+
+/** The receipt for the user's latest plan or pack, from our records only. Null before any purchase. */
+export function makeLatestReceipt(deps: { purchases: PurchaseReader; plans: PlanReader; demo: boolean }) {
+  return async (): Promise<Result<Receipt | null, AppError>> => {
+    const [purchase, plans] = await Promise.all([deps.purchases.latest(), deps.plans.listPlans()]);
+    if (!purchase.ok) return purchase;
+    if (!plans.ok) return plans;
+    if (!purchase.value) return ok(null);
+    const rows = plans.value.map((p) => ({ ...p, credits: p.entitlements.credits }));
+    return ok(buildReceipt(purchase.value, rows, deps.demo));
   };
 }

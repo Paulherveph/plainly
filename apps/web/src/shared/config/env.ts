@@ -127,7 +127,10 @@ const ServerEnvSchema = PublicEnv.extend({
   GUEST_MERGE_SECRET: optional(z.string().min(32)),
   BILLING_PROVIDER: z.enum(["fake"]).default("fake"),
   BILLING_WEBHOOK_SECRET: optional(z.string().min(16)),
-  /** Lets the fake-billing simulator run under `next start` (E2E only). Never set in production. */
+  /**
+   * Lets the demo checkout run under `next start`: E2E, and a public demo with USE_FAKE_AI=true (plans
+   * are granted for free). Never with real AI keys (docs/DECISIONS.md ADR 15).
+   */
   ALLOW_FAKE_BILLING: bool,
   SENTRY_DSN: optional(z.url()),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),

@@ -109,6 +109,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | E13 | Open redirect attempt in `next` param | Ignored, goes to default page | U | S3 | `safe-next.test.ts`, `e2e/auth.spec.ts` (E13) |
 | E14 | Email not verified (Free) | Documents work, monthly credits wait until verified | I | S3 | `pnpm test-user status` shows 0 credits until approved |
 | E15 | Forgot password | Code by email, new password saved, signed in | E | S3 | `e2e/auth.spec.ts` (E15) |
+| E16 | Account activity graph | Documents explained and questions asked per day for 12 months, in green; today's action shows at once; only the user's own rows | E | S7 | `activity.test.ts`, `activity.test.sql`, `e2e/account.spec.ts` (E16) |
 
 ## F. Credits and billing
 
@@ -120,7 +121,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | F04 | 50 parallel requests on a balance of 10 | Never goes negative, never double charges | I | S4 | `credits.int.test.ts` (F04, `pnpm test:int`) |
 | F05 | AI call fails | Hold released, balance unchanged | I | S4 | `credits.test.sql`, `analyze-document.test.ts` (B11) |
 | F06 | Cache hit or sample | 0 credits | I | S4 | `credits.test.sql`, `entitlement-service.test.ts` (F06) |
-| F07 | Fake checkout success | Plan active, credits granted once | E | S4 | `e2e/billing.spec.ts` (F07), `billing.test.ts` |
+| F07 | Fake checkout success | Plan active, credits granted once, PDF receipt downloads | E | S4 | `e2e/billing.spec.ts` (F07), `billing.test.ts`, `receipt.test.ts`, `pdf-receipt.test.ts` |
 | F08 | Return from checkout before webhook | "Confirming payment" until the webhook arrives, then active | E | S5 |  |
 | F09 | Duplicate or out-of-order webhook | Processed once, state correct | I | S5 | `billing.test.ts`, `subscription.test.ts` (F09) |
 | F10 | Payment fails | `past_due`, 3-day grace, no new credits, banner with fix link | I | S5 | `subscription.test.ts` (F10), `effective_plan()` 3-day grace |
@@ -132,6 +133,7 @@ Each row is a test target. **Level**: U unit, I integration (DB), E e2e (Playwri
 | F16 | Daily budget at 80% and 100% | Free and Guest degrade then pause, paid continue, alert sent | I | S2 | `admission.test.ts`, `budget.test.ts`, `drills.int.test.ts` (budget drill) |
 | F17 | Localized price and currency on pricing page | Matches provider checkout | M | S5 |  |
 | F18 | Pricing page | Free, Pro and Max cards in every locale, yearly switch shows "Save 17%", plan facts match the `plans` seed | E | S7 | `e2e/billing.spec.ts` (F18), `public-plans.test.ts` |
+| F19 | Demo checkout card | The card mirrors the form, turns over for the CVC, hides details; only the published test cards work, card data never leaves the browser | E | S7 | `demo-card.test.ts`, `e2e/billing.spec.ts` (F19) |
 
 ## G. Privacy and safety
 

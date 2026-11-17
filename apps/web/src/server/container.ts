@@ -7,6 +7,7 @@ import {
 import { fflateZipper } from "@/modules/accounts/infrastructure/fflate-zipper";
 import { SupabaseAccountAdmin } from "@/modules/accounts/infrastructure/supabase-account-admin";
 import { SupabaseAccountData } from "@/modules/accounts/infrastructure/supabase-account-data";
+import { SupabaseActivityReader } from "@/modules/accounts/infrastructure/supabase-activity";
 import { SupabaseProfileRepository } from "@/modules/accounts/infrastructure/supabase-profile-repository";
 import type { TierReader } from "@/modules/ai/application/admission";
 import { makeAnalyzeDocument } from "@/modules/analysis/application/analyze-document";
@@ -14,11 +15,17 @@ import { GatewayAnalyzer } from "@/modules/analysis/infrastructure/gateway-analy
 import { SupabaseAnalysisCache } from "@/modules/analysis/infrastructure/supabase-analysis-cache";
 import { SupabaseAnalysisRepository } from "@/modules/analysis/infrastructure/supabase-analysis-repository";
 import { SupabaseJobStore } from "@/modules/analysis/infrastructure/supabase-job-store";
-import { makeCancelForDeletion, makeStartCheckout } from "@/modules/billing/application/billing";
+import {
+  makeCancelForDeletion,
+  makeLatestReceipt,
+  makeStartCheckout,
+} from "@/modules/billing/application/billing";
 import { makeEntitlements } from "@/modules/billing/application/entitlement-service";
 import { CREDIT_COSTS } from "@/modules/billing/domain/credits.config";
+import { renderReceiptPdf } from "@/modules/billing/infrastructure/pdf-receipt";
 import { SupabaseCreditStore } from "@/modules/billing/infrastructure/supabase-credit-store";
 import { SupabasePlanRepository } from "@/modules/billing/infrastructure/supabase-plan-repository";
+import { SupabasePurchaseReader } from "@/modules/billing/infrastructure/supabase-purchase-reader";
 import { makeAnswerQuestion } from "@/modules/chat/application/answer-question";
 import { GatewayAnswerer } from "@/modules/chat/infrastructure/gateway-answerer";
 import { SupabaseMessageRepository } from "@/modules/chat/infrastructure/supabase-message-repository";
@@ -89,6 +96,13 @@ export async function container() {
     ledger: creditStore.ledger.bind(creditStore),
     markLowNudged: creditStore.markLowNudged.bind(creditStore),
     startCheckout: makeStartCheckout({ provider, plans }),
+    latestReceipt: makeLatestReceipt({
+      purchases: new SupabasePurchaseReader(supabase),
+      plans,
+      demo: provider.name === "fake",
+    }),
+    /** Writes a receipt as a one-page PDF (no dependency). */
+    receiptPdf: renderReceiptPdf,
     openPortal: provider.createPortalSession.bind(provider),
     listDocuments: makeListDocuments({ documents }),
     getDocument: makeGetDocument({ documents }),
@@ -140,6 +154,8 @@ export async function container() {
     }),
     exportDeadlines: makeExportDeadlines({ deadlines, now: () => new Date() }),
     getProfile: profiles.get.bind(profiles),
+    /** Documents explained and questions asked per day, last year (account activity graph). */
+    activity: () => new SupabaseActivityReader(supabase).lastYear(),
     /** Linked sign-in methods for the Security tab (no tokens, provider names only). */
     identities: async (): Promise<string[]> => {
       const { data } = await supabase.auth.getUserIdentities();

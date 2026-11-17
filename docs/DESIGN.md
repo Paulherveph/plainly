@@ -16,6 +16,8 @@
 | `--accent` | `#9478FF` | Single accent, matches your React Bits sample |
 | `--ok` / `--caution` / `--critical` | `#3DD68C` / `#F5B83D` / `#FF5C6C` | Severity, always paired with an icon and a label |
 
+**One exception, activity:** the account activity graph (a GitHub-style calendar) uses `--ok` as a scale, not as severity: empty `--surface-2`, then `--ok` at 25%, 45%, 70% and 100%. Green means "you were active that day" only there. Every square has a tooltip and the grid has one screen-reader summary.
+
 Light theme: invert surfaces, keep the same accent, check contrast (AA). Theme toggle in the header.
 
 **Type**: Geist Sans for UI, Geist Mono for quotes and dates. Scale 12, 14, 16, 20, 28, 40, 64. Line height 1.5 body, 1.1 display.
@@ -28,6 +30,8 @@ Light theme: invert surfaces, keep the same accent, check contrast (AA). Theme t
 - Stagger lists by 40 ms, max 8 items.
 - Stream results in section by section. Skeletons match the final layout.
 - Everything respects `prefers-reduced-motion`: fall back to opacity only.
+- Demo checkout card: turns over (`rotateY`, 240 ms ease-out) while the CVC field has focus and shakes once (240 ms) on a refused card. Under reduced motion the faces cross-fade and nothing shakes.
+- Activity graph: week columns fade in 4 ms apart (about 210 ms in all); none of it under reduced motion.
 - Tokens in `globals.css`: `--dur-1/2/3` (150/200/250 ms), `--ease-out`, `--ease-in`, `--ease-spring`.
 - **Pages** enter with a fade and an 8 px rise, and leave faster (`[locale]/template.tsx`, React `<ViewTransition>`).
   The header and footer are named, so they stay still.

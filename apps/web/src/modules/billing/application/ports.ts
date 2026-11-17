@@ -1,6 +1,7 @@
 import type { AppError } from "@/shared/lib/errors";
 import type { Result } from "@/shared/lib/result";
 import type { Entitlements } from "../domain/entitlements";
+import type { Purchase } from "../domain/receipt";
 import type { BillingEvent, Subscription } from "../domain/subscription";
 
 export type CreditBalance = {
@@ -91,4 +92,9 @@ export interface BillingStore {
     credits: number,
     key: string,
   ): Promise<Result<number, AppError>>;
+}
+
+/** The session user's latest purchase (RLS: own rows only), for the success page and the receipt. */
+export interface PurchaseReader {
+  latest(): Promise<Result<Purchase | null, AppError>>;
 }

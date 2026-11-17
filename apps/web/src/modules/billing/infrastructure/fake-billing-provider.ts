@@ -73,7 +73,7 @@ export class FakeBillingProvider implements BillingProvider {
 
   private async sessionUrl(locale: string, session: CheckoutSession): Promise<string> {
     const token = await signValue(JSON.stringify(session), this.secret, 30 * 60);
-    return `${this.siteUrl}/${locale}/dev/billing?session=${encodeURIComponent(token)}`;
+    return `${this.siteUrl}/${locale}/checkout?session=${encodeURIComponent(token)}`;
   }
 
   async createCheckout(input: Parameters<BillingProvider["createCheckout"]>[0]) {

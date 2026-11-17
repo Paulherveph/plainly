@@ -19,7 +19,7 @@ export function AccountTabs(props: {
 }) {
   const t = useTranslations("Account");
   return (
-    <Tabs defaultValue={props.initialTab ?? "profile"} className="mt-8">
+    <Tabs defaultValue={props.initialTab ?? "profile"} className="mt-4">
       <TabsList className="flex-wrap">
         <TabsTrigger value="profile">{t("tabProfile")}</TabsTrigger>
         {props.plan ? <TabsTrigger value="plan">{t("tabPlan")}</TabsTrigger> : null}

@@ -48,6 +48,7 @@ Drop in a lease, a visa letter, a job offer or a contract. Plainly explains what
 - **Many formats.** PDF, Word, Excel, PowerPoint, images and text. Photos and scans need a model that reads images.
 - **Three languages.** English, French and Chinese interface, and explanations in any of the three, whatever the document's language.
 - **Any AI provider.** Claude, Gemini, Grok, or Ollama on your own machine or in the cloud, switched with one line of config.
+- **Credits, plans and a demo checkout.** Free, Pro and Max with monthly credits. The demo checkout takes only test cards (`4242 4242 4242 4242`), never sends card details, and ends with a PDF receipt. Your account page shows your activity as a green calendar.
 
 > Plainly explains documents. It is not legal advice.
 

@@ -19,7 +19,7 @@ export async function proxy(request: NextRequest) {
   return updateSession(request, response);
 }
 
-const BILLING_SIMULATOR = /^\/([a-z]{2})\/dev\/billing$/;
+const BILLING_SIMULATOR = /^\/([a-z]{2})\/checkout$/;
 
 /** The fake checkout is a real 404 unless fake billing is on and the signed session is valid. */
 async function validSimulatorSession(request: NextRequest): Promise<boolean> {

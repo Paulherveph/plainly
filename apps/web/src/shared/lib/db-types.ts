@@ -786,6 +786,14 @@ export type Database = {
         Args: { p_guest: string; p_user: string }
         Returns: number
       }
+      my_activity: {
+        Args: { p_days?: number }
+        Returns: {
+          analyses: number
+          day: string
+          questions: number
+        }[]
+      }
       my_credits: {
         Args: never
         Returns: {

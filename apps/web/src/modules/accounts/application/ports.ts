@@ -1,5 +1,6 @@
 import type { AppError } from "@/shared/lib/errors";
 import type { Result } from "@/shared/lib/result";
+import type { ActivityDay } from "../domain/activity";
 import type { Profile, ProfilePatch } from "../domain/profile";
 
 export interface ProfileRepository {
@@ -31,4 +32,9 @@ export interface Zipper {
 /** Cancels any paid subscription before an account is deleted (billing implements it in S4). */
 export interface SubscriptionCanceller {
   cancelForDeletion(userId: string): Promise<Result<null, AppError>>;
+}
+
+/** The signed-in user's documents explained and questions asked per day, for the activity graph. */
+export interface ActivityReader {
+  lastYear(): Promise<ActivityDay[]>;
 }

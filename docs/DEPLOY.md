@@ -105,7 +105,7 @@ Nothing here has been run. Work through it in order. Each step says who does it.
 - [ ] Resend: domain verified (SPF, DKIM, DMARC records added), API key created.
 - [ ] Cloudflare Turnstile: widget for the production hostname (and one for previews).
 - [ ] Sentry (optional): a project, DSN copied.
-- [ ] Billing provider: not chosen yet. Production runs with `BILLING_PROVIDER=fake` and **no paid checkout** until S5. The pricing page buttons then lead to the simulator, which is 404 in production, so hide paid buttons or finish S5 before announcing prices.
+- [ ] Billing provider: not chosen yet. Production runs with `BILLING_PROVIDER=fake` and **no paid checkout** until S5. The pricing page buttons then lead to the demo checkout, which is 404 in production unless `ALLOW_FAKE_BILLING=true` (public demo with fake AI only), so finish S5 before announcing prices.
 
 ### 2. Database (owner, from the repo root)
 - [ ] `supabase link --project-ref <prod ref>`
@@ -145,7 +145,7 @@ Apply the table in "Supabase Auth settings for production (S3)" above: anonymous
 | `GUEST_MERGE_SECRET` | P, V | 32+ random characters (`openssl rand -base64 48`) |
 | `BILLING_PROVIDER` | P, V | `fake` until S5 |
 | `BILLING_WEBHOOK_SECRET` | P, V | 32+ random characters (S5: the provider's signing secret) |
-| `ALLOW_FAKE_BILLING` | none | Never set outside E2E |
+| `ALLOW_FAKE_BILLING` | P (demo only) | `true` only for a public demo that runs `USE_FAKE_AI=true`: the demo checkout then grants Pro and Max for free. Leave unset with real AI keys |
 | `CRON_SECRET` | P | 32+ random characters (Vercel Cron sends it) |
 | `SENTRY_DSN` | P | Optional |
 | `NEXT_PUBLIC_SENTRY_DSN` | P | Optional, same project |
