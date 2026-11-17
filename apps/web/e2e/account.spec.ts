@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { signUp } from "./helpers";
+import { openPasteTab, signUp } from "./helpers";
 
 test("E16: the account activity graph counts today's explained document", async ({ page }) => {
   await signUp(page, "activity");
@@ -9,12 +9,7 @@ test("E16: the account activity graph counts today's explained document", async 
   await expect(main.getByText("Your activity shows here")).toBeVisible();
 
   await page.goto("/en/documents");
-  // A click that lands before hydration only focuses the tab, so click until it is selected.
-  const paste = page.getByRole("tab", { name: "Paste text" });
-  await expect(async () => {
-    await paste.click();
-    await expect(paste).toHaveAttribute("aria-selected", "true", { timeout: 1_000 });
-  }).toPass();
+  await openPasteTab(page);
   await page
     .getByLabel("Document text")
     .fill(`Notice. ${"The tenant must pay the rent before the fifth day of each month. ".repeat(8)}`);

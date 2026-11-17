@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { signUp } from "./helpers";
+import { openPasteTab, signUp } from "./helpers";
 
 /** Group F with FakeBillingProvider. Needs `supabase start`, USE_FAKE_AI and ALLOW_FAKE_BILLING (playwright.config). */
 
@@ -22,7 +22,7 @@ test("F01: a guest who runs out of credits gets a soft paywall, never a dead end
   // end (or the paywall opens) before the next one, so the credits are really spent.
   for (let i = 0; i < 3; i++) {
     await page.goto("/en/documents");
-    await page.getByRole("tab", { name: "Paste text" }).click();
+    await openPasteTab(page);
     await page
       .getByLabel("Document text")
       .fill(`Notice ${i}. ${"The tenant must pay the rent before the fifth day of each month. ".repeat(8)}`);

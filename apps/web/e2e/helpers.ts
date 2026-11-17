@@ -1,4 +1,4 @@
-import type { Page } from "@playwright/test";
+import { expect, type Page } from "@playwright/test";
 
 /** Creates a confirmed account through the real sign-up form and the code from Mailpit, then signs in. */
 export async function signUp(page: Page, prefix: string): Promise<string> {
@@ -15,4 +15,13 @@ export async function signUp(page: Page, prefix: string): Promise<string> {
   await page.getByLabel("Digit 1 of 6").fill(msg.Text.match(/\b(\d{6})\b/)?.[1] ?? "");
   await page.waitForURL(/\/en\/documents/);
   return email;
+}
+
+/** Opens the Paste text tab. A click that lands before hydration only focuses it, so click until selected. */
+export async function openPasteTab(page: Page): Promise<void> {
+  const paste = page.getByRole("tab", { name: "Paste text" });
+  await expect(async () => {
+    await paste.click();
+    await expect(paste).toHaveAttribute("aria-selected", "true", { timeout: 1_000 });
+  }).toPass();
 }
