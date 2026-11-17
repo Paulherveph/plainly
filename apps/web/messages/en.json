@@ -28,7 +28,8 @@
     "account": "Account",
     "pricing": "Pricing",
     "terms": "Terms",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "collapseMenu": "Collapse menu"
   },
   "Footer": {
     "note": "Not legal advice. Files are deleted after 30 days.",

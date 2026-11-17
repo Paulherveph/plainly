@@ -28,7 +28,8 @@
     "account": "账户",
     "pricing": "价格",
     "terms": "服务条款",
-    "signIn": "登录"
+    "signIn": "登录",
+    "collapseMenu": "收起菜单"
   },
   "Footer": {
     "note": "不构成法律意见。文件 30 天后删除。",

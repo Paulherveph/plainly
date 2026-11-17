@@ -28,7 +28,8 @@
     "account": "Compte",
     "pricing": "Tarifs",
     "terms": "Conditions",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "collapseMenu": "Réduire le menu"
   },
   "Footer": {
     "note": "Pas un conseil juridique. Fichiers supprimés après 30 jours.",
