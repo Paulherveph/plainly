@@ -56,30 +56,32 @@ test("F19: the demo card mirrors the form, flips for the CVC, hides details and 
   page,
 }) => {
   await signUp(page, "card");
+  // Inside <main>: while the page streams, Next keeps a hidden copy of the content outside it.
+  const main = page.getByRole("main");
   await page.goto("/en/pricing");
   await page.getByRole("button", { name: "Get Pro" }).click();
-  const card = page.getByTestId("payment-card");
-  const number = page.getByTestId("card-number");
+  const card = main.getByTestId("payment-card");
+  const number = main.getByTestId("card-number");
 
-  await page.getByLabel("Cardholder name", { exact: true }).fill("Sam Taylor");
-  await page.getByLabel("Card number", { exact: true }).pressSequentially("42424242");
+  await main.getByLabel("Cardholder name", { exact: true }).fill("Sam Taylor");
+  await main.getByLabel("Card number", { exact: true }).pressSequentially("42424242");
   await expect(number).toHaveText("4242 4242 •••• ••••");
-  await expect(page.getByTestId("card-name")).toHaveText("Sam Taylor");
+  await expect(main.getByTestId("card-name")).toHaveText("Sam Taylor");
 
-  await page.getByLabel("CVC", { exact: true }).focus();
+  await main.getByLabel("CVC", { exact: true }).focus();
   await expect(card).toHaveAttribute("data-flipped", "true");
-  await page.getByLabel("Cardholder name", { exact: true }).focus();
+  await main.getByLabel("Cardholder name", { exact: true }).focus();
   await expect(card).toHaveAttribute("data-flipped", "false");
 
   await page.getByRole("button", { name: "Hide card details" }).click();
   await expect(number).toHaveText("•••• •••• •••• ••••");
-  await expect(page.getByLabel("Card number", { exact: true })).toHaveAttribute("type", "password");
+  await expect(main.getByLabel("Card number", { exact: true })).toHaveAttribute("type", "password");
   await page.getByRole("button", { name: "Show card details" }).click();
 
   // A real-looking card (valid checksum) is refused: this demo never takes card numbers.
-  await page.getByLabel("Card number", { exact: true }).fill("4111 1111 1111 1111");
-  await page.getByLabel("Expiry", { exact: true }).fill("1230");
-  await page.getByLabel("CVC", { exact: true }).fill("123");
+  await main.getByLabel("Card number", { exact: true }).fill("4111 1111 1111 1111");
+  await main.getByLabel("Expiry", { exact: true }).fill("1230");
+  await main.getByLabel("CVC", { exact: true }).fill("123");
   await page.getByRole("button", { name: "Pay $12.00" }).click();
   await expect(page.getByRole("alert").filter({ hasText: "only the test cards work" })).toBeVisible();
 

@@ -167,7 +167,8 @@ test("E10: language and theme are saved in the profile", async ({ page }) => {
   await page.getByRole("button", { name: "Save" }).click();
   await expect(page.getByText("Saved")).toBeVisible();
   await page.reload();
-  await expect(page.getByLabel("Name")).toHaveValue("Ada");
+  // Inside <main>: while the page streams, Next keeps a hidden copy of the content outside it.
+  await expect(page.getByRole("main").getByLabel("Name")).toHaveValue("Ada");
 });
 
 test("E09: someone else's document URL is a 404", async ({ page }) => {
